@@ -1,0 +1,4 @@
+{
+  "executablePath": "C:/Users/Mark/.cache/puppeteer/chrome/win64-131.0.6778.204/chrome-win64/chrome.exe",
+  "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+}

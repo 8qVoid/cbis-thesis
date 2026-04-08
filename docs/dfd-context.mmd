@@ -1,0 +1,18 @@
+flowchart LR
+    U[Public User] -->|View blood availability, events, map| S((CBIS Platform))
+    D[Donor] -->|Register/Login, manage profile| S
+    D -->|Donation participation data| S
+    F[Blood Bank or Hospital Applicant] -->|Submit legitimacy + DOH proof| S
+    A[Red Cross Central Admin] -->|Manage facilities, users, records, events| S
+    FA[Facility Admin / Personnel] -->|Manage donors, donations, inventory, releases, events| S
+    MT[Medical Technologist] -->|Manage bloodletting verification| S
+
+    S -->|Public portal info| U
+    S -->|Donor portal updates| D
+    S -->|Application status review result| F
+    S -->|Dashboards, reports, alerts| A
+    S -->|Facility-scoped dashboards, reports| FA
+    S -->|Bloodletting records & status| MT
+
+    DB[(Centralized MySQL Database)]
+    S <--> DB

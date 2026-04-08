@@ -1,0 +1,79 @@
+flowchart TB
+    subgraph External_Entities
+      U[Public User]
+      D[Donor]
+      F[Blood Bank or Hospital Applicant]
+      A[Red Cross Central Admin]
+      FA[Facility Admin / Personnel]
+      MT[Medical Technologist]
+    end
+
+    subgraph CBIS_Processes
+      P1[1.0 Authentication and RBAC]
+      P2[2.0 Facility and Staff Management]
+      P3[3.0 Donor Management]
+      P4[4.0 Donation and Bloodletting Records]
+      P5[5.0 Inventory and Blood Release]
+      P6[6.0 Event Scheduling and Mapping]
+      P7[7.0 Reports and Notifications]
+      P8[8.0 Facility Application Review]
+    end
+
+    subgraph Data_Stores
+      DS1[(D1 Users, Roles, Permissions)]
+      DS2[(D2 Facilities)]
+      DS3[(D3 Donors)]
+      DS4[(D4 Donation Records)]
+      DS5[(D5 Bloodletting Records)]
+      DS6[(D6 Blood Inventory)]
+      DS7[(D7 Blood Releases)]
+      DS8[(D8 Event Schedules and Locations)]
+      DS9[(D9 Audit Logs and Notifications)]
+      DS10[(D10 Facility Applications)]
+    end
+
+    U -->|Public portal requests| P6
+    P6 -->|Availability, schedules, map| U
+
+    D -->|Register/Login/Profile updates| P1
+    P1 -->|Auth result| D
+    D -->|Donor details| P3
+    P3 -->|Profile and history| D
+
+    F -->|Application form + proof files| P8
+    P8 -->|Application status| F
+
+    A -->|Create/update facilities & staff| P2
+    A -->|Review applications| P8
+    A -->|View reports| P7
+
+    FA -->|Facility operations| P3
+    FA -->|Record donations| P4
+    FA -->|Inventory/release actions| P5
+    FA -->|Create facility events| P6
+
+    MT -->|Bloodletting verification| P4
+
+    P1 <--> DS1
+    P2 <--> DS1
+    P2 <--> DS2
+    P3 <--> DS3
+    P4 <--> DS4
+    P4 <--> DS5
+    P5 <--> DS6
+    P5 <--> DS7
+    P4 -->|Donation increases stock| DS6
+    P6 <--> DS8
+    P7 <--> DS9
+    P7 -->|Uses data| DS2
+    P7 -->|Uses data| DS3
+    P7 -->|Uses data| DS4
+    P7 -->|Uses data| DS6
+    P8 <--> DS10
+    P8 -->|Approved applicant becomes facility| DS2
+    P2 -->|Critical actions| DS9
+    P3 -->|Critical actions| DS9
+    P4 -->|Critical actions| DS9
+    P5 -->|Critical actions| DS9
+    P6 -->|Critical actions| DS9
+    P8 -->|Critical actions| DS9

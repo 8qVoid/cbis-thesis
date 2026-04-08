@@ -1,0 +1,184 @@
+erDiagram
+    FACILITIES {
+      bigint id PK
+      string code UK
+      string name
+      string type
+      string contact_person
+      string contact_number
+      string email
+      text address
+      boolean is_active
+    }
+
+    USERS {
+      bigint id PK
+      bigint facility_id FK
+      string name
+      string email UK
+      string phone
+      string password
+      boolean is_active
+    }
+
+    DONORS {
+      bigint id PK
+      bigint facility_id FK
+      string first_name
+      string last_name
+      date birth_date
+      string sex
+      string blood_type
+      string contact_number
+      string email
+      boolean is_eligible
+      boolean is_online_registered
+    }
+
+    DONATION_RECORDS {
+      bigint id PK
+      bigint facility_id FK
+      bigint donor_id FK
+      bigint recorded_by FK
+      string donation_no UK
+      datetime donated_at
+      string blood_type
+      int volume_ml
+      date expiration_date
+      string status
+    }
+
+    BLOODLETTING_RECORDS {
+      bigint id PK
+      bigint facility_id FK
+      bigint donation_record_id FK
+      bigint medical_technologist_id FK
+      datetime bloodletting_at
+      string verification_status
+    }
+
+    BLOOD_INVENTORY {
+      bigint id PK
+      bigint facility_id FK
+      bigint donation_record_id FK
+      string blood_type
+      int units_available
+      date expiration_date
+      string status
+    }
+
+    BLOOD_RELEASES {
+      bigint id PK
+      bigint facility_id FK
+      bigint blood_inventory_id FK
+      bigint released_by FK
+      datetime released_at
+      int units_released
+      string purpose
+    }
+
+    DONATION_SCHEDULES {
+      bigint id PK
+      bigint facility_id FK
+      string title
+      string event_type
+      date event_date
+      time start_time
+      time end_time
+      string venue
+      decimal latitude
+      decimal longitude
+      boolean is_public
+      string status
+    }
+
+    BLOOD_BANK_LOCATIONS {
+      bigint id PK
+      bigint facility_id FK
+      decimal latitude
+      decimal longitude
+      string address
+      string contact_number
+    }
+
+    FACILITY_APPLICATIONS {
+      bigint id PK
+      string organization_name
+      string facility_type
+      string contact_person
+      string contact_number
+      string email
+      string doh_accreditation_number
+      string legitimacy_proof_path
+      string doh_accreditation_proof_path
+      string status
+      bigint reviewed_by FK
+      bigint facility_id FK
+    }
+
+    AUDIT_LOGS {
+      bigint id PK
+      bigint facility_id FK
+      bigint user_id FK
+      string action
+      string auditable_type
+      bigint auditable_id
+      json details
+      string ip_address
+    }
+
+    ROLES {
+      bigint id PK
+      string name
+      string guard_name
+    }
+
+    PERMISSIONS {
+      bigint id PK
+      string name
+      string guard_name
+    }
+
+    ROLE_HAS_PERMISSIONS {
+      bigint permission_id FK
+      bigint role_id FK
+    }
+
+    MODEL_HAS_ROLES {
+      bigint role_id FK
+      bigint model_id
+      string model_type
+    }
+
+    MODEL_HAS_PERMISSIONS {
+      bigint permission_id FK
+      bigint model_id
+      string model_type
+    }
+
+    FACILITIES ||--o{ USERS : has
+    FACILITIES ||--o{ DONORS : has
+    FACILITIES ||--o{ DONATION_RECORDS : has
+    FACILITIES ||--o{ BLOODLETTING_RECORDS : has
+    FACILITIES ||--o{ BLOOD_INVENTORY : has
+    FACILITIES ||--o{ BLOOD_RELEASES : has
+    FACILITIES ||--o{ DONATION_SCHEDULES : has_events
+    FACILITIES ||--o{ BLOOD_BANK_LOCATIONS : has_locations
+
+    DONORS ||--o{ DONATION_RECORDS : donates
+    DONATION_RECORDS ||--o{ BLOOD_INVENTORY : creates_stock
+    DONATION_RECORDS ||--o| BLOODLETTING_RECORDS : verified_by
+    BLOOD_INVENTORY ||--o{ BLOOD_RELEASES : released_as_usage
+
+    USERS ||--o{ DONATION_RECORDS : records
+    USERS ||--o{ BLOODLETTING_RECORDS : verifies
+    USERS ||--o{ BLOOD_RELEASES : releases
+    USERS ||--o{ AUDIT_LOGS : performs
+
+    USERS ||--o{ FACILITY_APPLICATIONS : reviews
+    FACILITIES ||--o{ FACILITY_APPLICATIONS : approved_to
+
+    ROLES ||--o{ ROLE_HAS_PERMISSIONS : has
+    PERMISSIONS ||--o{ ROLE_HAS_PERMISSIONS : belongs
+    ROLES ||--o{ MODEL_HAS_ROLES : assigned
+    PERMISSIONS ||--o{ MODEL_HAS_PERMISSIONS : assigned
