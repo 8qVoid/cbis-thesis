@@ -22,6 +22,11 @@ class FacilityApplicationController extends Controller
 {
     use LogsAudit;
 
+    private function primaryContactNumber(string $contactNumbers): string
+    {
+        return trim(strtok($contactNumbers, ',')) ?: $contactNumbers;
+    }
+
     public function create(): View
     {
         return view('public-portal.facility-application');
@@ -111,7 +116,7 @@ class FacilityApplicationController extends Controller
                     $staffUser = User::create([
                         'name' => $facilityApplication->contact_person,
                         'email' => $facilityApplication->email,
-                        'phone' => $facilityApplication->contact_number,
+                        'phone' => $this->primaryContactNumber($facilityApplication->contact_number),
                         'facility_id' => $facilityId,
                         'password' => $temporaryPassword,
                         'is_active' => true,
