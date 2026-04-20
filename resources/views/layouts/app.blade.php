@@ -48,6 +48,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('facility-application.create') }}">Apply Facility</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('public.availability') }}">Available Bloods</a></li>
                 @endif
             </ul>
             <div class="d-flex">

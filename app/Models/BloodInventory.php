@@ -12,6 +12,8 @@ class BloodInventory extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
     protected $table = 'blood_inventory';
 
     protected $fillable = [

@@ -5,6 +5,8 @@
     <p class="cbis-page-subtitle">View verified upcoming events and map locations in real time.</p>
 </div>
 
+@include('public-portal.partials.nav')
+
 <form method="GET" class="card card-body mb-3 cbis-filter-card">
     <div class="row g-2">
         <div class="col-md-3">
@@ -76,5 +78,6 @@
 
 <div class="mt-3 d-flex gap-2">
     <a href="{{ route('public.map') }}" class="btn btn-danger">View Events & Map</a>
+    <a href="{{ route('public.availability') }}" class="btn btn-outline-danger">View Available Bloods</a>
 </div>
 @endsection

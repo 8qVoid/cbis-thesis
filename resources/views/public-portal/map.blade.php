@@ -5,6 +5,8 @@
     <p class="cbis-page-subtitle">Upcoming public blood donation and bloodletting activities in Negros.</p>
 </div>
 
+@include('public-portal.partials.nav')
+
 <form method="GET" class="card card-body mb-3 cbis-filter-card">
     <div class="row g-2">
         <div class="col-md-3">

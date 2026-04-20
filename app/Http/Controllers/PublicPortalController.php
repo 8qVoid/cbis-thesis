@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterPublicEventsRequest;
+use App\Http\Requests\FilterPublicInventoryRequest;
 use App\Models\BloodBankLocation;
+use App\Models\BloodInventory;
 use App\Models\DonationSchedule;
 use App\Models\Facility;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class PublicPortalController extends Controller
@@ -135,5 +138,58 @@ class PublicPortalController extends Controller
             ->values();
 
         return view('public-portal.map', compact('mapLocations', 'events', 'facilities'));
+    }
+
+    public function availability(FilterPublicInventoryRequest $request): View
+    {
+        $filters = $request->validated();
+        $bloodTypes = ! empty($filters['blood_type'])
+            ? [$filters['blood_type']]
+            : BloodInventory::BLOOD_TYPES;
+
+        $facilitiesQuery = Facility::query()
+            ->where('is_active', true)
+            ->where('type', 'blood_bank')
+            ->orderBy('name');
+
+        if (! empty($filters['facility_id'])) {
+            $facilitiesQuery->where('id', $filters['facility_id']);
+        }
+
+        $facilities = $facilitiesQuery->get();
+
+        $availablePairs = BloodInventory::query()
+            ->select('facility_id', 'blood_type')
+            ->whereIn('facility_id', $facilities->pluck('id'))
+            ->whereIn('blood_type', $bloodTypes)
+            ->where('units_available', '>', 0)
+            ->where('status', '!=', 'expired')
+            ->whereDate('expiration_date', '>=', now()->toDateString())
+            ->groupBy('facility_id', 'blood_type')
+            ->get()
+            ->groupBy('facility_id')
+            ->map(fn (Collection $rows) => $rows->pluck('blood_type')->all());
+
+        $availabilityByFacility = $facilities->map(function (Facility $facility) use ($availablePairs) {
+            $availableTypes = $availablePairs->get($facility->id, []);
+
+            return [
+                'facility' => $facility,
+                'blood_types' => array_values($availableTypes),
+            ];
+        })->filter(fn (array $facilityAvailability) => $facilityAvailability['blood_types'] !== [])->values();
+
+        $facilityOptions = Facility::query()
+            ->where('is_active', true)
+            ->where('type', 'blood_bank')
+            ->orderBy('name')
+            ->get();
+
+        return view('public-portal.availability', [
+            'availabilityByFacility' => $availabilityByFacility,
+            'bloodTypes' => BloodInventory::BLOOD_TYPES,
+            'selectedBloodTypes' => $bloodTypes,
+            'facilities' => $facilityOptions,
+        ]);
     }
 }

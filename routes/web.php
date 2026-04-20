@@ -25,6 +25,7 @@ Route::redirect('/', '/portal/map');
 Route::get('/portal', [PublicPortalController::class, 'index'])->name('public.index');
 Route::redirect('/portal/events', '/portal/map')->name('public.events');
 Route::get('/portal/map', [PublicPortalController::class, 'map'])->name('public.map');
+Route::get('/portal/availability', [PublicPortalController::class, 'availability'])->name('public.availability');
 Route::get('/facility/apply', [FacilityApplicationController::class, 'create'])->name('facility-application.create');
 Route::post('/facility/apply', [FacilityApplicationController::class, 'store'])
     ->middleware('throttle:facility-apply')
