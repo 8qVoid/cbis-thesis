@@ -35,7 +35,7 @@ class StoreStaffUserRequest extends BaseFormRequest
             'facility_id' => [$isCentralAdmin ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
-            'role' => ['required', 'in:Facility Admin / Blood Bank Personnel,Medical Technologist'],
+            'role' => ['required', 'in:Facility Admin / Blood Bank Personnel'],
         ];
     }
 }

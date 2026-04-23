@@ -7,6 +7,7 @@ use App\Http\Requests\FilterPublicInventoryRequest;
 use App\Models\BloodBankLocation;
 use App\Models\BloodInventory;
 use App\Models\DonationSchedule;
+use App\Models\EventRegistration;
 use App\Models\Facility;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -43,7 +44,9 @@ class PublicPortalController extends Controller
 
         $facilities = Facility::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('public-portal.index', compact('schedules', 'facilities'));
+        $registeredEventIds = $this->registeredEventIdsForDonor($schedules->pluck('id')->all());
+
+        return view('public-portal.index', compact('schedules', 'facilities', 'registeredEventIds'));
     }
 
     public function events(FilterPublicEventsRequest $request): View
@@ -76,7 +79,9 @@ class PublicPortalController extends Controller
 
         $facilities = Facility::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('public-portal.events', compact('events', 'facilities'));
+        $registeredEventIds = $this->registeredEventIdsForDonor($events->pluck('id')->all());
+
+        return view('public-portal.events', compact('events', 'facilities', 'registeredEventIds'));
     }
 
     public function map(FilterPublicEventsRequest $request): View
@@ -137,7 +142,9 @@ class PublicPortalController extends Controller
             ->filter()
             ->values();
 
-        return view('public-portal.map', compact('mapLocations', 'events', 'facilities'));
+        $registeredEventIds = $this->registeredEventIdsForDonor($events->pluck('id')->all());
+
+        return view('public-portal.map', compact('mapLocations', 'events', 'facilities', 'registeredEventIds'));
     }
 
     public function availability(FilterPublicInventoryRequest $request): View
@@ -191,5 +198,21 @@ class PublicPortalController extends Controller
             'selectedBloodTypes' => $bloodTypes,
             'facilities' => $facilityOptions,
         ]);
+    }
+
+    private function registeredEventIdsForDonor(array $eventIds): array
+    {
+        $donor = auth('donor')->user();
+
+        if ($donor === null || $eventIds === []) {
+            return [];
+        }
+
+        return EventRegistration::query()
+            ->where('donor_id', $donor->id)
+            ->where('status', 'registered')
+            ->whereIn('donation_schedule_id', $eventIds)
+            ->pluck('donation_schedule_id')
+            ->all();
     }
 }

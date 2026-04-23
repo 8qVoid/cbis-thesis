@@ -24,16 +24,22 @@ class DonorEventRegistrationController extends Controller
 
     public function join(DonationSchedule $donationSchedule): RedirectResponse
     {
-        $this->registerForEvent($donationSchedule);
+        $created = $this->registerForEvent($donationSchedule);
 
-        return redirect()->route('public.map')->with('success', 'You are now registered for this event.');
+        return redirect()->route('public.map')->with(
+            'success',
+            $created ? 'You are now registered for this event.' : 'You are already registered for this event.'
+        );
     }
 
     public function store(DonationSchedule $donationSchedule): RedirectResponse
     {
-        $this->registerForEvent($donationSchedule);
+        $created = $this->registerForEvent($donationSchedule);
 
-        return back()->with('success', 'You are now registered for this event.');
+        return back()->with(
+            'success',
+            $created ? 'You are now registered for this event.' : 'You are already registered for this event.'
+        );
     }
 
     public function destroy(DonationSchedule $donationSchedule): RedirectResponse
@@ -48,11 +54,20 @@ class DonorEventRegistrationController extends Controller
         return back()->with('success', 'Your event registration has been cancelled.');
     }
 
-    private function registerForEvent(DonationSchedule $donationSchedule): void
+    private function registerForEvent(DonationSchedule $donationSchedule): bool
     {
         $donor = auth('donor')->user();
 
-        abort_unless($donationSchedule->is_public && ! $donationSchedule->event_date?->isPast(), 422, 'This event is no longer open for registration.');
+        $existingRegistration = EventRegistration::query()
+            ->where('donation_schedule_id', $donationSchedule->id)
+            ->where('donor_id', $donor->id)
+            ->first();
+
+        if ($existingRegistration?->status === 'registered') {
+            return false;
+        }
+
+        abort_unless($donationSchedule->isRegistrationOpen(), 422, 'This event is no longer open for registration.');
 
         EventRegistration::query()->updateOrCreate(
             [
@@ -65,5 +80,7 @@ class DonorEventRegistrationController extends Controller
                 'registered_at' => now(),
             ]
         );
+
+        return true;
     }
 }

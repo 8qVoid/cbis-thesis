@@ -64,7 +64,11 @@
                             <td>{{ $event->start_time }} - {{ $event->end_time }}</td>
                             <td>{{ $event->venue }}</td>
                             <td>
-                                <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @if(in_array($event->id, $registeredEventIds ?? [], true))
+                                    <span class="badge text-bg-success">Already Registered</span>
+                                @else
+                                    <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @endif
                             </td>
                         </tr>
                     @empty

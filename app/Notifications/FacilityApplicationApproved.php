@@ -15,8 +15,7 @@ class FacilityApplicationApproved extends Notification
         public Facility $facility,
         public string $recipientName,
         public string $recipientEmail,
-        public ?string $temporaryPassword = null,
-        public ?string $reviewNotes = null,
+        public ?string $temporaryPassword = null,        public ?string $reviewNotes = null,
     ) {
     }
 

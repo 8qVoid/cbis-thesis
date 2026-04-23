@@ -18,7 +18,12 @@
                 <small class="text-muted">You can create users only for your own facility.</small>
             </div>
         @endif
-        <div class="col-md-4"><label class="form-label">Role</label><select name="role" class="form-select">@foreach($roles as $role)<option value="{{ $role->name }}">{{ $role->name }}</option>@endforeach</select></div>
+        <input type="hidden" name="role" value="{{ $roles->first()?->name }}">
+        <div class="col-md-4">
+            <label class="form-label">Role</label>
+            <input class="form-control" value="{{ $roles->first()?->name }}" disabled>
+            <small class="text-muted">Facility staff accounts now use one combined role.</small>
+        </div>
         <div class="col-md-4"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
         <div class="col-md-4"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
         <div class="col-12"><button class="btn btn-danger">Create Staff User</button></div>

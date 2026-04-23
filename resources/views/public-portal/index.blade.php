@@ -64,7 +64,11 @@
                             <td>{{ $schedule->venue }}</td>
                             <td>{{ $schedule->contact_person ?? '-' }} / {{ $schedule->contact_number ?? '-' }}</td>
                             <td>
-                                <a href="{{ route('donor.events.join', $schedule) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @if(in_array($schedule->id, $registeredEventIds ?? [], true))
+                                    <span class="badge text-bg-success">Already Registered</span>
+                                @else
+                                    <a href="{{ route('donor.events.join', $schedule) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @endif
                             </td>
                         </tr>
                     @empty

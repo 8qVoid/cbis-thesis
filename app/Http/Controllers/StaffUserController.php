@@ -31,10 +31,7 @@ class StaffUserController extends Controller
         $facilities = $user->isCentralAdmin()
             ? Facility::query()->where('is_active', true)->orderBy('name')->get()
             : Facility::query()->where('is_active', true)->whereKey($user->facility_id)->get();
-        $roles = Role::query()->whereIn('name', [
-            'Facility Admin / Blood Bank Personnel',
-            'Medical Technologist',
-        ])->orderBy('name')->get();
+        $roles = Role::query()->where('name', 'Facility Admin / Blood Bank Personnel')->get();
 
         return view('staff-users.create', compact('facilities', 'roles'));
     }

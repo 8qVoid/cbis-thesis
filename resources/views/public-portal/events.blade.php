@@ -63,7 +63,11 @@
                             <td>{{ $event->contact_person ?? '-' }} / {{ $event->contact_number ?? '-' }}</td>
                             <td>{{ ucfirst($event->status) }}</td>
                             <td>
-                                <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @if(in_array($event->id, $registeredEventIds ?? [], true))
+                                    <span class="badge text-bg-success">Already Registered</span>
+                                @else
+                                    <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
+                                @endif
                             </td>
                         </tr>
                     @empty

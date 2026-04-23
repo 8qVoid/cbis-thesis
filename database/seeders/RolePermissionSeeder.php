@@ -36,25 +36,26 @@ class RolePermissionSeeder extends Seeder
 
         $centralAdmin = Role::findOrCreate('Central Administrator', 'web');
         $facilityAdmin = Role::findOrCreate('Facility Admin / Blood Bank Personnel', 'web');
-        $medTech = Role::findOrCreate('Medical Technologist', 'web');
         $public = Role::findOrCreate('Public User', 'web');
 
         $centralAdmin->syncPermissions($permissions);
         $facilityAdmin->syncPermissions([
             'manage donors',
             'manage donation records',
+            'manage bloodletting records',
             'manage inventory',
             'manage blood releases',
             'manage schedules',
             'view reports',
             'view public portal',
         ]);
-        $medTech->syncPermissions([
-            'manage bloodletting records',
-            'manage blood releases',
-            'view reports',
-        ]);
         $public->syncPermissions(['view public portal']);
+
+        User::role('Medical Technologist')->get()->each(function (User $user) use ($facilityAdmin): void {
+            $user->syncRoles([$facilityAdmin]);
+        });
+
+        Role::query()->where('name', 'Medical Technologist')->delete();
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@cbis.local'],

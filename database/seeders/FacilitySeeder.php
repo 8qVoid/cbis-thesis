@@ -35,15 +35,21 @@ class FacilitySeeder extends Seeder
         );
         $facilityAdmin->syncRoles(['Facility Admin / Blood Bank Personnel']);
 
-        $medTech = User::firstOrCreate(
-            ['email' => 'medtech@cbis.local'],
-            [
-                'name' => 'Medical Technologist',
-                'password' => Hash::make('password'),
+        $legacyMedTech = User::withTrashed()->firstWhere('email', 'medtech@cbis.local');
+
+        if ($legacyMedTech !== null) {
+            $legacyMedTech->forceFill([
                 'facility_id' => $facility->id,
-                'is_active' => true,
-            ]
-        );
-        $medTech->syncRoles(['Medical Technologist']);
+                'is_active' => false,
+            ]);
+
+            if ($legacyMedTech->trashed()) {
+                $legacyMedTech->restore();
+            }
+
+            $legacyMedTech->save();
+            $legacyMedTech->syncRoles([]);
+            $legacyMedTech->delete();
+        }
     }
 }

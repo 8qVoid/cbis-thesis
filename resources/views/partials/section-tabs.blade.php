@@ -2,15 +2,14 @@
     $user = auth('web')->user();
     $isCentral = $user?->isCentralAdmin();
     $isFacility = $user?->hasRole('Facility Admin / Blood Bank Personnel');
-    $isMedtech = $user?->hasRole('Medical Technologist');
 
     $tabs = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'show' => true],
         ['label' => 'Records', 'route' => 'donors.index', 'show' => $isCentral || $isFacility || $user?->can('manage donors')],
         ['label' => 'Donations', 'route' => 'donation-records.index', 'show' => $isCentral || $isFacility || $user?->can('manage donation records')],
-        ['label' => 'Bloodletting', 'route' => 'bloodletting-records.index', 'show' => $isCentral || $isMedtech || $user?->can('manage bloodletting records')],
+        ['label' => 'Bloodletting', 'route' => 'bloodletting-records.index', 'show' => $isCentral || $isFacility || $user?->can('manage bloodletting records')],
         ['label' => 'Inventory', 'route' => 'blood-inventory.index', 'show' => $isCentral || $isFacility || $user?->can('manage inventory')],
-        ['label' => 'Releases', 'route' => 'blood-releases.index', 'show' => $isCentral || $isFacility || $isMedtech || $user?->can('manage blood releases')],
+        ['label' => 'Releases', 'route' => 'blood-releases.index', 'show' => $isCentral || $isFacility || $user?->can('manage blood releases')],
         ['label' => 'Events', 'route' => 'donation-schedules.index', 'show' => $isCentral || $isFacility || $user?->can('manage schedules')],
         ['label' => 'Locations', 'route' => 'blood-bank-locations.index', 'show' => $isCentral || $user?->can('manage locations')],
         ['label' => 'Reports', 'route' => 'reports.index', 'show' => $isCentral || $isFacility || $user?->can('view reports')],

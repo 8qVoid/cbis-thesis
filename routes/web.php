@@ -106,13 +106,13 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage donation records');
 
     Route::resource('bloodletting-records', BloodlettingRecordController::class)
-        ->middleware('role_or_permission:Central Administrator|Medical Technologist|manage bloodletting records');
+        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage bloodletting records');
 
     Route::resource('blood-inventory', BloodInventoryController::class)
         ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage inventory');
 
     Route::resource('blood-releases', BloodReleaseController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|Medical Technologist|manage blood releases');
+        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage blood releases');
 
     Route::resource('donation-schedules', DonationScheduleController::class)
         ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage schedules');

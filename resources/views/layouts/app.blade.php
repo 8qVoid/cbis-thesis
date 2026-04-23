@@ -19,14 +19,13 @@
     $webUser = $webAuthenticated ? auth('web')->user() : null;
     $isCentralAdmin = $webAuthenticated && $webUser?->isCentralAdmin();
     $isFacilityAdmin = $webAuthenticated && $webUser?->hasRole('Facility Admin / Blood Bank Personnel');
-    $isMedicalTechnologist = $webAuthenticated && $webUser?->hasRole('Medical Technologist');
 
     // Mirror route middleware access checks so navbar only shows allowed modules.
     $canManageDonors = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage donors'));
     $canManageDonations = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage donation records'));
-    $canManageBloodletting = $webAuthenticated && ($isCentralAdmin || $isMedicalTechnologist || $webUser?->can('manage bloodletting records'));
+    $canManageBloodletting = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage bloodletting records'));
     $canManageInventory = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage inventory'));
-    $canManageReleases = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $isMedicalTechnologist || $webUser?->can('manage blood releases'));
+    $canManageReleases = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage blood releases'));
     $canManageSchedules = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage schedules'));
     $canManageLocations = $webAuthenticated && ($isCentralAdmin || $webUser?->can('manage locations'));
     $canViewReports = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('view reports'));

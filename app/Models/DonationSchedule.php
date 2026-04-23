@@ -60,4 +60,17 @@ class DonationSchedule extends Model
     {
         return $this->event_type === 'bloodletting' ? 'Bloodletting' : 'Blood Donation';
     }
+
+    public function isRegistrationOpen(): bool
+    {
+        if (! $this->is_public || ! in_array($this->status, ['planned', 'ongoing'], true)) {
+            return false;
+        }
+
+        $registrationDeadline = $this->end_at
+            ?? $this->start_at
+            ?? $this->event_date?->copy()->endOfDay();
+
+        return $registrationDeadline === null || $registrationDeadline->isFuture();
+    }
 }
