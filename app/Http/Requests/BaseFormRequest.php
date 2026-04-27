@@ -47,6 +47,16 @@ abstract class BaseFormRequest extends FormRequest
             ->all();
     }
 
+    protected function facilityOperatorCan(string $permission): bool
+    {
+        $user = $this->user();
+
+        return $user !== null
+            && ! $user->isCentralAdmin()
+            && $user->facility_id !== null
+            && $user->can($permission);
+    }
+
     /**
      * @param array<string, mixed> $data
      * @return array<string, mixed>

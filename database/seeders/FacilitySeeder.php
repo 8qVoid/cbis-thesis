@@ -16,7 +16,7 @@ class FacilitySeeder extends Seeder
             [
                 'name' => 'City Blood Center',
                 'type' => 'blood_bank',
-                'contact_person' => 'Facility Admin',
+                'contact_person' => 'Facility Facilitator',
                 'contact_number' => '09170000000',
                 'email' => 'facility@cbis.local',
                 'address' => 'Sample City',
@@ -24,23 +24,44 @@ class FacilitySeeder extends Seeder
             ]
         );
 
-        $facilityAdmin = User::firstOrCreate(
+        $facilitator = User::firstOrCreate(
             ['email' => 'facility.admin@cbis.local'],
             [
-                'name' => 'Facility Admin',
+                'name' => 'Facility Facilitator',
                 'password' => Hash::make('password'),
                 'facility_id' => $facility->id,
                 'is_active' => true,
             ]
         );
-        $facilityAdmin->syncRoles(['Facility Admin / Blood Bank Personnel']);
+        $facilitator->forceFill([
+            'name' => 'Facility Facilitator',
+            'facility_id' => $facility->id,
+            'is_active' => true,
+        ])->save();
+        $facilitator->syncRoles(['Facilitator']);
+
+        $medicalStaff = User::firstOrCreate(
+            ['email' => 'medical.staff@cbis.local'],
+            [
+                'name' => 'Medical Staff Nurse',
+                'password' => Hash::make('password'),
+                'facility_id' => $facility->id,
+                'is_active' => true,
+            ]
+        );
+        $medicalStaff->forceFill([
+            'facility_id' => $facility->id,
+            'is_active' => true,
+        ])->save();
+        $medicalStaff->syncRoles(['Medical Staff / Nurse']);
 
         $legacyMedTech = User::withTrashed()->firstWhere('email', 'medtech@cbis.local');
 
         if ($legacyMedTech !== null) {
             $legacyMedTech->forceFill([
+                'name' => 'Medical Staff Nurse',
                 'facility_id' => $facility->id,
-                'is_active' => false,
+                'is_active' => true,
             ]);
 
             if ($legacyMedTech->trashed()) {
@@ -48,8 +69,7 @@ class FacilitySeeder extends Seeder
             }
 
             $legacyMedTech->save();
-            $legacyMedTech->syncRoles([]);
-            $legacyMedTech->delete();
+            $legacyMedTech->syncRoles(['Medical Staff / Nurse']);
         }
     }
 }

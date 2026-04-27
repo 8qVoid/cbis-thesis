@@ -6,7 +6,7 @@ use App\Support\PhilippinePhone;
 
 class StoreDonorRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage donors') ?? false; }
+    public function authorize(): bool { return $this->facilityOperatorCan('manage donors'); }
 
     protected function prepareForValidation(): void
     {

@@ -18,19 +18,8 @@
     $donorAuthenticated = auth('donor')->check();
     $webUser = $webAuthenticated ? auth('web')->user() : null;
     $isCentralAdmin = $webAuthenticated && $webUser?->isCentralAdmin();
-    $isFacilityAdmin = $webAuthenticated && $webUser?->hasRole('Facility Admin / Blood Bank Personnel');
 
-    // Mirror route middleware access checks so navbar only shows allowed modules.
-    $canManageDonors = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage donors'));
-    $canManageDonations = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage donation records'));
-    $canManageBloodletting = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage bloodletting records'));
-    $canManageInventory = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage inventory'));
-    $canManageReleases = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage blood releases'));
-    $canManageSchedules = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('manage schedules'));
-    $canManageLocations = $webAuthenticated && ($isCentralAdmin || $webUser?->can('manage locations'));
-    $canViewReports = $webAuthenticated && ($isCentralAdmin || $isFacilityAdmin || $webUser?->can('view reports'));
-
-    $showNotificationCenter = $webAuthenticated && ($webUser?->isCentralAdmin() || $webUser?->hasRole('Facility Admin / Blood Bank Personnel'));
+    $showNotificationCenter = $webAuthenticated && ($webUser?->isCentralAdmin() || $webUser?->can('manage inventory'));
     $lowStockType = \App\Notifications\LowStockAlert::class;
     $unreadCount = $showNotificationCenter ? $webUser->unreadNotifications()->where('type', $lowStockType)->count() : 0;
     $recentNotifications = $showNotificationCenter ? $webUser->notifications()->where('type', $lowStockType)->latest()->limit(5)->get() : collect();

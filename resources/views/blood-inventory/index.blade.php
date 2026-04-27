@@ -1,6 +1,18 @@
 @extends('layouts.app')
 @section('content')
-<div class="d-flex justify-content-between align-items-end mb-3"><div><h1 class="cbis-page-title mb-0">Blood Inventory</h1><p class="cbis-page-subtitle">Monitor stock levels, expiration dates, and status.</p></div><a href="{{ route('blood-inventory.create') }}" class="btn btn-danger">Add Manual Entry</a></div>
+@php
+    $currentUser = auth('web')->user();
+    $canManageInventory = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage inventory') ?? false);
+@endphp
+<div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
+        <h1 class="cbis-page-title mb-0">Blood Inventory</h1>
+        <p class="cbis-page-subtitle">Monitor stock levels, expiration dates, and status.</p>
+    </div>
+    @if($canManageInventory)
+        <a href="{{ route('blood-inventory.create') }}" class="btn btn-danger">Add Manual Entry</a>
+    @endif
+</div>
 <div class="table-responsive">
 <table class="table table-striped bg-white"><thead><tr><th>Blood Type</th><th>Units</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead><tbody>
 @foreach($inventory as $item)

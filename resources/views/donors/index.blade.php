@@ -1,11 +1,17 @@
 @extends('layouts.app')
 @section('content')
+@php
+    $currentUser = auth('web')->user();
+    $canManageDonors = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage donors') ?? false);
+@endphp
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Donors</h1>
         <p class="cbis-page-subtitle">Manage donor profiles and facility association.</p>
     </div>
-    <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
+    @if($canManageDonors)
+        <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
+    @endif
 </div>
 <div class="table-responsive">
     <table class="table table-striped bg-white">
@@ -27,19 +33,21 @@
                     <td>{{ $donor->facility->name ?? '-' }}</td>
                     <td class="text-nowrap">
                         <a href="{{ route('donors.show', $donor) }}" class="btn btn-sm btn-outline-secondary">View</a>
-                        <a href="{{ route('donors.edit', $donor) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="POST" action="{{ route('donors.destroy', $donor) }}" class="d-inline donor-delete-form" id="donor-delete-{{ $donor->id }}">
-                            @csrf
-                            @method('DELETE')
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-outline-danger js-open-delete-modal"
-                                data-form-id="donor-delete-{{ $donor->id }}"
-                                data-donor-name="{{ $donor->full_name }}"
-                            >
-                                Delete
-                            </button>
-                        </form>
+                        @if($canManageDonors)
+                            <a href="{{ route('donors.edit', $donor) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form method="POST" action="{{ route('donors.destroy', $donor) }}" class="d-inline donor-delete-form" id="donor-delete-{{ $donor->id }}">
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger js-open-delete-modal"
+                                    data-form-id="donor-delete-{{ $donor->id }}"
+                                    data-donor-name="{{ $donor->full_name }}"
+                                >
+                                    Delete
+                                </button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @endforeach
@@ -48,27 +56,30 @@
 </div>
 {{ $donors->links() }}
 
-<div class="modal fade" id="deleteDonorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Donor Record</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-1">Are you sure you want to delete this donor record?</p>
-                <p class="mb-1"><strong id="deleteDonorName">-</strong></p>
-                <p class="text-danger mb-0"><strong>This action cannot be undone.</strong></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteDonorBtn">Yes, Delete</button>
+@if($canManageDonors)
+    <div class="modal fade" id="deleteDonorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Donor Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-1">Are you sure you want to delete this donor record?</p>
+                    <p class="mb-1"><strong id="deleteDonorName">-</strong></p>
+                    <p class="text-danger mb-0"><strong>This action cannot be undone.</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteDonorBtn">Yes, Delete</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+@endif
 @endsection
 
+@if($canManageDonors)
 @push('scripts')
 <script>
 (() => {
@@ -97,3 +108,4 @@
 })();
 </script>
 @endpush
+@endif

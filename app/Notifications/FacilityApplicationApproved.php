@@ -29,7 +29,7 @@ class FacilityApplicationApproved extends Notification
         $mail = (new MailMessage)
             ->subject('CBIS Facility Application Approved')
             ->greeting('Good day, '.$this->recipientName.'!')
-            ->line('Your facility application has been approved by the Philippine Red Cross central administrator.')
+            ->line('Your facility application has been approved by the Philippine Red Cross super administrator.')
             ->line('Facility: '.$this->facility->name)
             ->line('Registered Email: '.$this->recipientEmail)
             ->line('You may now log in to the CBIS staff portal.');

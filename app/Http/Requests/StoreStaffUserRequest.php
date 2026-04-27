@@ -3,14 +3,13 @@
 namespace App\Http\Requests;
 
 use App\Support\PhilippinePhone;
+use Illuminate\Validation\Rule;
 
 class StoreStaffUserRequest extends BaseFormRequest
 {
     public function authorize(): bool
     {
-        return ($this->user()?->isCentralAdmin() ?? false)
-            || ($this->user()?->hasRole('Facility Admin / Blood Bank Personnel') ?? false)
-            || ($this->user()?->can('manage users') ?? false);
+        return $this->facilityOperatorCan('manage users');
     }
 
     protected function prepareForValidation(): void
@@ -35,7 +34,13 @@ class StoreStaffUserRequest extends BaseFormRequest
             'facility_id' => [$isCentralAdmin ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
-            'role' => ['required', 'in:Facility Admin / Blood Bank Personnel'],
+            'role' => [
+                'required',
+                Rule::in([
+                    'Facilitator',
+                    'Medical Staff / Nurse',
+                ]),
+            ],
         ];
     }
 }

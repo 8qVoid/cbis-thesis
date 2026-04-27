@@ -27,7 +27,9 @@ class BloodInventoryController extends Controller
 
     public function create(): View
     {
-        $facilities = Facility::orderBy('name')->get();
+        $facilities = auth()->user()->isCentralAdmin()
+            ? Facility::orderBy('name')->get()
+            : Facility::query()->whereKey(auth()->user()->facility_id)->get();
 
         return view('blood-inventory.create', compact('facilities'));
     }
@@ -55,7 +57,9 @@ class BloodInventoryController extends Controller
     public function edit(BloodInventory $bloodInventory): View
     {
         $this->authorizeRecord($bloodInventory);
-        $facilities = Facility::orderBy('name')->get();
+        $facilities = auth()->user()->isCentralAdmin()
+            ? Facility::orderBy('name')->get()
+            : Facility::query()->whereKey(auth()->user()->facility_id)->get();
 
         return view('blood-inventory.edit', compact('bloodInventory', 'facilities'));
     }

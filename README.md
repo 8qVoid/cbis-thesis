@@ -5,7 +5,7 @@ Laravel 13 thesis system implementing centralized, multi-facility blood inventor
 ## Scope Alignment
 - Centralized single-platform architecture
 - One database for many facilities
-- Admin-created facilities only (no public facility signup)
+- Facility applications reviewed by the Red Cross super administrator
 - Real-time inventory updates via events/listeners
 - Role-based access per approved thesis roles
 
@@ -51,16 +51,109 @@ Laravel 13 thesis system implementing centralized, multi-facility blood inventor
    - `php artisan serve`
 
 ## Default Users (Seeder)
-- Central Admin: `admin@cbis.local` / `password`
-- Facility Admin: `facility.admin@cbis.local` / `password`
-- Medical Technologist: `medtech@cbis.local` / `password`
+- Super Administrator: `admin@cbis.local` / `password`
+- Facility Facilitator: `facility.admin@cbis.local` / `password`
+- Medical Staff / Nurse: `medical.staff@cbis.local` / `password`
+
+## Role Boundaries
+
+### Super Administrator
+The Red Cross main administrator for central oversight and approval.
+
+Can access:
+- Dashboard
+- Donor records
+- Donation records
+- Bloodletting records
+- Blood inventory
+- Blood releases
+- Event schedules
+- Blood bank locations
+- Reports
+- Notifications
+- Facilities
+- Staff accounts
+- Facility applications
+
+Can do:
+- Approve or reject facility applications
+- Manage approved facilities
+- Manage central facility and location records
+- View records across all facilities
+- Generate reports
+- Monitor inventory and alerts
+- View staff accounts across facilities
+
+Cannot do:
+- Create donor records for a facility
+- Create donation records as a facility
+- Create bloodletting records as a facility
+- Create or edit inventory as a facility
+- Create blood release records as a facility
+- Create event schedules as a facility
+- Create facility staff accounts
+
+### Facility Facilitator
+The approved facility account for front desk and facility operations.
+
+Can access:
+- Dashboard
+- Donor records
+- Donation records
+- Bloodletting records
+- Event schedules
+- Staff accounts
+
+Can do:
+- Manage donors under their assigned facility
+- Record donation transactions
+- Manage bloodletting records
+- Create and manage donation events or schedules
+- Create facility staff accounts, such as Medical Staff / Nurse
+- View dashboard summaries for their assigned facility
+
+Cannot access:
+- Facility approval
+- All-facility management
+- Inventory management
+- Blood releases
+- Reports
+- Locations
+- Super administrator controls
+
+### Medical Staff / Nurse
+The facility inventory user.
+
+Can access:
+- Dashboard
+- Blood inventory
+- Notifications
+
+Can do:
+- View current stock
+- Add or update inventory records
+- Monitor low-stock alerts
+- Manage inventory for their assigned facility only
+
+Cannot access:
+- Donor records
+- Donation records
+- Bloodletting records
+- Event schedules
+- Staff management
+- Facility approval
+- Reports
+- Other facilities' data
+
+### Public User
+The public-facing portal user role for non-staff access.
 
 ## Scheduled Commands
 - `inventory:flag-expired`
 - `inventory:notify-low-stock`
 
 ## Low Stock Alerts (In-App + Email)
-- In-app alerts are available for staff (central admin and facility admin) via navbar `Alerts` and `/notifications`.
+- In-app alerts are available for the super administrator and medical staff via navbar `Alerts` and `/notifications`.
 - Email alerts are sent through `LowStockAlert` when inventory enters low-stock state.
 - Required runtime processes:
   - `php artisan schedule:work`

@@ -57,14 +57,6 @@
             <label class="form-label">Contact Number (PH)</label>
             <input name="contact_number" class="form-control" value="{{ old('contact_number') }}" placeholder="+63 917 123 4567 or 09171234567">
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Latitude</label>
-            <input id="latitude" name="latitude" class="form-control" value="{{ old('latitude') }}" placeholder="e.g. 14.5995000">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Longitude</label>
-            <input id="longitude" name="longitude" class="form-control" value="{{ old('longitude') }}" placeholder="e.g. 120.9842000">
-        </div>
         <div class="col-12">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description') }}</textarea>
@@ -80,6 +72,14 @@
             <label class="form-label">Pick Coordinates on Map (optional)</label>
             <div id="event-map" class="rounded border" style="height: 320px"></div>
             <small class="text-muted">Click map to set latitude and longitude.</small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Latitude</label>
+            <input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude') }}" placeholder="e.g. 14.5995000" readonly>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Longitude</label>
+            <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" placeholder="e.g. 120.9842000" readonly>
         </div>
         <div class="col-12">
             <button class="btn btn-danger">Save Event</button>

@@ -34,38 +34,69 @@ class RolePermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        $centralAdmin = Role::findOrCreate('Central Administrator', 'web');
-        $facilityAdmin = Role::findOrCreate('Facility Admin / Blood Bank Personnel', 'web');
+        $superAdmin = Role::findOrCreate('Super Administrator', 'web');
+        $facilitator = Role::findOrCreate('Facilitator', 'web');
+        $medicalStaff = Role::findOrCreate('Medical Staff / Nurse', 'web');
         $public = Role::findOrCreate('Public User', 'web');
 
-        $centralAdmin->syncPermissions($permissions);
-        $facilityAdmin->syncPermissions([
+        $superAdmin->syncPermissions([
+            'manage facilities',
+            'manage roles',
+            'manage locations',
+            'view reports',
+            'view public portal',
+        ]);
+        $facilitator->syncPermissions([
+            'manage users',
             'manage donors',
             'manage donation records',
             'manage bloodletting records',
-            'manage inventory',
-            'manage blood releases',
             'manage schedules',
-            'view reports',
+            'view public portal',
+        ]);
+        $medicalStaff->syncPermissions([
+            'manage inventory',
             'view public portal',
         ]);
         $public->syncPermissions(['view public portal']);
 
-        User::role('Medical Technologist')->get()->each(function (User $user) use ($facilityAdmin): void {
-            $user->syncRoles([$facilityAdmin]);
-        });
+        if (Role::query()->where('name', 'Central Administrator')->exists()) {
+            User::role('Central Administrator')->get()->each(function (User $user) use ($superAdmin): void {
+                $user->syncRoles([$superAdmin]);
+            });
 
-        Role::query()->where('name', 'Medical Technologist')->delete();
+            Role::query()->where('name', 'Central Administrator')->delete();
+        }
+
+        if (Role::query()->where('name', 'Facility Admin / Blood Bank Personnel')->exists()) {
+            User::role('Facility Admin / Blood Bank Personnel')->get()->each(function (User $user) use ($facilitator): void {
+                $user->syncRoles([$facilitator]);
+            });
+
+            Role::query()->where('name', 'Facility Admin / Blood Bank Personnel')->delete();
+        }
+
+        if (Role::query()->where('name', 'Medical Technologist')->exists()) {
+            User::role('Medical Technologist')->get()->each(function (User $user) use ($medicalStaff): void {
+                $user->syncRoles([$medicalStaff]);
+            });
+
+            Role::query()->where('name', 'Medical Technologist')->delete();
+        }
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@cbis.local'],
             [
-                'name' => 'Philippine Red Cross Central Admin',
+                'name' => 'Philippine Red Cross Super Administrator',
                 'password' => Hash::make('password'),
                 'is_active' => true,
             ]
         );
 
-        $admin->syncRoles([$centralAdmin]);
+        $admin->forceFill([
+            'name' => 'Philippine Red Cross Super Administrator',
+            'is_active' => true,
+        ])->save();
+        $admin->syncRoles([$superAdmin]);
     }
 }

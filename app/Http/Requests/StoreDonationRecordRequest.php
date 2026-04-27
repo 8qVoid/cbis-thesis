@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 
 class StoreDonationRecordRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage donation records') ?? false; }
+    public function authorize(): bool { return $this->facilityOperatorCan('manage donation records'); }
 
     public function rules(): array
     {

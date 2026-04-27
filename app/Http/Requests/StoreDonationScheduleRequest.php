@@ -6,7 +6,7 @@ use App\Support\PhilippinePhone;
 
 class StoreDonationScheduleRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage schedules') ?? false; }
+    public function authorize(): bool { return $this->facilityOperatorCan('manage schedules'); }
 
     protected function prepareForValidation(): void
     {

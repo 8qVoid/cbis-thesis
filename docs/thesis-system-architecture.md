@@ -5,7 +5,7 @@
 ### Architecture
 - Single Laravel 13 monolith with one MySQL database.
 - Multi-facility data is isolated by `facility_id` and role-based middleware.
-- Central administrator can access all facilities.
+- Super administrator can monitor all facilities but cannot perform facility operational actions.
 - Facility users are limited to their own records.
 - Public portal is read-only for blood availability, schedules, and map.
 
@@ -55,12 +55,12 @@
 ## PHASE 3 - Permission Matrix, Routes, Controllers, Form Requests
 
 ### Permission Matrix
-- Central Administrator
-  - full system access
-- Facility Admin / Blood Bank Personnel
-  - donors, donation records, inventory, blood releases, schedules, reports
-- Medical Technologist
-  - bloodletting records, blood release support, report viewing
+- Super Administrator
+  - facility approval, central facility/location records, reports, alerts, and monitoring across all facilities
+- Facilitator
+  - approved facility/front desk work: facility staff, donors, donation records, bloodletting records, schedules
+- Medical Staff / Nurse
+  - inventory only
 - Public User
   - public portal views only
 

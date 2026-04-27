@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 
 class StoreBloodInventoryRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage inventory') ?? false; }
+    public function authorize(): bool { return $this->facilityOperatorCan('manage inventory'); }
 
     public function rules(): array
     {

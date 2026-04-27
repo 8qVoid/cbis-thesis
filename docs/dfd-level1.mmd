@@ -3,9 +3,9 @@ flowchart TB
       U[Public User]
       D[Donor]
       F[Blood Bank or Hospital Applicant]
-      A[Red Cross Central Admin]
-      FA[Facility Admin / Personnel]
-      MT[Medical Technologist]
+      A[Super Administrator]
+      FD[Facilitator / Approved Facility]
+      MS[Medical Staff / Nurse]
     end
 
     subgraph CBIS_Processes
@@ -43,16 +43,16 @@ flowchart TB
     F -->|Application form + proof files| P8
     P8 -->|Application status| F
 
-    A -->|Create/update facilities & staff| P2
+    A -->|Create/update central facility records and monitor staff| P2
     A -->|Review applications| P8
     A -->|View reports| P7
 
-    FA -->|Facility operations| P3
-    FA -->|Record donations| P4
-    FA -->|Inventory/release actions| P5
-    FA -->|Create facility events| P6
+    FD -->|Facility staff setup| P2
+    FD -->|Front desk donor records| P3
+    FD -->|Donation and bloodletting records| P4
+    FD -->|Create facility events| P6
 
-    MT -->|Bloodletting verification| P4
+    MS -->|Inventory updates| P5
 
     P1 <--> DS1
     P2 <--> DS1

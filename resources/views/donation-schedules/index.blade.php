@@ -1,11 +1,17 @@
 @extends('layouts.app')
 @section('content')
+@php
+    $currentUser = auth('web')->user();
+    $canManageSchedules = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage schedules') ?? false);
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Event Schedules</h1>
         <p class="cbis-page-subtitle">Plan and publish blood donation and bloodletting activities.</p>
     </div>
-    <a href="{{ route('donation-schedules.create') }}" class="btn btn-danger">Create Event</a>
+    @if($canManageSchedules)
+        <a href="{{ route('donation-schedules.create') }}" class="btn btn-danger">Create Event</a>
+    @endif
 </div>
 
 <form method="GET" class="card card-body mb-3 cbis-filter-card">
@@ -76,12 +82,14 @@
                     <td>{{ $schedule->registrations_count ?? 0 }}</td>
                     <td class="text-nowrap">
                         <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View</a>
-                        <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form method="POST" action="{{ route('donation-schedules.destroy', $schedule) }}" class="d-inline" onsubmit="return confirm('Delete this event?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
+                        @if($canManageSchedules)
+                            <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form method="POST" action="{{ route('donation-schedules.destroy', $schedule) }}" class="d-inline" onsubmit="return confirm('Delete this event?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @empty

@@ -76,13 +76,13 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('central.control');
 
     Route::get('/staff-users', [StaffUserController::class, 'index'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage users')
+        ->middleware('role_or_permission:Super Administrator|manage users')
         ->name('staff-users.index');
     Route::get('/staff-users/create', [StaffUserController::class, 'create'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage users')
+        ->middleware(['permission:manage users', 'facility.operator'])
         ->name('staff-users.create');
     Route::post('/staff-users', [StaffUserController::class, 'store'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage users')
+        ->middleware(['permission:manage users', 'facility.operator'])
         ->name('staff-users.store');
 
     Route::get('/facility-applications', [FacilityApplicationController::class, 'index'])
@@ -100,45 +100,69 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->name('facility-applications.review');
 
     Route::resource('donors', DonorController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage donors');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage donors', 'facility.operator']);
+    Route::resource('donors', DonorController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage donors');
 
     Route::resource('donation-records', DonationRecordController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage donation records');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage donation records', 'facility.operator']);
+    Route::resource('donation-records', DonationRecordController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage donation records');
 
     Route::resource('bloodletting-records', BloodlettingRecordController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage bloodletting records');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage bloodletting records', 'facility.operator']);
+    Route::resource('bloodletting-records', BloodlettingRecordController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage bloodletting records');
 
     Route::resource('blood-inventory', BloodInventoryController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage inventory');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage inventory', 'facility.operator']);
+    Route::resource('blood-inventory', BloodInventoryController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage inventory');
 
     Route::resource('blood-releases', BloodReleaseController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage blood releases');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage blood releases', 'facility.operator']);
+    Route::resource('blood-releases', BloodReleaseController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage blood releases');
 
     Route::resource('donation-schedules', DonationScheduleController::class)
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|manage schedules');
+        ->except(['index', 'show'])
+        ->middleware(['permission:manage schedules', 'facility.operator']);
+    Route::resource('donation-schedules', DonationScheduleController::class)
+        ->only(['index', 'show'])
+        ->middleware('role_or_permission:Super Administrator|manage schedules');
 
     Route::resource('blood-bank-locations', BloodBankLocationController::class)
-        ->middleware('role_or_permission:Central Administrator|manage locations');
+        ->middleware('role_or_permission:Super Administrator|manage locations');
 
     Route::get('/reports', [ReportController::class, 'index'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|view reports')
+        ->middleware('role_or_permission:Super Administrator|view reports')
         ->name('reports.index');
 
     Route::get('/reports/pdf', [ReportController::class, 'pdf'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|view reports')
+        ->middleware('role_or_permission:Super Administrator|view reports')
         ->name('reports.pdf');
 
     Route::get('/reports/excel', [ReportController::class, 'excel'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel|view reports')
+        ->middleware('role_or_permission:Super Administrator|view reports')
         ->name('reports.excel');
 
     Route::get('/notifications', [NotificationController::class, 'index'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel')
+        ->middleware('role_or_permission:Super Administrator|manage inventory')
         ->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel')
+        ->middleware('role_or_permission:Super Administrator|manage inventory')
         ->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])
-        ->middleware('role_or_permission:Central Administrator|Facility Admin / Blood Bank Personnel')
+        ->middleware('role_or_permission:Super Administrator|manage inventory')
         ->name('notifications.read-all');
 });

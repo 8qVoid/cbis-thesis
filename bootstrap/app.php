@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureFacilityAccess;
 use App\Http\Middleware\EnsureCentralControl;
+use App\Http\Middleware\EnsureFacilityOperator;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'facility.access' => EnsureFacilityAccess::class,
             'central.control' => EnsureCentralControl::class,
+            'facility.operator' => EnsureFacilityOperator::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

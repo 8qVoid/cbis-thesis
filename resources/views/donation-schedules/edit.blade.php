@@ -58,14 +58,6 @@
             <label class="form-label">Contact Number (PH)</label>
             <input name="contact_number" class="form-control" value="{{ old('contact_number', $donationSchedule->contact_number) }}" placeholder="+63 917 123 4567 or 09171234567">
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Latitude</label>
-            <input id="latitude" name="latitude" class="form-control" value="{{ old('latitude', $donationSchedule->latitude) }}">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Longitude</label>
-            <input id="longitude" name="longitude" class="form-control" value="{{ old('longitude', $donationSchedule->longitude) }}">
-        </div>
         <div class="col-12">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description', $donationSchedule->description) }}</textarea>
@@ -81,6 +73,14 @@
             <label class="form-label">Pick Coordinates on Map (optional)</label>
             <div id="event-map" class="rounded border" style="height: 320px"></div>
             <small class="text-muted">Click map to update latitude and longitude.</small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Latitude</label>
+            <input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude', $donationSchedule->latitude) }}" readonly>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Longitude</label>
+            <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude', $donationSchedule->longitude) }}" readonly>
         </div>
         <div class="col-12">
             <button class="btn btn-danger">Update Event</button>

@@ -11,7 +11,7 @@ class SendLowStockAlerts extends Command
 {
     protected $signature = 'inventory:notify-low-stock';
 
-    protected $description = 'Send low stock notifications to facility admins and central admin';
+    protected $description = 'Send low stock notifications to medical staff and super administrator';
 
     public function handle(): int
     {
@@ -31,21 +31,25 @@ class SendLowStockAlerts extends Command
             ->whereDate('expiration_date', '>=', now()->toDateString())
             ->get();
 
-        $centralAdmins = User::query()
+        $superAdmins = User::query()
             ->where('is_active', true)
             ->whereNull('facility_id')
-            ->whereHas('roles', fn ($query) => $query->where('name', 'Central Administrator'))
+            ->whereHas('roles', fn ($query) => $query->where('name', 'Super Administrator'))
             ->get();
 
-        $facilityAdmins = User::query()
+        $facilityInventoryStaff = User::query()
             ->where('is_active', true)
             ->whereNotNull('facility_id')
-            ->whereHas('roles', fn ($query) => $query->where('name', 'Facility Admin / Blood Bank Personnel'))
+            ->where(function ($query): void {
+                $query
+                    ->whereHas('roles.permissions', fn ($permissionQuery) => $permissionQuery->where('name', 'manage inventory'))
+                    ->orWhereHas('permissions', fn ($permissionQuery) => $permissionQuery->where('name', 'manage inventory'));
+            })
             ->get()
             ->groupBy('facility_id');
 
         foreach ($lowStockItems as $item) {
-            $recipients = $centralAdmins->concat($facilityAdmins->get($item->facility_id, collect()));
+            $recipients = $superAdmins->concat($facilityInventoryStaff->get($item->facility_id, collect()));
 
             foreach ($recipients->unique('id') as $user) {
                 $user->notify(new LowStockAlert($item));

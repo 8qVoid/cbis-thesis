@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $user = auth('web')->user();
+    $canSeeDonors = $user?->isCentralAdmin() || $user?->can('manage donors');
+    $canSeeDonations = $user?->isCentralAdmin() || $user?->can('manage donation records');
+    $canSeeReleases = $user?->isCentralAdmin() || $user?->can('manage blood releases');
+    $canOperateDonationRecords = ! ($user?->isCentralAdmin() ?? false) && ($user?->can('manage donation records') ?? false);
+    $canOperateBloodReleases = ! ($user?->isCentralAdmin() ?? false) && ($user?->can('manage blood releases') ?? false);
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title">Operations Dashboard</h1>
@@ -8,25 +16,33 @@
     </div>
     <span class="badge text-bg-secondary">Role-Based Access Active</span>
 </div>
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <x-ui.kpi-card label="Total Donors" :value="$donors" suffix="Registered in scope" />
+@if($canSeeDonors || $canSeeDonations || $canSeeReleases)
+    <div class="row g-3 mb-4">
+        @if($canSeeDonors)
+            <div class="col-md-4">
+                <x-ui.kpi-card label="Total Donors" :value="$donors" suffix="Registered in scope" />
+            </div>
+        @endif
+        @if($canSeeDonations)
+            <div class="col-md-4">
+                <x-ui.kpi-card label="Total Donations" :value="$donations" suffix="Recorded transactions" />
+            </div>
+        @endif
+        @if($canSeeReleases)
+            <div class="col-md-4">
+                <x-ui.kpi-card label="Total Releases" :value="$releases" suffix="Units released to use cases" />
+            </div>
+        @endif
     </div>
-    <div class="col-md-4">
-        <x-ui.kpi-card label="Total Donations" :value="$donations" suffix="Recorded transactions" />
-    </div>
-    <div class="col-md-4">
-        <x-ui.kpi-card label="Total Releases" :value="$releases" suffix="Units released to use cases" />
-    </div>
-</div>
+@endif
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>Current Stock by Blood Type</span>
         <div class="d-flex gap-2">
-            @if(auth('web')->user()?->can('manage donation records') || auth('web')->user()?->hasRole('Facility Admin / Blood Bank Personnel') || auth('web')->user()?->isCentralAdmin())
+            @if($canOperateDonationRecords)
                 <a href="{{ route('donation-records.create') }}" class="btn btn-sm btn-danger">New Donation</a>
             @endif
-            @if(auth('web')->user()?->can('manage blood releases') || auth('web')->user()?->hasRole('Facility Admin / Blood Bank Personnel') || auth('web')->user()?->isCentralAdmin())
+            @if($canOperateBloodReleases)
                 <a href="{{ route('blood-releases.create') }}" class="btn btn-sm btn-outline-danger">New Release</a>
             @endif
         </div>

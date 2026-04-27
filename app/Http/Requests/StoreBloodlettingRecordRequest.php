@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 
 class StoreBloodlettingRecordRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage bloodletting records') ?? false; }
+    public function authorize(): bool { return $this->facilityOperatorCan('manage bloodletting records'); }
 
     public function rules(): array
     {

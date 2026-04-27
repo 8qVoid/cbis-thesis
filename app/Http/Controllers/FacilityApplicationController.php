@@ -122,7 +122,7 @@ class FacilityApplicationController extends Controller
                         'is_active' => true,
                     ]);
 
-                    $staffUser->syncRoles(['Facility Admin / Blood Bank Personnel']);
+                    $staffUser->syncRoles(['Facilitator']);
                 }
             }
 

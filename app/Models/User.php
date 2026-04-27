@@ -42,7 +42,7 @@ class User extends Authenticatable
 
     public function isCentralAdmin(): bool
     {
-        // Central control account(s) must not be attached to a specific facility.
-        return $this->hasRole('Central Administrator') && $this->facility_id === null;
+        // Super administrator account(s) must not be attached to a specific facility.
+        return $this->hasRole('Super Administrator') && $this->facility_id === null;
     }
 }
