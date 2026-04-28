@@ -51,10 +51,15 @@ abstract class BaseFormRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user !== null
-            && ! $user->isCentralAdmin()
-            && $user->facility_id !== null
-            && $user->can($permission);
+        if ($user === null || ! $user->can($permission)) {
+            return false;
+        }
+
+        if ($user->isCentralAdmin()) {
+            return true;
+        }
+
+        return $user->facility_id !== null;
     }
 
     /**

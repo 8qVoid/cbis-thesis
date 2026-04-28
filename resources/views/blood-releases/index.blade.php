@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageBloodReleases = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage blood releases') ?? false);
+    $canManageBloodReleases = $currentUser?->can('manage blood releases') ?? false;
 @endphp
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>

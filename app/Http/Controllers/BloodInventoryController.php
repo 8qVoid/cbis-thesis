@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBloodInventoryRequest;
 use App\Http\Requests\UpdateBloodInventoryRequest;
 use App\Models\BloodInventory;
+use App\Models\DonationRecord;
 use App\Models\Facility;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
@@ -37,7 +38,11 @@ class BloodInventoryController extends Controller
     public function store(StoreBloodInventoryRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
+        if (! empty($data['donation_record_id'])) {
+            $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
+                ->findOrFail($data['donation_record_id']);
+            $data['facility_id'] = $donationRecord->facility_id;
+        } elseif (! auth()->user()->isCentralAdmin()) {
             $data['facility_id'] = auth()->user()->facility_id;
         }
 
@@ -69,7 +74,11 @@ class BloodInventoryController extends Controller
         $this->authorizeRecord($bloodInventory);
 
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
+        if (! empty($data['donation_record_id'])) {
+            $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
+                ->findOrFail($data['donation_record_id']);
+            $data['facility_id'] = $donationRecord->facility_id;
+        } elseif (! auth()->user()->isCentralAdmin()) {
             $data['facility_id'] = auth()->user()->facility_id;
         }
 

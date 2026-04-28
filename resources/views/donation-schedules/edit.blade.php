@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <h4>Edit Event Schedule</h4>
-<form method="POST" action="{{ route('donation-schedules.update', $donationSchedule) }}" class="card card-body">
+<form method="POST" action="{{ route('donation-schedules.update', $donationSchedule) }}" class="card card-body" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="row g-3">
@@ -61,6 +61,16 @@
         <div class="col-12">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description', $donationSchedule->description) }}</textarea>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Event Photo</label>
+            @if($donationSchedule->photo_path)
+                <div class="mb-2">
+                    <img src="{{ Storage::disk('public')->url($donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border" style="max-height: 180px; object-fit: cover;">
+                </div>
+            @endif
+            <input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" @required(! $donationSchedule->photo_path)>
+            <small class="text-muted">{{ $donationSchedule->photo_path ? 'Upload a new image only if you want to replace the current photo.' : 'Upload a JPG, PNG, or WebP image up to 4 MB.' }}</small>
         </div>
         <div class="col-md-3">
             <label class="form-label">Show to Public</label>

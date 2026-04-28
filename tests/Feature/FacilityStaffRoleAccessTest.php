@@ -38,10 +38,12 @@ class FacilityStaffRoleAccessTest extends TestCase
         $this->actingAs($facilitator)->get(route('donors.index'))->assertOk();
         $this->actingAs($facilitator)->get(route('donation-records.index'))->assertOk();
         $this->actingAs($facilitator)->get(route('donation-schedules.index'))->assertOk();
+        $this->actingAs($facilitator)->get(route('notifications.index'))->assertOk();
         $this->actingAs($facilitator)->get(route('blood-inventory.index'))->assertForbidden();
+        $this->actingAs($facilitator)->get(route('reports.index'))->assertForbidden();
     }
 
-    public function test_medical_staff_nurse_can_use_inventory_only(): void
+    public function test_medical_staff_nurse_can_use_inventory_notifications_and_reports_only(): void
     {
         $this->seed(RolePermissionSeeder::class);
 
@@ -50,6 +52,8 @@ class FacilityStaffRoleAccessTest extends TestCase
         $medicalStaff->assignRole('Medical Staff / Nurse');
 
         $this->actingAs($medicalStaff)->get(route('blood-inventory.index'))->assertOk();
+        $this->actingAs($medicalStaff)->get(route('notifications.index'))->assertOk();
+        $this->actingAs($medicalStaff)->get(route('reports.index'))->assertOk();
         $this->actingAs($medicalStaff)->get(route('donors.index'))->assertForbidden();
         $this->actingAs($medicalStaff)->get(route('donation-records.index'))->assertForbidden();
         $this->actingAs($medicalStaff)->get(route('blood-releases.index'))->assertForbidden();

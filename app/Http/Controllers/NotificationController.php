@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterNotificationsRequest;
+use App\Models\User;
+use App\Notifications\FacilityApplicationSubmitted;
 use App\Notifications\LowStockAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +19,8 @@ class NotificationController extends Controller
         $user = $request->user();
         $status = (string) ($filters['status'] ?? 'all');
 
-        $query = $user->notifications()->where('type', LowStockAlert::class);
+        $notificationTypes = $this->notificationTypesFor($user);
+        $query = $user->notifications()->whereIn('type', $notificationTypes);
 
         if ($status === 'unread') {
             $query->whereNull('read_at');
@@ -41,7 +44,7 @@ class NotificationController extends Controller
         /** @var DatabaseNotification|null $notification */
         $notification = $request->user()
             ->notifications()
-            ->where('type', LowStockAlert::class)
+            ->whereIn('type', $this->notificationTypesFor($request->user()))
             ->whereKey($id)
             ->first();
 
@@ -60,9 +63,21 @@ class NotificationController extends Controller
     {
         $request->user()
             ->unreadNotifications()
-            ->where('type', LowStockAlert::class)
+            ->whereIn('type', $this->notificationTypesFor($request->user()))
             ->update(['read_at' => now()]);
 
         return back()->with('success', 'All notifications marked as read.');
+    }
+
+    /**
+     * @return array<int, class-string>
+     */
+    private function notificationTypesFor(User $user): array
+    {
+        if ($user->isCentralAdmin()) {
+            return [FacilityApplicationSubmitted::class];
+        }
+
+        return [LowStockAlert::class];
     }
 }

@@ -28,7 +28,7 @@ class BloodlettingRecordController extends Controller
     public function create(): View
     {
         $user = auth()->user();
-        $donationRecords = FacilityScope::apply(DonationRecord::query()->orderByDesc('donated_at'), $user)->get();
+        $donationRecords = FacilityScope::apply(DonationRecord::query()->with('facility')->orderByDesc('donated_at'), $user)->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('bloodletting-records.create', compact('donationRecords', 'facilities'));
@@ -37,9 +37,9 @@ class BloodlettingRecordController extends Controller
     public function store(StoreBloodlettingRecordRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
-            $data['facility_id'] = auth()->user()->facility_id;
-        }
+        $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
+            ->findOrFail($data['donation_record_id']);
+        $data['facility_id'] = $donationRecord->facility_id;
         $data['medical_technologist_id'] = auth()->id();
 
         $record = BloodlettingRecord::create($data);
@@ -59,7 +59,7 @@ class BloodlettingRecordController extends Controller
     {
         $this->authorizeRecord($bloodlettingRecord);
         $user = auth()->user();
-        $donationRecords = FacilityScope::apply(DonationRecord::query()->orderByDesc('donated_at'), $user)->get();
+        $donationRecords = FacilityScope::apply(DonationRecord::query()->with('facility')->orderByDesc('donated_at'), $user)->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('bloodletting-records.edit', compact('bloodlettingRecord', 'donationRecords', 'facilities'));
@@ -70,9 +70,9 @@ class BloodlettingRecordController extends Controller
         $this->authorizeRecord($bloodlettingRecord);
 
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
-            $data['facility_id'] = auth()->user()->facility_id;
-        }
+        $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
+            ->findOrFail($data['donation_record_id']);
+        $data['facility_id'] = $donationRecord->facility_id;
 
         $bloodlettingRecord->update($data);
         $this->logAudit('bloodletting_record.updated', $bloodlettingRecord, $data, $request);

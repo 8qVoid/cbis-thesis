@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <h4>Create Event Schedule</h4>
-<form method="POST" action="{{ route('donation-schedules.store') }}" class="card card-body">
+<form method="POST" action="{{ route('donation-schedules.store') }}" class="card card-body" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
         @if(auth('web')->user()?->isCentralAdmin())
@@ -60,6 +60,11 @@
         <div class="col-12">
             <label class="form-label">Description</label>
             <textarea name="description" rows="3" class="form-control">{{ old('description') }}</textarea>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Event Photo</label>
+            <input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" required>
+            <small class="text-muted">Upload a JPG, PNG, or WebP image up to 4 MB.</small>
         </div>
         <div class="col-md-3">
             <label class="form-label">Show to Public</label>

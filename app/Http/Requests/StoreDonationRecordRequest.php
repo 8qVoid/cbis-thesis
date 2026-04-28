@@ -10,7 +10,7 @@ class StoreDonationRecordRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
+            'facility_id' => [$this->user()?->isCentralAdmin() ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
             'donor_id' => ['required', 'integer', 'exists:donors,id'],
             'donation_no' => ['required', 'string', 'max:50', 'unique:donation_records,donation_no'],
             'donated_at' => ['required', 'date'],

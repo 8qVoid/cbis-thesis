@@ -9,7 +9,7 @@ class UpdateDonationRecordRequest extends StoreDonationRecordRequest
     public function rules(): array
     {
         return [
-            'facility_id' => ['nullable', 'exists:facilities,id'],
+            'facility_id' => [$this->user()?->isCentralAdmin() ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
             'donor_id' => ['required', 'exists:donors,id'],
             'donation_no' => ['required', 'string', 'max:50', Rule::unique('donation_records', 'donation_no')->ignore($this->route('donation_record'))],
             'donated_at' => ['required', 'date'],

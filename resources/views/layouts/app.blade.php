@@ -19,10 +19,22 @@
     $webUser = $webAuthenticated ? auth('web')->user() : null;
     $isCentralAdmin = $webAuthenticated && $webUser?->isCentralAdmin();
 
-    $showNotificationCenter = $webAuthenticated && ($webUser?->isCentralAdmin() || $webUser?->can('manage inventory'));
     $lowStockType = \App\Notifications\LowStockAlert::class;
-    $unreadCount = $showNotificationCenter ? $webUser->unreadNotifications()->where('type', $lowStockType)->count() : 0;
-    $recentNotifications = $showNotificationCenter ? $webUser->notifications()->where('type', $lowStockType)->latest()->limit(5)->get() : collect();
+    $facilityApplicationType = \App\Notifications\FacilityApplicationSubmitted::class;
+    $notificationTypes = [];
+    $notificationTitle = 'Notifications';
+
+    if ($webAuthenticated && $webUser?->isCentralAdmin()) {
+        $notificationTypes = [$facilityApplicationType];
+        $notificationTitle = 'Facility Applications';
+    } elseif ($webAuthenticated && ($webUser?->hasRole('Facilitator') || $webUser?->can('manage inventory'))) {
+        $notificationTypes = [$lowStockType];
+        $notificationTitle = 'Low Stock Alerts';
+    }
+
+    $showNotificationCenter = $webAuthenticated && $notificationTypes !== [];
+    $unreadCount = $showNotificationCenter ? $webUser->unreadNotifications()->whereIn('type', $notificationTypes)->count() : 0;
+    $recentNotifications = $showNotificationCenter ? $webUser->notifications()->whereIn('type', $notificationTypes)->latest()->limit(5)->get() : collect();
 @endphp
 <nav class="navbar navbar-expand-lg navbar-dark cbis-navbar">
     <div class="container">
@@ -67,7 +79,7 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 360px;">
                                 <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                    <strong>Low Stock Alerts</strong>
+                                    <strong>{{ $notificationTitle }}</strong>
                                     <form method="POST" action="{{ route('notifications.read-all') }}">
                                         @csrf
                                         <button class="btn btn-link btn-sm text-decoration-none p-0">Mark all read</button>
@@ -80,8 +92,13 @@
                                         @endphp
                                         <div class="list-group-item small">
                                             <div class="fw-semibold">{{ $data['title'] ?? 'Notification' }}</div>
-                                            <div>Facility: {{ $data['facility_name'] ?? 'N/A' }}</div>
-                                            <div>Blood Type: {{ $data['blood_type'] ?? 'N/A' }} | Units: {{ $data['units_available'] ?? 'N/A' }}</div>
+                                            @if($notification->type === $facilityApplicationType)
+                                                <div>Organization: {{ $data['organization_name'] ?? 'N/A' }}</div>
+                                                <div>Contact: {{ $data['contact_person'] ?? 'N/A' }}</div>
+                                            @else
+                                                <div>Facility: {{ $data['facility_name'] ?? 'N/A' }}</div>
+                                                <div>Blood Type: {{ $data['blood_type'] ?? 'N/A' }} | Units: {{ $data['units_available'] ?? 'N/A' }}</div>
+                                            @endif
                                             <div class="text-muted mb-1">{{ $notification->created_at?->diffForHumans() }}</div>
                                             @if($notification->read_at === null)
                                                 <form method="POST" action="{{ route('notifications.read', $notification->id) }}">

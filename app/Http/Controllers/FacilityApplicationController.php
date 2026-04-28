@@ -9,6 +9,7 @@ use App\Models\Facility;
 use App\Models\FacilityApplication;
 use App\Models\User;
 use App\Notifications\FacilityApplicationApproved;
+use App\Notifications\FacilityApplicationSubmitted;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,18 @@ class FacilityApplicationController extends Controller
 
         $application = FacilityApplication::create($data);
         $this->logAudit('facility_application.submitted', $application, $data, $request);
+
+        $superAdmins = User::query()
+            ->where('is_active', true)
+            ->whereNull('facility_id')
+            ->whereHas('roles', fn ($query) => $query->where('name', 'Super Administrator'))
+            ->get();
+
+        try {
+            Notification::send($superAdmins, new FacilityApplicationSubmitted($application));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return redirect()->route('public.index')->with('success', 'Facility application submitted. Philippine Red Cross will review your legitimacy and DOH accreditation documents.');
     }

@@ -12,7 +12,7 @@ class BloodBankLocation extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'facility_id', 'latitude', 'longitude', 'address', 'contact_number',
+        'facility_id', 'latitude', 'longitude', 'address', 'contact_number', 'photo_path',
     ];
 
     public function facility(): BelongsTo { return $this->belongsTo(Facility::class); }

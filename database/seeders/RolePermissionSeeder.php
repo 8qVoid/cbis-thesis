@@ -56,6 +56,7 @@ class RolePermissionSeeder extends Seeder
         ]);
         $medicalStaff->syncPermissions([
             'manage inventory',
+            'view reports',
             'view public portal',
         ]);
         $public->syncPermissions(['view public portal']);

@@ -26,6 +26,7 @@ class StoreBloodBankLocationRequest extends BaseFormRequest
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'address' => ['required', 'string', 'max:255'],
             'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ];
     }
 }

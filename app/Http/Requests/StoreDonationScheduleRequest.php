@@ -31,6 +31,7 @@ class StoreDonationScheduleRequest extends BaseFormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'contact_person' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
             'is_public' => ['nullable', 'boolean'],

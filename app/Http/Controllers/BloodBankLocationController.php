@@ -9,6 +9,7 @@ use App\Models\Facility;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class BloodBankLocationController extends Controller
@@ -36,6 +37,11 @@ class BloodBankLocationController extends Controller
         $data = $request->validated();
         if (! auth()->user()->isCentralAdmin()) {
             $data['facility_id'] = auth()->user()->facility_id;
+        }
+        unset($data['photo']);
+
+        if ($request->hasFile('photo')) {
+            $data['photo_path'] = $request->file('photo')->store('location-photos', 'public');
         }
 
         $location = BloodBankLocation::create($data);
@@ -66,6 +72,15 @@ class BloodBankLocationController extends Controller
         $data = $request->validated();
         if (! auth()->user()->isCentralAdmin()) {
             $data['facility_id'] = auth()->user()->facility_id;
+        }
+        unset($data['photo']);
+
+        if ($request->hasFile('photo')) {
+            if ($bloodBankLocation->photo_path) {
+                Storage::disk('public')->delete($bloodBankLocation->photo_path);
+            }
+
+            $data['photo_path'] = $request->file('photo')->store('location-photos', 'public');
         }
 
         $bloodBankLocation->update($data);

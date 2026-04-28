@@ -24,6 +24,7 @@ class DonationSchedule extends Model
         'latitude',
         'longitude',
         'description',
+        'photo_path',
         'contact_person',
         'contact_number',
         'is_public',

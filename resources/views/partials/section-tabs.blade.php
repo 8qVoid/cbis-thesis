@@ -1,7 +1,7 @@
 @php
     $user = auth('web')->user();
     $isCentral = $user?->isCentralAdmin();
-    $canViewNotifications = $isCentral || $user?->can('manage inventory');
+    $canViewNotifications = $isCentral || $user?->hasRole('Facilitator') || $user?->can('manage inventory');
 
     $tabs = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'show' => true],

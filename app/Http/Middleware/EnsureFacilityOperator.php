@@ -17,7 +17,7 @@ class EnsureFacilityOperator
         }
 
         if ($user->isCentralAdmin()) {
-            abort(403, 'Super administrators can monitor facility records but cannot perform facility operational actions.');
+            return $next($request);
         }
 
         if ($user->facility_id === null) {

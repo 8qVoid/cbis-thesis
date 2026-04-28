@@ -10,6 +10,7 @@ use App\Models\DonationSchedule;
 use App\Models\EventRegistration;
 use App\Models\Facility;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PublicPortalController extends Controller
@@ -109,15 +110,27 @@ class PublicPortalController extends Controller
         $events = $eventsQuery->orderBy('event_date')->orderBy('start_time')->get();
 
         $facilities = Facility::query()->where('is_active', true)->orderBy('name')->get();
+        $registeredEventIds = $this->registeredEventIdsForDonor($events->pluck('id')->all());
 
-        $facilityLocationById = BloodBankLocation::query()
+        $facilityLocationsQuery = BloodBankLocation::query()
+            ->with('facility')
+            ->whereHas('facility', fn ($query) => $query->where('is_active', true))
             ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
+            ->whereNotNull('longitude');
+
+        if (! empty($filters['facility_id'])) {
+            $facilityLocationsQuery->where('facility_id', $filters['facility_id']);
+        }
+
+        $facilityLocations = $facilityLocationsQuery
             ->get()
+            ->filter(fn (BloodBankLocation $location) => $location->facility !== null);
+
+        $facilityLocationById = $facilityLocations
             ->keyBy('facility_id');
 
-        $mapLocations = $events
-            ->map(function (DonationSchedule $event) use ($facilityLocationById) {
+        $eventMapLocations = $events
+            ->map(function (DonationSchedule $event) use ($facilityLocationById, $registeredEventIds) {
                 $fallbackLocation = $facilityLocationById->get($event->facility_id);
                 $lat = $event->latitude ?? $fallbackLocation?->latitude;
                 $lng = $event->longitude ?? $fallbackLocation?->longitude;
@@ -127,6 +140,8 @@ class PublicPortalController extends Controller
                 }
 
                 return [
+                    'type' => 'event',
+                    'event_id' => $event->id,
                     'title' => $event->title,
                     'event_type' => $event->event_type_label,
                     'facility' => $event->facility?->name ?? 'Unknown Facility',
@@ -137,14 +152,39 @@ class PublicPortalController extends Controller
                     'contact_number' => $event->contact_number ?: ($event->facility?->contact_number ?? 'N/A'),
                     'lat' => (float) $lat,
                     'lng' => (float) $lng,
+                    'photo_url' => $event->photo_path ? Storage::disk('public')->url($event->photo_path) : null,
+                    'action_url' => route('donor.events.join', $event),
+                    'is_registered' => in_array($event->id, $registeredEventIds, true),
                 ];
             })
             ->filter()
             ->values();
 
-        $registeredEventIds = $this->registeredEventIdsForDonor($events->pluck('id')->all());
+        $facilityMapLocations = $facilityLocations
+            ->map(function (BloodBankLocation $location) {
+                return [
+                    'type' => 'facility',
+                    'title' => $location->facility?->name ?? 'Unknown Facility',
+                    'facility_type' => ucwords(str_replace('_', ' ', $location->facility?->type ?? 'facility')),
+                    'address' => $location->address ?: ($location->facility?->address ?? 'N/A'),
+                    'contact_person' => $location->facility?->contact_person ?? 'N/A',
+                    'contact_number' => $location->contact_number ?: ($location->facility?->contact_number ?? 'N/A'),
+                    'email' => $location->facility?->email ?? 'N/A',
+                    'lat' => (float) $location->latitude,
+                    'lng' => (float) $location->longitude,
+                    'photo_url' => $location->photo_path ? Storage::disk('public')->url($location->photo_path) : null,
+                ];
+            })
+            ->values();
 
-        return view('public-portal.map', compact('mapLocations', 'events', 'facilities', 'registeredEventIds'));
+        return view('public-portal.map', [
+            'mapLocations' => $eventMapLocations->concat($facilityMapLocations)->values(),
+            'eventMapLocations' => $eventMapLocations,
+            'facilityMapLocations' => $facilityMapLocations,
+            'events' => $events,
+            'facilities' => $facilities,
+            'registeredEventIds' => $registeredEventIds,
+        ]);
     }
 
     public function availability(FilterPublicInventoryRequest $request): View

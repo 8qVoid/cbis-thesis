@@ -1,10 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $facilityApplicationType = \App\Notifications\FacilityApplicationSubmitted::class;
+    $isCentralAdmin = auth('web')->user()?->isCentralAdmin() ?? false;
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Notifications</h1>
-        <p class="cbis-page-subtitle">Low stock alerts for your authorized facility scope.</p>
+        <p class="cbis-page-subtitle">{{ $isCentralAdmin ? 'Facility application alerts for central review.' : 'Low stock alerts for your assigned facility.' }}</p>
     </div>
     <form method="POST" action="{{ route('notifications.read-all') }}">
         @csrf
@@ -42,10 +46,7 @@
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Facility</th>
-                        <th>Blood Type</th>
-                        <th>Units</th>
-                        <th>Expiration Date</th>
+                        <th>Details</th>
                         <th>Created</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -58,10 +59,19 @@
                         @endphp
                         <tr>
                             <td>{{ $data['title'] ?? 'Low stock alert' }}</td>
-                            <td>{{ $data['facility_name'] ?? 'N/A' }}</td>
-                            <td>{{ $data['blood_type'] ?? 'N/A' }}</td>
-                            <td>{{ $data['units_available'] ?? 'N/A' }}</td>
-                            <td>{{ $data['expiration_date'] ?? 'N/A' }}</td>
+                            <td>
+                                @if($notification->type === $facilityApplicationType)
+                                    <div>{{ $data['organization_name'] ?? 'N/A' }}</div>
+                                    <div class="text-muted small">
+                                        {{ $data['facility_type'] ?? 'N/A' }} | {{ $data['contact_person'] ?? 'N/A' }} | {{ $data['email'] ?? 'N/A' }}
+                                    </div>
+                                @else
+                                    <div>{{ $data['facility_name'] ?? 'N/A' }}</div>
+                                    <div class="text-muted small">
+                                        {{ $data['blood_type'] ?? 'N/A' }} | {{ $data['units_available'] ?? 'N/A' }} units | Expires {{ $data['expiration_date'] ?? 'N/A' }}
+                                    </div>
+                                @endif
+                            </td>
                             <td>{{ $notification->created_at?->format('Y-m-d H:i') }}</td>
                             <td>
                                 @if($notification->read_at)
@@ -84,7 +94,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No notifications found.</td>
+                            <td colspan="5" class="text-center">No notifications found.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageInventory = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage inventory') ?? false);
+    $canManageInventory = $currentUser?->can('manage inventory') ?? false;
 @endphp
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>

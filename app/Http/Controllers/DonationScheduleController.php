@@ -6,10 +6,14 @@ use App\Http\Requests\FilterDonationScheduleRequest;
 use App\Http\Requests\StoreDonationScheduleRequest;
 use App\Http\Requests\UpdateDonationScheduleRequest;
 use App\Models\DonationSchedule;
+use App\Models\Donor;
 use App\Models\Facility;
+use App\Notifications\EventPostedNotification;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class DonationScheduleController extends Controller
@@ -73,9 +77,16 @@ class DonationScheduleController extends Controller
         }
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
+        unset($data['photo']);
+
+        if ($request->hasFile('photo')) {
+            $data['photo_path'] = $request->file('photo')->store('event-photos', 'public');
+        }
 
         $schedule = DonationSchedule::create($data);
         $this->logAudit('donation_schedule.created', $schedule, $data, $request);
+
+        $this->notifyVerifiedDonors($schedule);
 
         return redirect()->route('donation-schedules.index')->with('success', 'Schedule added.');
     }
@@ -113,6 +124,15 @@ class DonationScheduleController extends Controller
         }
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
+        unset($data['photo']);
+
+        if ($request->hasFile('photo')) {
+            if ($donationSchedule->photo_path) {
+                Storage::disk('public')->delete($donationSchedule->photo_path);
+            }
+
+            $data['photo_path'] = $request->file('photo')->store('event-photos', 'public');
+        }
 
         $donationSchedule->update($data);
         $this->logAudit('donation_schedule.updated', $donationSchedule, $data, $request);
@@ -134,5 +154,27 @@ class DonationScheduleController extends Controller
         if (! auth()->user()->isCentralAdmin() && $record->facility_id !== auth()->user()->facility_id) {
             abort(403);
         }
+    }
+
+    private function notifyVerifiedDonors(DonationSchedule $schedule): void
+    {
+        if (! $schedule->is_public || ! in_array($schedule->status, ['planned', 'ongoing'], true)) {
+            return;
+        }
+
+        $schedule->loadMissing('facility');
+
+        Donor::query()
+            ->where('is_online_registered', true)
+            ->where('is_eligible', true)
+            ->whereNotNull('email')
+            ->whereNotNull('password')
+            ->chunkById(100, function ($donors) use ($schedule): void {
+                try {
+                    Notification::send($donors, new EventPostedNotification($schedule));
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            });
     }
 }

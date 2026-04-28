@@ -29,7 +29,7 @@ class BloodReleaseController extends Controller
     public function create(): View
     {
         $user = auth()->user();
-        $inventory = FacilityScope::apply(BloodInventory::query()->where('status', '!=', 'expired'), $user)->get();
+        $inventory = FacilityScope::apply(BloodInventory::query()->with('facility')->where('status', '!=', 'expired'), $user)->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('blood-releases.create', compact('inventory', 'facilities'));
@@ -38,9 +38,9 @@ class BloodReleaseController extends Controller
     public function store(StoreBloodReleaseRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
-            $data['facility_id'] = auth()->user()->facility_id;
-        }
+        $inventory = FacilityScope::apply(BloodInventory::query(), auth()->user())
+            ->findOrFail($data['blood_inventory_id']);
+        $data['facility_id'] = $inventory->facility_id;
         $data['released_by'] = auth()->id();
 
         $release = BloodRelease::create($data);
@@ -62,7 +62,7 @@ class BloodReleaseController extends Controller
     {
         $this->authorizeRecord($bloodRelease);
         $user = auth()->user();
-        $inventory = FacilityScope::apply(BloodInventory::query()->where('status', '!=', 'expired'), $user)->get();
+        $inventory = FacilityScope::apply(BloodInventory::query()->with('facility')->where('status', '!=', 'expired'), $user)->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('blood-releases.edit', compact('bloodRelease', 'inventory', 'facilities'));
@@ -73,9 +73,9 @@ class BloodReleaseController extends Controller
         $this->authorizeRecord($bloodRelease);
 
         $data = $request->validated();
-        if (! auth()->user()->isCentralAdmin()) {
-            $data['facility_id'] = auth()->user()->facility_id;
-        }
+        $inventory = FacilityScope::apply(BloodInventory::query(), auth()->user())
+            ->findOrFail($data['blood_inventory_id']);
+        $data['facility_id'] = $inventory->facility_id;
 
         $bloodRelease->update($data);
         $this->logAudit('blood_release.updated', $bloodRelease, $data, $request);

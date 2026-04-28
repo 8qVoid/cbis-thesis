@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageDonationRecords = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage donation records') ?? false);
+    $canManageDonationRecords = $currentUser?->can('manage donation records') ?? false;
 @endphp
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
