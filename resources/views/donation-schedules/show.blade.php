@@ -3,7 +3,7 @@
 <h4 class="mb-3">Event Details</h4>
 <div class="card card-body">
     @if($donationSchedule->photo_path)
-        <img src="{{ Storage::disk('public')->url($donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border mb-3" style="max-height: 280px; object-fit: cover;">
+        <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border mb-3" style="max-height: 280px; object-fit: cover;">
     @endif
     <p><strong>Title:</strong> {{ $donationSchedule->title }}</p>
     <p><strong>Type:</strong> {{ $donationSchedule->event_type_label }}</p>

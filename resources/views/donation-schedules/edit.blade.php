@@ -66,7 +66,7 @@
             <label class="form-label">Event Photo</label>
             @if($donationSchedule->photo_path)
                 <div class="mb-2">
-                    <img src="{{ Storage::disk('public')->url($donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border" style="max-height: 180px; object-fit: cover;">
+                    <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border" style="max-height: 180px; object-fit: cover;">
                 </div>
             @endif
             <input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" @required(! $donationSchedule->photo_path)>

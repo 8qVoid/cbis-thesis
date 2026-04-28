@@ -10,7 +10,6 @@ use App\Models\DonationSchedule;
 use App\Models\EventRegistration;
 use App\Models\Facility;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PublicPortalController extends Controller
@@ -152,7 +151,7 @@ class PublicPortalController extends Controller
                     'contact_number' => $event->contact_number ?: ($event->facility?->contact_number ?? 'N/A'),
                     'lat' => (float) $lat,
                     'lng' => (float) $lng,
-                    'photo_url' => $event->photo_path ? Storage::disk('public')->url($event->photo_path) : null,
+                    'photo_url' => $event->photo_path ? asset('storage/'.$event->photo_path) : null,
                     'action_url' => route('donor.events.join', $event),
                     'is_registered' => in_array($event->id, $registeredEventIds, true),
                 ];
@@ -172,7 +171,7 @@ class PublicPortalController extends Controller
                     'email' => $location->facility?->email ?? 'N/A',
                     'lat' => (float) $location->latitude,
                     'lng' => (float) $location->longitude,
-                    'photo_url' => $location->photo_path ? Storage::disk('public')->url($location->photo_path) : null,
+                    'photo_url' => $location->photo_path ? asset('storage/'.$location->photo_path) : null,
                 ];
             })
             ->values();

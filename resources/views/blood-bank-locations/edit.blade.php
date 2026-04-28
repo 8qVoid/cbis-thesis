@@ -11,7 +11,7 @@
 <div class="col-md-6">
 <label class="form-label">Location Photo</label>
 @if($bloodBankLocation->photo_path)
-<div class="mb-2"><img src="{{ Storage::disk('public')->url($bloodBankLocation->photo_path) }}" alt="{{ $bloodBankLocation->facility?->name ?? 'Location photo' }}" class="img-fluid rounded border" style="max-height: 180px; object-fit: cover;"></div>
+<div class="mb-2"><img src="{{ asset('storage/'.$bloodBankLocation->photo_path) }}" alt="{{ $bloodBankLocation->facility?->name ?? 'Location photo' }}" class="img-fluid rounded border" style="max-height: 180px; object-fit: cover;"></div>
 @endif
 <input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" @required(! $bloodBankLocation->photo_path)>
 <small class="text-muted">{{ $bloodBankLocation->photo_path ? 'Upload a new image only if you want to replace the current photo.' : 'Upload a JPG, PNG, or WebP image up to 4 MB.' }}</small>
