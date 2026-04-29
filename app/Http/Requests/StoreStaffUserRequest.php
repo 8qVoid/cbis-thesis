@@ -9,7 +9,8 @@ class StoreStaffUserRequest extends BaseFormRequest
 {
     public function authorize(): bool
     {
-        return $this->facilityOperatorCan('manage users');
+        return ($this->user()?->isCentralAdmin() ?? false)
+            || $this->facilityOperatorCan('manage users');
     }
 
     protected function prepareForValidation(): void

@@ -34,6 +34,14 @@ Laravel 13 thesis system implementing centralized, multi-facility blood inventor
 12. Public portal and donor event registration
 13. Required event/location photo uploads
 
+## Recent Updates
+- Facility approval now automatically creates or reactivates the facility's first Facilitator account using the application email.
+- Approved facilities receive an onboarding email with their login email and a generated temporary password.
+- Super Administrators can create facility staff accounts when needed.
+- Facility Facilitators can pin their own facility location on the map and upload a required location photo.
+- Facility Facilitators can access Reports, matching Medical Staff / Nurse report access.
+- Location latitude and longitude fields are read-only and are filled by clicking the map picker.
+
 ## Installation
 1. Clone project
 2. Create `.env` from `.env.example`
@@ -80,12 +88,14 @@ Can access:
 
 Can do:
 - Approve or reject facility applications
+- Automatically onboard an approved facility's first Facilitator account through the approval workflow
 - Manage approved facilities
 - Manage central facility and location records
 - View records across all facilities
 - Generate reports
 - Monitor facility application alerts
 - View staff accounts across facilities
+- Create facility staff accounts when needed
 
 Cannot do:
 - Create donor records for a facility
@@ -94,7 +104,6 @@ Cannot do:
 - Create or edit inventory as a facility
 - Create blood release records as a facility
 - Create event schedules as a facility
-- Create facility staff accounts
 - Receive low-stock alerts
 
 ### Facility Facilitator
@@ -107,6 +116,8 @@ Can access:
 - Bloodletting records
 - Event schedules
 - Staff accounts
+- Blood bank locations
+- Reports
 - Notifications
 
 Can do:
@@ -115,6 +126,8 @@ Can do:
 - Manage bloodletting records
 - Create and manage donation events or schedules with required uploaded event photos
 - Create facility staff accounts, such as Medical Staff / Nurse
+- Pin their assigned facility location on the map and upload a required location photo
+- Download reports for their assigned facility
 - View dashboard summaries for their assigned facility
 - Receive low-stock alerts for their assigned facility
 
@@ -123,8 +136,6 @@ Cannot access:
 - All-facility management
 - Inventory management
 - Blood releases
-- Reports
-- Locations
 - Super administrator controls
 
 ### Medical Staff / Nurse
@@ -185,6 +196,7 @@ Can do:
   - one in-app dashboard/navbar notification
   - one email notification through `FacilityApplicationSubmitted`
 - The Super Administrator notification center is dedicated to facility application alerts, not low-stock alerts.
+- When a facility application is approved, the system creates or reactivates the first Facilitator account for the applicant email, generates a temporary password, and sends it through `FacilityApplicationApproved`.
 
 ## Event Notifications
 - When a public event is created with status `planned` or `ongoing`, verified online registered donors receive an email notification.

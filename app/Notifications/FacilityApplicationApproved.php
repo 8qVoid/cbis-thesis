@@ -15,9 +15,9 @@ class FacilityApplicationApproved extends Notification
         public Facility $facility,
         public string $recipientName,
         public string $recipientEmail,
-        public ?string $temporaryPassword = null,        public ?string $reviewNotes = null,
-    ) {
-    }
+        public ?string $temporaryPassword = null,
+        public ?string $reviewNotes = null,
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -34,12 +34,8 @@ class FacilityApplicationApproved extends Notification
             ->line('Registered Email: '.$this->recipientEmail)
             ->line('You may now log in to the CBIS staff portal.');
 
-        if (! empty($this->temporaryPassword)) {
-            $mail->line('Temporary Password: '.$this->temporaryPassword)
-                ->line('Please change your password immediately after your first login.');
-        } else {
-            $mail->line('A staff account for this email already exists. Use your existing password to sign in.');
-        }
+        $mail->line('Temporary Password: '.$this->temporaryPassword)
+            ->line('Please change your password immediately after your first login.');
 
         if (! empty($this->reviewNotes)) {
             $mail->line('Review Notes: '.$this->reviewNotes);

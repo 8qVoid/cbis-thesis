@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FacilityApplicationController extends Controller
 {
@@ -122,9 +123,32 @@ class FacilityApplicationController extends Controller
 
             if ($data['status'] === 'approved' && $facilityId) {
                 $facility ??= Facility::query()->find($facilityId);
-                $existingStaff = User::query()->where('email', $facilityApplication->email)->first();
+                $existingStaff = User::withTrashed()->where('email', $facilityApplication->email)->first();
 
-                if (! $existingStaff) {
+                if ($existingStaff?->isCentralAdmin()) {
+                    throw ValidationException::withMessages([
+                        'status' => 'This application email already belongs to a super administrator account.',
+                    ]);
+                }
+
+                if ($existingStaff) {
+                    if ($existingStaff->trashed()) {
+                        $existingStaff->restore();
+                    }
+
+                    $temporaryPassword = Str::password(12);
+                    $staffData = [
+                        'name' => $existingStaff->name ?: $facilityApplication->contact_person,
+                        'phone' => $existingStaff->phone ?: $this->primaryContactNumber($facilityApplication->contact_number),
+                        'facility_id' => $facilityId,
+                        'password' => $temporaryPassword,
+                        'is_active' => true,
+                    ];
+
+                    $existingStaff->forceFill($staffData)->save();
+
+                    $existingStaff->syncRoles(['Facilitator']);
+                } else {
                     $temporaryPassword = Str::password(12);
                     $staffUser = User::create([
                         'name' => $facilityApplication->contact_person,

@@ -41,6 +41,7 @@ class RolePermissionSeeder extends Seeder
 
         $superAdmin->syncPermissions([
             'manage facilities',
+            'manage users',
             'manage roles',
             'manage locations',
             'view reports',
@@ -52,6 +53,8 @@ class RolePermissionSeeder extends Seeder
             'manage donation records',
             'manage bloodletting records',
             'manage schedules',
+            'manage locations',
+            'view reports',
             'view public portal',
         ]);
         $medicalStaff->syncPermissions([

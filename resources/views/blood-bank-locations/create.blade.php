@@ -5,8 +5,6 @@
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">Facility</label><select name="facility_id" class="form-select">@foreach($facilities as $facility)<option value="{{ $facility->id }}">{{ $facility->name }}</option>@endforeach</select></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" required></div>
-<div class="col-md-3"><label class="form-label">Latitude</label><input id="latitude" name="latitude" class="form-control" value="{{ old('latitude') }}" required></div>
-<div class="col-md-3"><label class="form-label">Longitude</label><input id="longitude" name="longitude" class="form-control" value="{{ old('longitude') }}" required></div>
 <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control" placeholder="+63 917 123 4567 or 09171234567"></div>
 <div class="col-md-6"><label class="form-label">Location Photo</label><input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" required><small class="text-muted">Upload a JPG, PNG, or WebP image up to 4 MB.</small></div>
 <div class="col-12">
@@ -14,7 +12,9 @@
 <div id="location-map" class="rounded border" style="height: 320px"></div>
 <small class="text-muted">Click map to set latitude and longitude within Negros.</small>
 </div>
-<div class="col-12"><button class="btn btn-danger">Save</button></div>
+<div class="col-md-3"><label class="form-label">Latitude</label><input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude') }}" required readonly></div>
+<div class="col-md-3"><label class="form-label">Longitude</label><input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" required readonly></div>
+<div class="col-md-6 d-flex align-items-end"><button class="btn btn-danger">Save</button></div>
 </div></form>
 @endsection
 

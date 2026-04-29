@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\Auth\DonorAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\DonorAuthController;
 use App\Http\Controllers\BloodBankLocationController;
 use App\Http\Controllers\BloodInventoryController;
-use App\Http\Controllers\BloodReleaseController;
 use App\Http\Controllers\BloodlettingRecordController;
+use App\Http\Controllers\BloodReleaseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationRecordController;
 use App\Http\Controllers\DonationScheduleController;
@@ -79,10 +79,10 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('role_or_permission:Super Administrator|manage users')
         ->name('staff-users.index');
     Route::get('/staff-users/create', [StaffUserController::class, 'create'])
-        ->middleware(['permission:manage users', 'facility.operator'])
+        ->middleware(['role_or_permission:Super Administrator|manage users', 'facility.operator'])
         ->name('staff-users.create');
     Route::post('/staff-users', [StaffUserController::class, 'store'])
-        ->middleware(['permission:manage users', 'facility.operator'])
+        ->middleware(['role_or_permission:Super Administrator|manage users', 'facility.operator'])
         ->name('staff-users.store');
 
     Route::get('/facility-applications', [FacilityApplicationController::class, 'index'])
