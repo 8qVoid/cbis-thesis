@@ -61,6 +61,7 @@ class FacilityApplicationApprovalTest extends TestCase
             return $notification->recipientEmail === 'facility.applicant@example.test'
                 && ! empty($notification->temporaryPassword);
         });
+        Notification::assertNotSentTo($superAdmin, FacilityApplicationApproved::class);
     }
 
     public function test_approval_creates_first_facilitator_login_and_emails_temporary_password(): void
@@ -99,5 +100,6 @@ class FacilityApplicationApprovalTest extends TestCase
             return $notification->recipientEmail === 'new.facility@example.test'
                 && ! empty($notification->temporaryPassword);
         });
+        Notification::assertNotSentTo($superAdmin, FacilityApplicationApproved::class);
     }
 }

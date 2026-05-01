@@ -22,6 +22,10 @@ class NotificationController extends Controller
         $notificationTypes = $this->notificationTypesFor($user);
         $query = $user->notifications()->whereIn('type', $notificationTypes);
 
+        if (! $user->isCentralAdmin()) {
+            $query->where('data->facility_id', $user->facility_id);
+        }
+
         if ($status === 'unread') {
             $query->whereNull('read_at');
         }
@@ -45,6 +49,9 @@ class NotificationController extends Controller
         $notification = $request->user()
             ->notifications()
             ->whereIn('type', $this->notificationTypesFor($request->user()))
+            ->when(! $request->user()->isCentralAdmin(), function ($query) use ($request): void {
+                $query->where('data->facility_id', $request->user()->facility_id);
+            })
             ->whereKey($id)
             ->first();
 
@@ -64,6 +71,9 @@ class NotificationController extends Controller
         $request->user()
             ->unreadNotifications()
             ->whereIn('type', $this->notificationTypesFor($request->user()))
+            ->when(! $request->user()->isCentralAdmin(), function ($query) use ($request): void {
+                $query->where('data->facility_id', $request->user()->facility_id);
+            })
             ->update(['read_at' => now()]);
 
         return back()->with('success', 'All notifications marked as read.');

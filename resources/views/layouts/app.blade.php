@@ -33,8 +33,21 @@
     }
 
     $showNotificationCenter = $webAuthenticated && $notificationTypes !== [];
-    $unreadCount = $showNotificationCenter ? $webUser->unreadNotifications()->whereIn('type', $notificationTypes)->count() : 0;
-    $recentNotifications = $showNotificationCenter ? $webUser->notifications()->whereIn('type', $notificationTypes)->latest()->limit(5)->get() : collect();
+    $unreadCount = 0;
+    $recentNotifications = collect();
+
+    if ($showNotificationCenter) {
+        $unreadQuery = $webUser->unreadNotifications()->whereIn('type', $notificationTypes);
+        $recentQuery = $webUser->notifications()->whereIn('type', $notificationTypes);
+
+        if (! $webUser->isCentralAdmin()) {
+            $unreadQuery->where('data->facility_id', $webUser->facility_id);
+            $recentQuery->where('data->facility_id', $webUser->facility_id);
+        }
+
+        $unreadCount = $unreadQuery->count();
+        $recentNotifications = $recentQuery->latest()->limit(5)->get();
+    }
 @endphp
 <nav class="navbar navbar-expand-lg navbar-dark cbis-navbar">
     <div class="container">

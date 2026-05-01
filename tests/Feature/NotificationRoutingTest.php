@@ -24,11 +24,16 @@ class NotificationRoutingTest extends TestCase
         Notification::fake();
 
         $facility = $this->facility();
+        $otherFacility = $this->facility();
         $superAdmin = User::where('email', 'admin@cbis.local')->firstOrFail();
         $facilitator = User::factory()->create(['facility_id' => $facility->id]);
         $facilitator->assignRole('Facilitator');
         $medicalStaff = User::factory()->create(['facility_id' => $facility->id]);
         $medicalStaff->assignRole('Medical Staff / Nurse');
+        $otherFacilitator = User::factory()->create(['facility_id' => $otherFacility->id]);
+        $otherFacilitator->assignRole('Facilitator');
+        $otherMedicalStaff = User::factory()->create(['facility_id' => $otherFacility->id]);
+        $otherMedicalStaff->assignRole('Medical Staff / Nurse');
 
         BloodInventory::create([
             'facility_id' => $facility->id,
@@ -43,6 +48,8 @@ class NotificationRoutingTest extends TestCase
         Notification::assertSentTo($facilitator, LowStockAlert::class);
         Notification::assertSentTo($medicalStaff, LowStockAlert::class);
         Notification::assertNotSentTo($superAdmin, LowStockAlert::class);
+        Notification::assertNotSentTo($otherFacilitator, LowStockAlert::class);
+        Notification::assertNotSentTo($otherMedicalStaff, LowStockAlert::class);
     }
 
     public function test_facility_application_submission_notifies_super_admins(): void
