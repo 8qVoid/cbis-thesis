@@ -1,23 +1,50 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Donor Profile</h4>
+<div class="cbis-donor-hero mb-4">
+    <div>
+        <div class="cbis-eyebrow">Profile</div>
+        <h1 class="cbis-page-title mb-1">{{ $donor->first_name }} {{ $donor->last_name }}</h1>
+        <p class="cbis-page-subtitle">Keep your contact details updated and track your blood donation activity.</p>
+    </div>
+    <div class="cbis-donor-summary">
+        <div class="cbis-donor-summary-item">
+            <span>Blood type</span>
+            <strong>{{ $donor->blood_type }}</strong>
+        </div>
+        <div class="cbis-donor-summary-item">
+            <span>Home facility</span>
+            <strong>{{ $donor->facility?->name ?? 'Not set' }}</strong>
+        </div>
+        <div class="cbis-donor-summary-item">
+            <span>Event registrations</span>
+            <strong>{{ $eventRegistrations->count() }}</strong>
+        </div>
+    </div>
 </div>
-<form method="POST" action="{{ route('donor.portal.profile.update') }}" class="card card-body">
+
+<form method="POST" action="{{ route('donor.portal.profile.update') }}" class="card cbis-profile-card">
     @csrf
     @method('PUT')
-    <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" value="{{ old('first_name',$donor->first_name) }}" class="form-control" required></div>
-        <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" value="{{ old('last_name',$donor->last_name) }}" class="form-control" required></div>
-        <div class="col-md-4"><label class="form-label">Middle Name</label><input name="middle_name" value="{{ old('middle_name',$donor->middle_name) }}" class="form-control"></div>
-        <div class="col-md-4"><label class="form-label">Birth Date</label><input type="date" name="birth_date" value="{{ old('birth_date',$donor->birth_date?->toDateString()) }}" class="form-control" required></div>
-        <div class="col-md-4"><label class="form-label">Sex</label><select name="sex" class="form-select"><option value="male" @selected($donor->sex==='male')>male</option><option value="female" @selected($donor->sex==='female')>female</option></select></div>
-        <div class="col-md-4"><label class="form-label">Blood Type</label><select name="blood_type" class="form-select">@foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $type)<option value="{{ $type }}" @selected($donor->blood_type===$type)>{{ $type }}</option>@endforeach</select></div>
-        <div class="col-md-6"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((int) old('facility_id', $donor->facility_id ?? 0) === $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
-        <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" value="{{ old('contact_number',$donor->contact_number) }}" class="form-control" placeholder="+63 917 123 4567 or 09171234567"></div>
-        <div class="col-md-6"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control"></div>
-        <div class="col-12"><button class="btn btn-danger">Update Profile</button></div>
+    <div class="card-header">
+        <div>
+            <div class="fw-bold">Personal information</div>
+            <div class="text-muted small">This information helps facilities identify your records during events and donations.</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" value="{{ old('first_name',$donor->first_name) }}" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" value="{{ old('last_name',$donor->last_name) }}" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Middle Name</label><input name="middle_name" value="{{ old('middle_name',$donor->middle_name) }}" class="form-control"></div>
+            <div class="col-md-4"><label class="form-label">Birth Date</label><input type="date" name="birth_date" value="{{ old('birth_date',$donor->birth_date?->toDateString()) }}" class="form-control" required></div>
+            <div class="col-md-4"><label class="form-label">Sex</label><select name="sex" class="form-select"><option value="male" @selected($donor->sex==='male')>Male</option><option value="female" @selected($donor->sex==='female')>Female</option></select></div>
+            <div class="col-md-4"><label class="form-label">Blood Type</label><select name="blood_type" class="form-select">@foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $type)<option value="{{ $type }}" @selected($donor->blood_type===$type)>{{ $type }}</option>@endforeach</select></div>
+            <div class="col-md-6"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((int) old('facility_id', $donor->facility_id ?? 0) === $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
+            <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" value="{{ old('contact_number',$donor->contact_number) }}" class="form-control" placeholder="+63 917 123 4567 or 09171234567"></div>
+            <div class="col-md-8"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control"></div>
+            <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>
+        </div>
     </div>
 </form>
 
@@ -27,6 +54,7 @@
         <a href="{{ route('donor.events.index') }}" class="btn btn-sm btn-outline-danger">View All</a>
     </div>
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
@@ -56,17 +84,25 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center">No event registrations yet.</td>
+                        <td colspan="5">
+                            <div class="cbis-empty-state">
+                                <strong>No event registrations yet</strong>
+                                <span>Browse public events and register for an upcoming activity.</span>
+                                <a href="{{ route('public.map') }}" class="btn btn-sm btn-outline-danger">Find events</a>
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
 <div class="card mt-4">
     <div class="card-header">My Donation History</div>
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
@@ -92,11 +128,17 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No donation records yet.</td>
+                        <td colspan="7">
+                            <div class="cbis-empty-state">
+                                <strong>No donation records yet</strong>
+                                <span>Your completed donation records will appear here after a facility records them.</span>
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

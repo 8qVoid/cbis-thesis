@@ -20,9 +20,9 @@
     ];
 @endphp
 
-<div class="cbis-section-tabs py-2 mb-4">
+<div class="cbis-section-tabs py-2 mb-4" aria-label="Section navigation">
     <div class="container cbis-main">
-        <ul class="nav nav-pills gap-2 flex-wrap">
+        <ul class="nav nav-pills gap-2 flex-nowrap cbis-tab-strip">
             @foreach($tabs as $tab)
                 @if($tab['show'] ?? false)
                     <li class="nav-item">

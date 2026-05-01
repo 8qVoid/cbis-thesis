@@ -13,6 +13,7 @@
     @livewireStyles
 </head>
 <body class="bg-light">
+<a href="#main-content" class="cbis-skip-link">Skip to content</a>
 @php
     $webAuthenticated = auth('web')->check();
     $donorAuthenticated = auth('donor')->check();
@@ -59,14 +60,16 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Home</a></li>
                 @else
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('facility-application.create') }}">Apply Facility</a></li>
+                    @if(! $donorAuthenticated)
+                        <li class="nav-item"><a class="nav-link" href="{{ route('facility-application.create') }}">Apply Facility</a></li>
+                    @endif
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.availability') }}">Available Bloods</a></li>
                 @endif
             </ul>
-            <div class="d-flex">
+            <div class="d-flex align-items-center cbis-nav-actions">
                 @if($donorAuthenticated)
-                    <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-light btn-sm me-2">Donor Portal</a>
+                    <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-light btn-sm me-2">Profile</a>
                     <a href="{{ route('password.change') }}" class="btn btn-outline-light btn-sm me-2">Change Password</a>
                     <form method="POST" action="{{ route('logout') }}" class="js-logout-form">
                         @csrf
@@ -90,7 +93,7 @@
                                     </span>
                                 @endif
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 360px;">
+                            <div class="dropdown-menu dropdown-menu-end p-0 cbis-notification-menu">
                                 <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
                                     <strong>{{ $notificationTitle }}</strong>
                                     <form method="POST" action="{{ route('notifications.read-all') }}">
@@ -146,7 +149,7 @@
 @if($webAuthenticated)
     @include('partials.section-tabs')
 @endif
-<main class="container cbis-main py-4">
+<main id="main-content" class="container cbis-main py-4">
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif

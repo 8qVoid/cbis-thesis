@@ -47,9 +47,16 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+const facilityIcon = L.divIcon({
+    className: 'cbis-map-pin-wrap',
+    html: '<span class="cbis-map-pin cbis-map-pin-facility"></span>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+});
+
 let marker = null;
 if (typedPoint && NEGROS_BOUNDS.contains(typedPoint)) {
-    marker = L.marker(typedPoint).addTo(map);
+    marker = L.marker(typedPoint, { icon: facilityIcon }).addTo(map);
 }
 
 map.on('click', (event) => {
@@ -60,7 +67,7 @@ map.on('click', (event) => {
     if (marker) {
         marker.setLatLng([lat, lng]);
     } else {
-        marker = L.marker([lat, lng]).addTo(map);
+        marker = L.marker([lat, lng], { icon: facilityIcon }).addTo(map);
     }
 });
 </script>

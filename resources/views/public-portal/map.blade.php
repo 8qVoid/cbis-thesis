@@ -36,7 +36,7 @@
     </div>
 </form>
 
-<div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+<div class="d-flex flex-wrap align-items-center gap-3 mb-2 cbis-map-controls">
     <div class="d-flex align-items-center gap-2 small fw-semibold">
         <span class="cbis-map-dot cbis-map-dot-event"></span> Events / Activities
     </div>
