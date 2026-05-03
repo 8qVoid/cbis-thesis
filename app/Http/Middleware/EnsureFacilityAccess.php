@@ -20,6 +20,14 @@ class EnsureFacilityAccess
             abort(403, 'User is not assigned to any facility.');
         }
 
+        if (! $user->isCentralAdmin()) {
+            $user->loadMissing('facility');
+
+            if (! $user->is_active || ! ($user->facility?->is_active ?? false)) {
+                abort(403, 'This facility account is inactive.');
+            }
+        }
+
         return $next($request);
     }
 }

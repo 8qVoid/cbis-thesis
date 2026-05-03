@@ -102,4 +102,89 @@ class FacilityApplicationApprovalTest extends TestCase
         });
         Notification::assertNotSentTo($superAdmin, FacilityApplicationApproved::class);
     }
+
+    public function test_rejecting_approved_application_deactivates_linked_facility_and_users(): void
+    {
+        Notification::fake();
+        $this->seed(RolePermissionSeeder::class);
+
+        $superAdmin = User::where('email', 'admin@cbis.local')->firstOrFail();
+        $facility = Facility::create([
+            'code' => 'FAC-9001',
+            'name' => 'Previously Approved Facility',
+            'type' => 'blood_bank',
+            'is_active' => true,
+        ]);
+        $facilityUser = User::factory()->create([
+            'facility_id' => $facility->id,
+            'is_active' => true,
+        ]);
+        $application = FacilityApplication::create([
+            'organization_name' => $facility->name,
+            'facility_type' => 'blood_bank',
+            'contact_person' => 'Facility Contact',
+            'contact_number' => '09171234567',
+            'email' => $facilityUser->email,
+            'address' => '123 Sample Street',
+            'legitimacy_proof_path' => 'facility-applications/legitimacy/sample.pdf',
+            'doh_accreditation_proof_path' => 'facility-applications/doh/sample.pdf',
+            'status' => 'approved',
+            'facility_id' => $facility->id,
+        ]);
+
+        $response = $this->actingAs($superAdmin)->put(route('facility-applications.review', $application), [
+            'status' => 'rejected',
+            'review_notes' => 'Documents did not pass review.',
+        ]);
+
+        $response->assertRedirect(route('facility-applications.show', $application));
+
+        $this->assertFalse($facility->fresh()->is_active);
+        $this->assertFalse($facilityUser->fresh()->is_active);
+        $this->assertSame('rejected', $application->fresh()->status);
+        $this->actingAs($facilityUser->fresh())->get(route('dashboard'))->assertForbidden();
+        Notification::assertNothingSent();
+    }
+
+    public function test_returning_approved_application_to_pending_deactivates_access_temporarily(): void
+    {
+        Notification::fake();
+        $this->seed(RolePermissionSeeder::class);
+
+        $superAdmin = User::where('email', 'admin@cbis.local')->firstOrFail();
+        $facility = Facility::create([
+            'code' => 'FAC-9002',
+            'name' => 'Pending Review Facility',
+            'type' => 'blood_bank',
+            'is_active' => true,
+        ]);
+        $facilityUser = User::factory()->create([
+            'facility_id' => $facility->id,
+            'is_active' => true,
+        ]);
+        $application = FacilityApplication::create([
+            'organization_name' => $facility->name,
+            'facility_type' => 'blood_bank',
+            'contact_person' => 'Facility Contact',
+            'contact_number' => '09171234567',
+            'email' => $facilityUser->email,
+            'address' => '456 Sample Street',
+            'legitimacy_proof_path' => 'facility-applications/legitimacy/sample.pdf',
+            'doh_accreditation_proof_path' => 'facility-applications/doh/sample.pdf',
+            'status' => 'approved',
+            'facility_id' => $facility->id,
+        ]);
+
+        $response = $this->actingAs($superAdmin)->put(route('facility-applications.review', $application), [
+            'status' => 'pending',
+            'review_notes' => 'Needs another review.',
+        ]);
+
+        $response->assertRedirect(route('facility-applications.show', $application));
+
+        $this->assertFalse($facility->fresh()->is_active);
+        $this->assertFalse($facilityUser->fresh()->is_active);
+        $this->assertSame('pending', $application->fresh()->status);
+        Notification::assertNothingSent();
+    }
 }

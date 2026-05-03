@@ -18,7 +18,7 @@
     <p><strong>DOH Accreditation Proof:</strong> <a href="{{ route('facility-applications.proof', ['facilityApplication' => $application, 'type' => 'doh']) }}" target="_blank">View File</a></p>
 </div>
 
-<form method="POST" action="{{ route('facility-applications.review', $application) }}" class="card card-body">
+<form method="POST" action="{{ route('facility-applications.review', $application) }}" class="card card-body js-facility-review-form" data-current-status="{{ $application->status }}" data-has-facility="{{ $application->facility_id ? '1' : '0' }}">
     @csrf
     @method('PUT')
     <div class="row g-3">
@@ -40,3 +40,29 @@
     </div>
 </form>
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('.js-facility-review-form').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        const decision = form.querySelector('[name="status"]')?.value;
+        const currentStatus = form.dataset.currentStatus;
+        const hasFacility = form.dataset.hasFacility === '1';
+
+        const messages = {
+            approved: 'Approve this facility application? The system will create or reactivate the facility account and email a temporary password to the applicant.',
+            rejected: hasFacility
+                ? 'Reject this facility application? The linked facility and all assigned staff accounts will be deactivated, but records will be kept.'
+                : 'Reject this facility application?',
+            pending: hasFacility
+                ? 'Move this application back to pending? The linked facility and all assigned staff accounts will be temporarily deactivated.'
+                : 'Move this application back to pending?',
+        };
+
+        if (decision !== currentStatus && messages[decision] && !confirm(messages[decision])) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+@endpush

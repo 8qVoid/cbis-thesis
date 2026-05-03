@@ -123,6 +123,14 @@ class FacilityApplicationController extends Controller
 
             if ($data['status'] === 'approved' && $facilityId) {
                 $facility ??= Facility::query()->find($facilityId);
+
+                if ($facility) {
+                    $facility->forceFill(['is_active' => true])->save();
+                    User::query()
+                        ->where('facility_id', $facilityId)
+                        ->update(['is_active' => true]);
+                }
+
                 $existingStaff = User::withTrashed()->where('email', $facilityApplication->email)->first();
 
                 if ($existingStaff?->isCentralAdmin()) {
@@ -163,6 +171,16 @@ class FacilityApplicationController extends Controller
                 }
             }
 
+            if ($data['status'] !== 'approved' && $facilityId) {
+                Facility::query()
+                    ->whereKey($facilityId)
+                    ->update(['is_active' => false]);
+
+                User::query()
+                    ->where('facility_id', $facilityId)
+                    ->update(['is_active' => false]);
+            }
+
             $facilityApplication->update([
                 'status' => $data['status'],
                 'review_notes' => $data['review_notes'] ?? null,
@@ -200,6 +218,10 @@ class FacilityApplicationController extends Controller
             $message = $emailSent
                 ? 'Application approved. Onboarding email has been sent to the applicant.'
                 : 'Application approved, but onboarding email could not be sent. Please verify mail settings and retry.';
+        } elseif ($data['status'] === 'rejected') {
+            $message = 'Application rejected. Any linked facility account access has been deactivated.';
+        } elseif ($data['status'] === 'pending') {
+            $message = 'Application marked pending. Any linked facility account access has been temporarily deactivated.';
         }
 
         return redirect()->route('facility-applications.show', $facilityApplication)->with('success', $message);
