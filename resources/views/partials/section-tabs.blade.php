@@ -12,7 +12,7 @@
         ['label' => 'Releases', 'route' => 'blood-releases.index', 'show' => $isCentral || $user?->can('manage blood releases')],
         ['label' => 'Events', 'route' => 'donation-schedules.index', 'show' => $isCentral || $user?->can('manage schedules')],
         ['label' => 'Locations', 'route' => 'blood-bank-locations.index', 'show' => $isCentral || $user?->can('manage locations')],
-        ['label' => 'Reports', 'route' => 'reports.index', 'show' => $isCentral || $user?->can('view reports')],
+        ['label' => 'Reports', 'route' => 'reports.index', 'show' => ! $isCentral && $user?->can('view reports')],
         ['label' => 'Notifications', 'route' => 'notifications.index', 'show' => $canViewNotifications],
         ['label' => 'Facilities', 'route' => 'facilities.index', 'show' => $isCentral],
         ['label' => 'Staff', 'route' => 'staff-users.index', 'show' => $isCentral || $user?->can('manage users')],

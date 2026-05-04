@@ -145,15 +145,15 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('role_or_permission:Super Administrator|manage locations');
 
     Route::get('/reports', [ReportController::class, 'index'])
-        ->middleware('role_or_permission:Super Administrator|view reports')
+        ->middleware('permission:view reports')
         ->name('reports.index');
 
     Route::get('/reports/pdf', [ReportController::class, 'pdf'])
-        ->middleware('role_or_permission:Super Administrator|view reports')
+        ->middleware('permission:view reports')
         ->name('reports.pdf');
 
     Route::get('/reports/excel', [ReportController::class, 'excel'])
-        ->middleware('role_or_permission:Super Administrator|view reports')
+        ->middleware('permission:view reports')
         ->name('reports.excel');
 
     Route::get('/notifications', [NotificationController::class, 'index'])

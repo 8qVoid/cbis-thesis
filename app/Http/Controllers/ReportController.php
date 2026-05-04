@@ -17,6 +17,8 @@ class ReportController extends Controller
 {
     public function index(FilterReportsRequest $request): View
     {
+        $this->authorizeFacilityReports();
+
         $filters = $request->validated();
         $from = $filters['from'] ?? null;
         $to = $filters['to'] ?? null;
@@ -60,6 +62,8 @@ class ReportController extends Controller
 
     public function pdf(FilterReportsRequest $request)
     {
+        $this->authorizeFacilityReports();
+
         $filters = $request->validated();
         $from = $filters['from'] ?? null;
         $to = $filters['to'] ?? null;
@@ -76,11 +80,20 @@ class ReportController extends Controller
 
     public function excel(FilterReportsRequest $request): BinaryFileResponse
     {
+        $this->authorizeFacilityReports();
+
         $filters = $request->validated();
 
         return Excel::download(
             new BloodInventoryExport($filters['from'] ?? null, $filters['to'] ?? null, auth()->user()),
             'blood-inventory-report.xlsx'
         );
+    }
+
+    private function authorizeFacilityReports(): void
+    {
+        if (auth()->user()?->isCentralAdmin()) {
+            abort(403);
+        }
     }
 }

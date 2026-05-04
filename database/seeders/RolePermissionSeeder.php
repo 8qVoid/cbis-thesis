@@ -44,7 +44,6 @@ class RolePermissionSeeder extends Seeder
             'manage users',
             'manage roles',
             'manage locations',
-            'view reports',
             'view public portal',
         ]);
         $facilitator->syncPermissions([
