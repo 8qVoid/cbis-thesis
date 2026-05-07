@@ -43,7 +43,6 @@ class RolePermissionSeeder extends Seeder
             'manage facilities',
             'manage users',
             'manage roles',
-            'manage locations',
             'view public portal',
         ]);
         $facilitator->syncPermissions([
@@ -53,7 +52,6 @@ class RolePermissionSeeder extends Seeder
             'manage bloodletting records',
             'manage schedules',
             'manage locations',
-            'view reports',
             'view public portal',
         ]);
         $medicalStaff->syncPermissions([

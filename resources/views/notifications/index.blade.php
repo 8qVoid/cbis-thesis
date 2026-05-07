@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Notifications</h1>
-        <p class="cbis-page-subtitle">{{ $isCentralAdmin ? 'Facility application alerts for central review.' : 'Low stock alerts for your assigned facility.' }}</p>
+        <p class="cbis-page-subtitle">{{ $isCentralAdmin ? 'Facility application and low stock alerts for central review.' : 'Low stock alerts for your assigned facility.' }}</p>
     </div>
     <form method="POST" action="{{ route('notifications.read-all') }}">
         @csrf
@@ -25,6 +25,16 @@
                 <option value="unread" @selected(($status ?? 'all') === 'unread')>Unread</option>
             </select>
         </div>
+        @if($isCentralAdmin)
+            <div class="col-md-3">
+                <label class="form-label">Alert Type</label>
+                <select name="type" class="form-select">
+                    <option value="all" @selected(($alertType ?? 'all') === 'all')>All alerts</option>
+                    <option value="facility_application" @selected(($alertType ?? 'all') === 'facility_application')>Facility applications</option>
+                    <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
+                </select>
+            </div>
+        @endif
         <div class="col-md-3">
             <label class="form-label">From</label>
             <input type="date" name="from" class="form-control" value="{{ request('from') }}">

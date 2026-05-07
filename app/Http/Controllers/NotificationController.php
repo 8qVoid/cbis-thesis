@@ -18,8 +18,15 @@ class NotificationController extends Controller
         $filters = $request->validated();
         $user = $request->user();
         $status = (string) ($filters['status'] ?? 'all');
+        $alertType = (string) ($filters['type'] ?? 'all');
 
         $notificationTypes = $this->notificationTypesFor($user);
+        $selectedType = $this->notificationClassForFilter($alertType);
+
+        if ($selectedType !== null && in_array($selectedType, $notificationTypes, true)) {
+            $notificationTypes = [$selectedType];
+        }
+
         $query = $user->notifications()->whereIn('type', $notificationTypes);
 
         if (! $user->isCentralAdmin()) {
@@ -40,7 +47,7 @@ class NotificationController extends Controller
 
         $notifications = $query->latest()->paginate(20)->withQueryString();
 
-        return view('notifications.index', compact('notifications', 'status'));
+        return view('notifications.index', compact('notifications', 'status', 'alertType'));
     }
 
     public function markRead(Request $request, string $id): RedirectResponse
@@ -85,9 +92,21 @@ class NotificationController extends Controller
     private function notificationTypesFor(User $user): array
     {
         if ($user->isCentralAdmin()) {
-            return [FacilityApplicationSubmitted::class];
+            return [FacilityApplicationSubmitted::class, LowStockAlert::class];
         }
 
         return [LowStockAlert::class];
+    }
+
+    /**
+     * @return class-string|null
+     */
+    private function notificationClassForFilter(string $type): ?string
+    {
+        return match ($type) {
+            'facility_application' => FacilityApplicationSubmitted::class,
+            'low_stock' => LowStockAlert::class,
+            default => null,
+        };
     }
 }

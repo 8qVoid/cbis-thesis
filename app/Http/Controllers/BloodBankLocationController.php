@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBloodBankLocationRequest;
 use App\Http\Requests\UpdateBloodBankLocationRequest;
 use App\Models\BloodBankLocation;
-use App\Models\Facility;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
@@ -18,22 +17,43 @@ class BloodBankLocationController extends Controller
 
     public function index(): View
     {
+        $this->authorizeFacilityLocations();
+
         $locations = FacilityScope::apply(BloodBankLocation::query()->with('facility'), auth()->user())
             ->latest()
             ->paginate(15);
+        $existingLocation = $this->existingFacilityLocation();
 
-        return view('blood-bank-locations.index', compact('locations'));
+        return view('blood-bank-locations.index', compact('locations', 'existingLocation'));
     }
 
-    public function create(): View
+    public function create(): RedirectResponse|View
     {
-        $facilities = Facility::orderBy('name')->get();
+        $this->authorizeFacilityLocations();
 
-        return view('blood-bank-locations.create', compact('facilities'));
+        $existingLocation = $this->existingFacilityLocation();
+
+        if ($existingLocation) {
+            return redirect()
+                ->route('blood-bank-locations.edit', $existingLocation)
+                ->with('success', 'Location already set. Edit the current location instead.');
+        }
+
+        return view('blood-bank-locations.create');
     }
 
     public function store(StoreBloodBankLocationRequest $request): RedirectResponse
     {
+        $this->authorizeFacilityLocations();
+
+        $existingLocation = $this->existingFacilityLocation();
+
+        if ($existingLocation) {
+            return redirect()
+                ->route('blood-bank-locations.edit', $existingLocation)
+                ->with('success', 'Location already set. Edit the current location instead.');
+        }
+
         $data = $request->validated();
         if (! auth()->user()->isCentralAdmin()) {
             $data['facility_id'] = auth()->user()->facility_id;
@@ -60,9 +80,8 @@ class BloodBankLocationController extends Controller
     public function edit(BloodBankLocation $bloodBankLocation): View
     {
         $this->authorizeRecord($bloodBankLocation);
-        $facilities = Facility::orderBy('name')->get();
 
-        return view('blood-bank-locations.edit', compact('bloodBankLocation', 'facilities'));
+        return view('blood-bank-locations.edit', compact('bloodBankLocation'));
     }
 
     public function update(UpdateBloodBankLocationRequest $request, BloodBankLocation $bloodBankLocation): RedirectResponse
@@ -100,8 +119,24 @@ class BloodBankLocationController extends Controller
 
     private function authorizeRecord(BloodBankLocation $record): void
     {
-        if (! auth()->user()->isCentralAdmin() && $record->facility_id !== auth()->user()->facility_id) {
+        $this->authorizeFacilityLocations();
+
+        if ($record->facility_id !== auth()->user()->facility_id) {
             abort(403);
         }
+    }
+
+    private function authorizeFacilityLocations(): void
+    {
+        if (auth()->user()?->isCentralAdmin()) {
+            abort(403);
+        }
+    }
+
+    private function existingFacilityLocation(): ?BloodBankLocation
+    {
+        return BloodBankLocation::query()
+            ->where('facility_id', auth()->user()?->facility_id)
+            ->first();
     }
 }

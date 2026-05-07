@@ -13,6 +13,7 @@ class FilterNotificationsRequest extends BaseFormRequest
     {
         return [
             'status' => ['nullable', 'in:all,unread'],
+            'type' => ['nullable', 'in:all,facility_application,low_stock'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'page' => ['nullable', 'integer', 'min:1'],

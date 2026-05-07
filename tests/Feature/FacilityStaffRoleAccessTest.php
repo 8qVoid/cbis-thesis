@@ -40,7 +40,7 @@ class FacilityStaffRoleAccessTest extends TestCase
         $this->actingAs($facilitator)->get(route('donation-schedules.index'))->assertOk();
         $this->actingAs($facilitator)->get(route('blood-bank-locations.create'))->assertOk();
         $this->actingAs($facilitator)->get(route('notifications.index'))->assertOk();
-        $this->actingAs($facilitator)->get(route('reports.index'))->assertOk();
+        $this->actingAs($facilitator)->get(route('reports.index'))->assertForbidden();
         $this->actingAs($facilitator)->get(route('blood-inventory.index'))->assertForbidden();
     }
 
@@ -72,6 +72,7 @@ class FacilityStaffRoleAccessTest extends TestCase
         $this->actingAs($superAdmin)->get(route('bloodletting-records.create'))->assertForbidden();
         $this->actingAs($superAdmin)->get(route('donors.create'))->assertForbidden();
         $this->actingAs($superAdmin)->get(route('donation-schedules.create'))->assertForbidden();
+        $this->actingAs($superAdmin)->get(route('blood-bank-locations.index'))->assertForbidden();
         $this->actingAs($superAdmin)->get(route('staff-users.create'))->assertOk();
     }
 

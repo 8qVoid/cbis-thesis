@@ -26,8 +26,8 @@
     $notificationTitle = 'Notifications';
 
     if ($webAuthenticated && $webUser?->isCentralAdmin()) {
-        $notificationTypes = [$facilityApplicationType];
-        $notificationTitle = 'Facility Applications';
+        $notificationTypes = [$facilityApplicationType, $lowStockType];
+        $notificationTitle = 'System Alerts';
     } elseif ($webAuthenticated && ($webUser?->hasRole('Facilitator') || $webUser?->can('manage inventory'))) {
         $notificationTypes = [$lowStockType];
         $notificationTitle = 'Low Stock Alerts';
@@ -101,6 +101,12 @@
                                         <button class="btn btn-link btn-sm text-decoration-none p-0">Mark all read</button>
                                     </form>
                                 </div>
+                                @if($webUser?->isCentralAdmin())
+                                    <div class="d-flex gap-2 px-3 py-2 border-bottom">
+                                        <a href="{{ route('notifications.index', ['type' => 'facility_application']) }}" class="btn btn-sm btn-outline-danger flex-fill">Applications</a>
+                                        <a href="{{ route('notifications.index', ['type' => 'low_stock']) }}" class="btn btn-sm btn-outline-danger flex-fill">Low stock</a>
+                                    </div>
+                                @endif
                                 <div class="list-group list-group-flush">
                                     @forelse($recentNotifications as $notification)
                                         @php

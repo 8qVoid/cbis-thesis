@@ -142,7 +142,7 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('role_or_permission:Super Administrator|manage schedules');
 
     Route::resource('blood-bank-locations', BloodBankLocationController::class)
-        ->middleware('role_or_permission:Super Administrator|manage locations');
+        ->middleware('permission:manage locations');
 
     Route::get('/reports', [ReportController::class, 'index'])
         ->middleware('permission:view reports')

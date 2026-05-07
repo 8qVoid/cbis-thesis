@@ -3,7 +3,7 @@
 <h4>Edit Blood Bank Location</h4>
 <form method="POST" action="{{ route('blood-bank-locations.update',$bloodBankLocation) }}" class="card card-body" enctype="multipart/form-data">@csrf @method('PUT')
 <div class="row g-3">
-<div class="col-md-6"><label class="form-label">Facility</label><select name="facility_id" class="form-select">@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected($bloodBankLocation->facility_id==$facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
+<div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ $bloodBankLocation->facility?->name ?? auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address',$bloodBankLocation->address) }}" required></div>
 <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control" value="{{ old('contact_number',$bloodBankLocation->contact_number) }}" placeholder="+63 917 123 4567 or 09171234567"></div>
 <div class="col-md-6">

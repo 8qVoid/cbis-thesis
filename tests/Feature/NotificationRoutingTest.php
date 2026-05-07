@@ -18,7 +18,7 @@ class NotificationRoutingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_low_stock_alerts_go_to_facility_facilitators_and_medical_staff_not_super_admins(): void
+    public function test_low_stock_alerts_go_to_super_admins_and_matching_facility_staff_only(): void
     {
         $this->seed(RolePermissionSeeder::class);
         Notification::fake();
@@ -47,7 +47,7 @@ class NotificationRoutingTest extends TestCase
 
         Notification::assertSentTo($facilitator, LowStockAlert::class);
         Notification::assertSentTo($medicalStaff, LowStockAlert::class);
-        Notification::assertNotSentTo($superAdmin, LowStockAlert::class);
+        Notification::assertSentTo($superAdmin, LowStockAlert::class);
         Notification::assertNotSentTo($otherFacilitator, LowStockAlert::class);
         Notification::assertNotSentTo($otherMedicalStaff, LowStockAlert::class);
     }

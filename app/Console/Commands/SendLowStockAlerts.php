@@ -11,7 +11,7 @@ class SendLowStockAlerts extends Command
 {
     protected $signature = 'inventory:notify-low-stock';
 
-    protected $description = 'Send low stock notifications to facility facilitators and medical staff';
+    protected $description = 'Send low stock notifications to super administrators and facility facilitators and medical staff';
 
     public function handle(): int
     {
@@ -43,8 +43,16 @@ class SendLowStockAlerts extends Command
             ->get()
             ->groupBy('facility_id');
 
+        $centralAdmins = User::query()
+            ->where('is_active', true)
+            ->whereNull('facility_id')
+            ->whereHas('roles', fn ($query) => $query->where('name', 'Super Administrator'))
+            ->get();
+
         foreach ($lowStockItems as $item) {
-            $recipients = $facilityAlertStaff->get($item->facility_id, collect());
+            $recipients = $facilityAlertStaff
+                ->get($item->facility_id, collect())
+                ->merge($centralAdmins);
 
             foreach ($recipients->unique('id') as $user) {
                 $user->notify(new LowStockAlert($item));
