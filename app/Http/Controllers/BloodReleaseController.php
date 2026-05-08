@@ -29,7 +29,14 @@ class BloodReleaseController extends Controller
     public function create(): View
     {
         $user = auth()->user();
-        $inventory = FacilityScope::apply(BloodInventory::query()->with('facility')->where('status', '!=', 'expired'), $user)->get();
+        $inventory = FacilityScope::apply(
+            BloodInventory::query()
+                ->with('facility')
+                ->where('status', '!=', 'expired')
+                ->where('units_available', '>', 0)
+                ->whereDate('expiration_date', '>=', now()->toDateString()),
+            $user
+        )->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('blood-releases.create', compact('inventory', 'facilities'));
@@ -62,7 +69,14 @@ class BloodReleaseController extends Controller
     {
         $this->authorizeRecord($bloodRelease);
         $user = auth()->user();
-        $inventory = FacilityScope::apply(BloodInventory::query()->with('facility')->where('status', '!=', 'expired'), $user)->get();
+        $inventory = FacilityScope::apply(
+            BloodInventory::query()
+                ->with('facility')
+                ->where('status', '!=', 'expired')
+                ->where('units_available', '>', 0)
+                ->whereDate('expiration_date', '>=', now()->toDateString()),
+            $user
+        )->get();
         $facilities = Facility::orderBy('name')->get();
 
         return view('blood-releases.edit', compact('bloodRelease', 'inventory', 'facilities'));

@@ -18,7 +18,7 @@ class BloodInventoryController extends Controller
 
     public function index(): View
     {
-        $inventory = FacilityScope::apply(BloodInventory::query()->with('facility'), auth()->user())
+        $inventory = FacilityScope::apply(BloodInventory::query()->with(['facility', 'donationRecord']), auth()->user())
             ->orderBy('blood_type')
             ->orderBy('expiration_date')
             ->paginate(20);

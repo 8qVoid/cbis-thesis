@@ -7,10 +7,10 @@
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Donation Records</h1>
-        <p class="cbis-page-subtitle">Real-time entries that add to blood inventory.</p>
+        <p class="cbis-page-subtitle">Facility donation transactions. Saving a donation automatically updates blood inventory.</p>
     </div>
     @if($canManageDonationRecords)
-        <a href="{{ route('donation-records.create') }}" class="btn btn-danger">Add Donation</a>
+        <a href="{{ route('donation-records.create') }}" class="btn btn-danger">Add Donation Record</a>
     @endif
 </div>
 <div class="table-responsive">

@@ -6,7 +6,10 @@ use App\Support\PhilippinePhone;
 
 class StoreDonorRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->facilityOperatorCan('manage donors'); }
+    public function authorize(): bool
+    {
+        return $this->facilityOperatorCan('manage donors');
+    }
 
     protected function prepareForValidation(): void
     {
@@ -22,9 +25,9 @@ class StoreDonorRequest extends BaseFormRequest
     {
         return [
             'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'middle_name' => ['nullable', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'last_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'middle_name' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
             'birth_date' => ['required', 'date', 'before:today'],
             'sex' => ['required', 'in:male,female'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],

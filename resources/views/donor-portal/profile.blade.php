@@ -34,14 +34,21 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" value="{{ old('first_name',$donor->first_name) }}" class="form-control" required></div>
-            <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" value="{{ old('last_name',$donor->last_name) }}" class="form-control" required></div>
-            <div class="col-md-4"><label class="form-label">Middle Name</label><input name="middle_name" value="{{ old('middle_name',$donor->middle_name) }}" class="form-control"></div>
+            <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" value="{{ old('first_name',$donor->first_name) }}" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+" required></div>
+            <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" value="{{ old('last_name',$donor->last_name) }}" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+" required></div>
+            <div class="col-md-4"><label class="form-label">Middle Name</label><input name="middle_name" value="{{ old('middle_name',$donor->middle_name) }}" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+"></div>
             <div class="col-md-4"><label class="form-label">Birth Date</label><input type="date" name="birth_date" value="{{ old('birth_date',$donor->birth_date?->toDateString()) }}" class="form-control" required></div>
             <div class="col-md-4"><label class="form-label">Sex</label><select name="sex" class="form-select"><option value="male" @selected($donor->sex==='male')>Male</option><option value="female" @selected($donor->sex==='female')>Female</option></select></div>
             <div class="col-md-4"><label class="form-label">Blood Type</label><select name="blood_type" class="form-select">@foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $type)<option value="{{ $type }}" @selected($donor->blood_type===$type)>{{ $type }}</option>@endforeach</select></div>
             <div class="col-md-6"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((int) old('facility_id', $donor->facility_id ?? 0) === $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
-            <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" value="{{ old('contact_number',$donor->contact_number) }}" class="form-control" placeholder="+63 917 123 4567 or 09171234567"></div>
+            <div class="col-md-6">
+                <label class="form-label">Mobile Number</label>
+                <div class="input-group">
+                    <span class="input-group-text">09</span>
+                    <input name="contact_number" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number', $donor->contact_number)) }}" class="form-control js-mobile-suffix" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789">
+                </div>
+                <small class="text-muted">Enter the 9 digits after 09.</small>
+            </div>
             <div class="col-md-8"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control"></div>
             <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>
         </div>

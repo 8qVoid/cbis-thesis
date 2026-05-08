@@ -1,5 +1,8 @@
 <div>
-    <h4>Add Donation Record</h4>
+    <div class="mb-3">
+        <h1 class="cbis-page-title mb-0">Add Donation Record</h1>
+        <p class="cbis-page-subtitle">Record a completed facility donation. Once saved, the system adds the collected blood to inventory.</p>
+    </div>
 
     <form wire:submit.prevent="save" class="card card-body">
         <div class="row g-3">
@@ -72,7 +75,7 @@
 
             <div class="col-12">
                 <button class="btn btn-danger" wire:loading.attr="disabled">
-                    <span wire:loading.remove>Save</span>
+                    <span wire:loading.remove>Save Donation Record</span>
                     <span wire:loading>Saving...</span>
                 </button>
             </div>

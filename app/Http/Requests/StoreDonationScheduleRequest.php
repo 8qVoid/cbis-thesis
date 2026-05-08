@@ -6,7 +6,10 @@ use App\Support\PhilippinePhone;
 
 class StoreDonationScheduleRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->facilityOperatorCan('manage schedules'); }
+    public function authorize(): bool
+    {
+        return $this->facilityOperatorCan('manage schedules');
+    }
 
     protected function prepareForValidation(): void
     {
@@ -32,8 +35,14 @@ class StoreDonationScheduleRequest extends BaseFormRequest
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'description' => ['nullable', 'string', 'max:1000'],
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
-            'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
+            'contact_person' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'contact_number' => [
+                'nullable',
+                'string',
+                'max:30',
+                fn (string $attribute, mixed $value, \Closure $fail) => PhilippinePhone::isValidContactNumber((string) $value)
+                    ?: $fail('Enter a valid Philippine mobile or landline number.'),
+            ],
             'is_public' => ['nullable', 'boolean'],
             'status' => ['required', 'in:planned,ongoing,completed,cancelled'],
         ];

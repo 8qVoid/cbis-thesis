@@ -6,7 +6,10 @@ use App\Support\PhilippinePhone;
 
 class StoreBloodBankLocationRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage locations') ?? false; }
+    public function authorize(): bool
+    {
+        return $this->user()?->can('manage locations') ?? false;
+    }
 
     protected function prepareForValidation(): void
     {
@@ -25,7 +28,13 @@ class StoreBloodBankLocationRequest extends BaseFormRequest
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'address' => ['required', 'string', 'max:255'],
-            'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
+            'contact_number' => [
+                'nullable',
+                'string',
+                'max:30',
+                fn (string $attribute, mixed $value, \Closure $fail) => PhilippinePhone::isValidContactNumber((string) $value)
+                    ?: $fail('Enter a valid Philippine mobile or landline number.'),
+            ],
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ];
     }

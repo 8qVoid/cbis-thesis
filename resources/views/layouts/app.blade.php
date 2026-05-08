@@ -180,6 +180,24 @@ document.querySelectorAll('.js-logout-form').forEach((form) => {
     });
 });
 
+document.querySelectorAll('.js-mobile-suffix').forEach((input) => {
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '').slice(0, 9);
+    });
+});
+
+document.querySelectorAll('.js-person-name').forEach((input) => {
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/\d/g, '').slice(0, 80);
+    });
+});
+
+document.querySelectorAll('.js-contact-numbers').forEach((input) => {
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9()+,\-\s]/g, '').slice(0, Number(input.maxLength) || 60);
+    });
+});
+
 window.addEventListener('storage', (event) => {
     if (event.key === 'cbis_logout') {
         window.location.href = "{{ route('login') }}";

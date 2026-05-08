@@ -13,7 +13,7 @@
     <div class="row g-3">
         <div class="col-md-4"><label class="form-label">Name</label><input name="name" class="form-control" value="{{ old('name') }}" required></div>
         <div class="col-md-4"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="{{ old('email') }}" required></div>
-        <div class="col-md-4"><label class="form-label">Phone</label><input name="phone" class="form-control" value="{{ old('phone') }}" placeholder="+63 917 123 4567 or 09171234567"></div>
+        <div class="col-md-4"><label class="form-label">Mobile Number</label><div class="input-group"><span class="input-group-text">09</span><input name="phone" class="form-control js-mobile-suffix" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('phone')) }}" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789"></div><small class="text-muted">Enter the 9 digits after 09.</small></div>
         @if(auth('web')->user()?->isCentralAdmin())
             <div class="col-md-4"><label class="form-label">Facility</label><select name="facility_id" class="form-select" required>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string) old('facility_id') === (string) $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
         @else

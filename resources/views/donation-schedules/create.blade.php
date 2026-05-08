@@ -51,11 +51,12 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Contact Person</label>
-            <input name="contact_person" class="form-control" value="{{ old('contact_person') }}">
+            <input name="contact_person" class="form-control js-person-name" value="{{ old('contact_person') }}" maxlength="80" pattern="[\p{L}\s.'-]+">
         </div>
         <div class="col-md-6">
             <label class="form-label">Contact Number (PH)</label>
-            <input name="contact_number" class="form-control" value="{{ old('contact_number') }}" placeholder="+63 917 123 4567 or 09171234567">
+            <input name="contact_number" class="form-control" value="{{ old('contact_number') }}" maxlength="30" placeholder="09171234567 or (034) 433 0313">
+            <small class="text-muted">Mobile or landline accepted.</small>
         </div>
         <div class="col-12">
             <label class="form-label">Description</label>

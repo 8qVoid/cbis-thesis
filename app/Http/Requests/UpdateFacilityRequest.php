@@ -7,7 +7,10 @@ use Illuminate\Validation\Rule;
 
 class UpdateFacilityRequest extends BaseFormRequest
 {
-    public function authorize(): bool { return $this->user()?->can('manage facilities') ?? false; }
+    public function authorize(): bool
+    {
+        return $this->user()?->can('manage facilities') ?? false;
+    }
 
     protected function prepareForValidation(): void
     {
@@ -25,8 +28,14 @@ class UpdateFacilityRequest extends BaseFormRequest
             'code' => ['required', 'string', 'max:30', Rule::unique('facilities', 'code')->ignore($this->route('facility'))],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', 'max:50'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
-            'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
+            'contact_person' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'contact_number' => [
+                'nullable',
+                'string',
+                'max:30',
+                fn (string $attribute, mixed $value, \Closure $fail) => PhilippinePhone::isValidContactNumber((string) $value)
+                    ?: $fail('Enter a valid Philippine mobile or landline number.'),
+            ],
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
             'is_active' => ['nullable', 'boolean'],

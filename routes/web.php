@@ -125,14 +125,14 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware(['permission:manage inventory', 'facility.operator']);
     Route::resource('blood-inventory', BloodInventoryController::class)
         ->only(['index', 'show'])
-        ->middleware('role_or_permission:Super Administrator|manage inventory');
+        ->middleware('role_or_permission:Super Administrator|view inventory|manage inventory');
 
     Route::resource('blood-releases', BloodReleaseController::class)
-        ->except(['index', 'show'])
+        ->only(['create', 'store'])
         ->middleware(['permission:manage blood releases', 'facility.operator']);
     Route::resource('blood-releases', BloodReleaseController::class)
         ->only(['index', 'show'])
-        ->middleware('role_or_permission:Super Administrator|manage blood releases');
+        ->middleware('role_or_permission:Super Administrator|view blood releases|manage blood releases');
 
     Route::resource('donation-schedules', DonationScheduleController::class)
         ->except(['index', 'show'])

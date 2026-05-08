@@ -22,7 +22,9 @@ class RolePermissionSeeder extends Seeder
             'manage donors',
             'manage donation records',
             'manage bloodletting records',
+            'view inventory',
             'manage inventory',
+            'view blood releases',
             'manage blood releases',
             'manage schedules',
             'manage locations',
@@ -52,10 +54,13 @@ class RolePermissionSeeder extends Seeder
             'manage bloodletting records',
             'manage schedules',
             'manage locations',
+            'view inventory',
+            'view blood releases',
             'view public portal',
         ]);
         $medicalStaff->syncPermissions([
             'manage inventory',
+            'manage blood releases',
             'view reports',
             'view public portal',
         ]);
