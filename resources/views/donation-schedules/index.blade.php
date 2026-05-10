@@ -84,7 +84,30 @@
                         <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View</a>
                         @if($canManageSchedules)
                             <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form method="POST" action="{{ route('donation-schedules.destroy', $schedule) }}" class="d-inline" onsubmit="return confirm('Delete this event?')">
+                            @if(in_array($schedule->status, ['planned', 'ongoing'], true))
+                                <form
+                                    method="POST"
+                                    action="{{ route('donation-schedules.end', $schedule) }}"
+                                    class="d-inline js-confirm-action"
+                                    data-confirm-title="End event?"
+                                    data-confirm-message="This will mark {{ $schedule->title }} as completed and remove it from public upcoming event listings."
+                                    data-confirm-button="End Event"
+                                    data-confirm-variant="success"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-sm btn-outline-success">End Event</button>
+                                </form>
+                            @endif
+                            <form
+                                method="POST"
+                                action="{{ route('donation-schedules.destroy', $schedule) }}"
+                                class="d-inline js-confirm-action"
+                                data-confirm-title="Delete event?"
+                                data-confirm-message="This will permanently remove {{ $schedule->title }} from the schedule list."
+                                data-confirm-button="Delete Event"
+                                data-confirm-variant="danger"
+                            >
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>

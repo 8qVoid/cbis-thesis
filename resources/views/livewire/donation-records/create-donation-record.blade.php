@@ -9,7 +9,7 @@
             @if($isCentralAdmin)
                 <div class="col-md-4">
                     <label class="form-label">Facility</label>
-                    <select wire:model="facility_id" class="form-select">
+                    <select wire:model.live="facility_id" class="form-select">
                         @foreach($facilities as $facility)
                             <option value="{{ $facility['id'] }}">{{ $facility['name'] }}</option>
                         @endforeach
@@ -17,6 +17,75 @@
                     @error('facility_id') <small class="text-danger">{{ $message }}</small> @enderror
                 </div>
             @endif
+
+            <div class="col-12">
+                <div class="border rounded p-3 bg-light">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Event Registration Lookup</label>
+                            <select wire:model.live="selected_event_id" class="form-select">
+                                <option value="">Select an event with registered donors</option>
+                                @foreach($events as $event)
+                                    <option value="{{ $event['id'] }}">
+                                        {{ $event['title'] }} @if($event['date']) ({{ $event['date'] }}) @endif - {{ $event['registered_count'] }} registered
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Use this when the donor says they registered for an event.</small>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Search Donor Name</label>
+                            <input wire:model.live.debounce.300ms="donor_search" class="form-control" placeholder="Type donor name to find an existing record">
+                            @if($matchingDonors)
+                                <div class="list-group mt-2">
+                                    @foreach($matchingDonors as $match)
+                                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" wire:click="selectDonor({{ $match['id'] }})">
+                                            <span>{{ $match['name'] }}</span>
+                                            <span class="badge text-bg-secondary">{{ $match['blood_type'] }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($selected_event_id)
+                        <div class="mt-3">
+                            <div class="fw-semibold mb-2">Registered donors for selected event</div>
+                            @if($registeredDonors)
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Blood Type</th>
+                                                <th>Registered At</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($registeredDonors as $registeredDonor)
+                                                <tr>
+                                                    <td>{{ $registeredDonor['name'] }}</td>
+                                                    <td>{{ $registeredDonor['blood_type'] }}</td>
+                                                    <td>{{ $registeredDonor['registered_at'] }}</td>
+                                                    <td class="text-end">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="selectDonor({{ $registeredDonor['id'] }})">
+                                                            Use Donor
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-muted small">No registered donors found for this event.</div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
 
             <div class="col-md-4">
                 <label class="form-label">Donor</label>

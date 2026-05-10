@@ -59,8 +59,8 @@
                 @if($webAuthenticated)
                     <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Home</a></li>
                 @else
-                    <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
                     @if(! $donorAuthenticated)
+                        <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('facility-application.create') }}">Apply Facility</a></li>
                     @endif
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
@@ -170,9 +170,69 @@
     @endif
     @yield('content')
 </main>
+<div class="modal fade" id="cbisConfirmModal" tabindex="-1" aria-labelledby="cbisConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cbis-confirm-modal">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <p class="text-danger small fw-semibold mb-1">Confirm action</p>
+                    <h2 class="modal-title h4" id="cbisConfirmTitle">Are you sure?</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0 text-muted" id="cbisConfirmMessage">Please confirm this action.</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="cbisConfirmButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+let cbisPendingConfirmForm = null;
+const cbisConfirmModalElement = document.getElementById('cbisConfirmModal');
+const cbisConfirmModal = cbisConfirmModalElement ? new bootstrap.Modal(cbisConfirmModalElement) : null;
+const cbisConfirmTitle = document.getElementById('cbisConfirmTitle');
+const cbisConfirmMessage = document.getElementById('cbisConfirmMessage');
+const cbisConfirmButton = document.getElementById('cbisConfirmButton');
+
+document.querySelectorAll('.js-confirm-action').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (form.dataset.confirmed === 'true' || !cbisConfirmModal) {
+            return;
+        }
+
+        event.preventDefault();
+        cbisPendingConfirmForm = form;
+
+        cbisConfirmTitle.textContent = form.dataset.confirmTitle || 'Confirm action?';
+        cbisConfirmMessage.textContent = form.dataset.confirmMessage || 'Please confirm this action.';
+        cbisConfirmButton.textContent = form.dataset.confirmButton || 'Confirm';
+        cbisConfirmButton.className = `btn btn-${form.dataset.confirmVariant || 'danger'}`;
+        cbisConfirmModal.show();
+    });
+});
+
+cbisConfirmButton?.addEventListener('click', () => {
+    if (!cbisPendingConfirmForm) {
+        return;
+    }
+
+    cbisPendingConfirmForm.dataset.confirmed = 'true';
+    cbisConfirmButton.disabled = true;
+    cbisConfirmButton.textContent = 'Working...';
+    cbisPendingConfirmForm.submit();
+});
+
+cbisConfirmModalElement?.addEventListener('hidden.bs.modal', () => {
+    cbisPendingConfirmForm = null;
+    cbisConfirmButton.disabled = false;
+});
+
 document.querySelectorAll('.js-logout-form').forEach((form) => {
     form.addEventListener('submit', () => {
         // Inform other tabs to return to the unified login page.

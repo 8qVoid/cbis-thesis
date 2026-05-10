@@ -22,21 +22,18 @@ class DonorEventRegistrationController extends Controller
         return view('donor-portal.events', compact('registrations'));
     }
 
-    public function join(DonationSchedule $donationSchedule): RedirectResponse
+    public function join(DonationSchedule $donationSchedule): View
     {
-        $created = $this->registerForEvent($donationSchedule);
+        abort_unless($donationSchedule->isRegistrationOpen(), 422, 'This event is no longer open for registration.');
 
-        return redirect()->route('public.map')->with(
-            'success',
-            $created ? 'You are now registered for this event.' : 'You are already registered for this event.'
-        );
+        return view('donor-portal.confirm-event-registration', compact('donationSchedule'));
     }
 
     public function store(DonationSchedule $donationSchedule): RedirectResponse
     {
         $created = $this->registerForEvent($donationSchedule);
 
-        return back()->with(
+        return redirect()->route('public.map')->with(
             'success',
             $created ? 'You are now registered for this event.' : 'You are already registered for this event.'
         );

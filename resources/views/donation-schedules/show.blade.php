@@ -1,6 +1,27 @@
 @extends('layouts.app')
 @section('content')
-<h4 class="mb-3">Event Details</h4>
+@php
+    $currentUser = auth('web')->user();
+    $canManageSchedules = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage schedules') ?? false);
+@endphp
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h4 class="mb-0">Event Details</h4>
+    @if($canManageSchedules && in_array($donationSchedule->status, ['planned', 'ongoing'], true))
+        <form
+            method="POST"
+            action="{{ route('donation-schedules.end', $donationSchedule) }}"
+            class="js-confirm-action"
+            data-confirm-title="End event?"
+            data-confirm-message="This will mark {{ $donationSchedule->title }} as completed and remove it from public upcoming event listings."
+            data-confirm-button="End Event"
+            data-confirm-variant="success"
+        >
+            @csrf
+            @method('PATCH')
+            <button class="btn btn-outline-success">End Event</button>
+        </form>
+    @endif
+</div>
 <div class="card card-body">
     @if($donationSchedule->photo_path)
         <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border mb-3" style="max-height: 280px; object-fit: cover;">

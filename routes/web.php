@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\DonorAuthController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\BloodBankLocationController;
@@ -36,6 +37,17 @@ Route::middleware('guest:web,donor')->group(function () {
     Route::post('/login', [LoginController::class, 'store'])
         ->middleware('throttle:login')
         ->name('login.store');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
+        ->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+        ->middleware('throttle:password-email')
+        ->name('password.email');
+    Route::get('/reset-password/{accountType}/{token}', [ForgotPasswordController::class, 'edit'])
+        ->name('password.reset');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'update'])
+        ->middleware('throttle:password-reset')
+        ->name('password.reset.update');
 });
 
 Route::prefix('donor')->group(function () {
@@ -134,6 +146,9 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->only(['index', 'show'])
         ->middleware('role_or_permission:Super Administrator|view blood releases|manage blood releases');
 
+    Route::patch('/donation-schedules/{donationSchedule}/end', [DonationScheduleController::class, 'end'])
+        ->middleware(['permission:manage schedules', 'facility.operator'])
+        ->name('donation-schedules.end');
     Route::resource('donation-schedules', DonationScheduleController::class)
         ->except(['index', 'show'])
         ->middleware(['permission:manage schedules', 'facility.operator']);

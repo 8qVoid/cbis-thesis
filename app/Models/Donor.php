@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Notifications\AccountResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -34,10 +35,26 @@ class Donor extends Authenticatable
         ];
     }
 
-    public function facility(): BelongsTo { return $this->belongsTo(Facility::class); }
-    public function homeFacility(): BelongsTo { return $this->belongsTo(Facility::class, 'facility_id'); }
-    public function donationRecords(): HasMany { return $this->hasMany(DonationRecord::class); }
-    public function eventRegistrations(): HasMany { return $this->hasMany(EventRegistration::class); }
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
+    }
+
+    public function homeFacility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class, 'facility_id');
+    }
+
+    public function donationRecords(): HasMany
+    {
+        return $this->hasMany(DonationRecord::class);
+    }
+
+    public function eventRegistrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
     public function registeredEvents(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -51,5 +68,10 @@ class Donor extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return trim($this->last_name.', '.$this->first_name.' '.$this->middle_name);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new AccountResetPasswordNotification($token, 'donor'));
     }
 }

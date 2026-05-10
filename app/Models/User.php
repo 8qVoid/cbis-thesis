@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\AccountResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -44,5 +45,10 @@ class User extends Authenticatable
     {
         // Super administrator account(s) must not be attached to a specific facility.
         return $this->hasRole('Super Administrator') && $this->facility_id === null;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new AccountResetPasswordNotification($token, 'staff'));
     }
 }

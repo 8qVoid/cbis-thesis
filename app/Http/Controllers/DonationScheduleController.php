@@ -12,8 +12,8 @@ use App\Notifications\EventPostedNotification;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class DonationScheduleController extends Controller
@@ -138,6 +138,21 @@ class DonationScheduleController extends Controller
         $this->logAudit('donation_schedule.updated', $donationSchedule, $data, $request);
 
         return redirect()->route('donation-schedules.index')->with('success', 'Schedule updated.');
+    }
+
+    public function end(DonationSchedule $donationSchedule): RedirectResponse
+    {
+        $this->authorizeRecord($donationSchedule);
+        abort_unless(auth()->user()->can('manage schedules'), 403);
+
+        if (! in_array($donationSchedule->status, ['planned', 'ongoing'], true)) {
+            return back()->with('success', 'This event is already closed.');
+        }
+
+        $donationSchedule->update(['status' => 'completed']);
+        $this->logAudit('donation_schedule.completed', $donationSchedule);
+
+        return back()->with('success', 'Event marked as completed.');
     }
 
     public function destroy(DonationSchedule $donationSchedule): RedirectResponse

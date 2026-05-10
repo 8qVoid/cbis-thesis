@@ -131,6 +131,36 @@ a:hover {
     min-width: min(360px, calc(100vw - 2rem));
 }
 
+.cbis-confirm-modal {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgba(19, 34, 54, 0.22);
+}
+
+.cbis-confirm-modal .modal-header,
+.cbis-confirm-modal .modal-body,
+.cbis-confirm-modal .modal-footer {
+    padding-left: 1.4rem;
+    padding-right: 1.4rem;
+}
+
+.cbis-confirm-modal .modal-header {
+    padding-top: 1.35rem;
+}
+
+.cbis-confirm-modal .modal-footer {
+    padding-bottom: 1.35rem;
+}
+
+.cbis-confirm-modal .modal-title {
+    font-weight: 800;
+    color: var(--cbis-text);
+}
+
+.cbis-confirm-modal .btn {
+    min-width: 110px;
+}
+
 .cbis-main {
     max-width: 1240px;
 }

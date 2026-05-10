@@ -29,6 +29,9 @@
                     </div>
                     <button class="btn btn-danger w-100" type="submit">Sign in</button>
                 </form>
+                <div class="text-center mt-3">
+                    <a href="{{ route('password.request') }}" class="text-danger text-decoration-none">Forgot password?</a>
+                </div>
                 <hr>
                 <a href="{{ route('donor.register') }}" class="btn btn-outline-secondary w-100">Donor Online Registration</a>
             </div>
