@@ -27,7 +27,7 @@
                                 <option value="">Select an event with registered donors</option>
                                 @foreach($events as $event)
                                     <option value="{{ $event['id'] }}">
-                                        {{ $event['title'] }} @if($event['date']) ({{ $event['date'] }}) @endif - {{ $event['registered_count'] }} registered
+                                        {{ $event['title'] }} @if($event['date']) ({{ $event['date'] }}) @endif - {{ $event['registered_count'] }} waiting
                                     </option>
                                 @endforeach
                             </select>
@@ -51,7 +51,7 @@
 
                     @if($selected_event_id)
                         <div class="mt-3">
-                            <div class="fw-semibold mb-2">Registered donors for selected event</div>
+                            <div class="fw-semibold mb-2">Registered donors still waiting for this event</div>
                             @if($registeredDonors)
                                 <div class="table-responsive">
                                     <table class="table table-sm align-middle mb-0">

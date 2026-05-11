@@ -28,6 +28,9 @@ class DonationScheduleController extends Controller
                 ->with('facility')
                 ->withCount([
                     'eventRegistrations as registrations_count' => fn ($q) => $q->where('status', 'registered'),
+                    'eventRegistrations as attended_count' => fn ($q) => $q->where('status', 'attended'),
+                    'eventRegistrations as no_show_count' => fn ($q) => $q->where('status', 'no_show'),
+                    'eventRegistrations as cancelled_count' => fn ($q) => $q->where('status', 'cancelled'),
                 ]),
             auth()->user()
         );
@@ -96,7 +99,6 @@ class DonationScheduleController extends Controller
         $this->authorizeRecord($donationSchedule);
         $donationSchedule->load([
             'eventRegistrations' => fn ($query) => $query
-                ->where('status', 'registered')
                 ->with('donor')
                 ->latest('registered_at'),
         ]);
@@ -149,10 +151,14 @@ class DonationScheduleController extends Controller
             return back()->with('success', 'This event is already closed.');
         }
 
+        $donationSchedule->eventRegistrations()
+            ->where('status', 'registered')
+            ->update(['status' => 'no_show']);
+
         $donationSchedule->update(['status' => 'completed']);
         $this->logAudit('donation_schedule.completed', $donationSchedule);
 
-        return back()->with('success', 'Event marked as completed.');
+        return back()->with('success', 'Event marked as completed. Remaining registered donors were marked as no-show.');
     }
 
     public function destroy(DonationSchedule $donationSchedule): RedirectResponse

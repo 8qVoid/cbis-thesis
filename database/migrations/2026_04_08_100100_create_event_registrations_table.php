@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('donation_schedule_id')->constrained('donation_schedules')->cascadeOnDelete();
             $table->foreignId('donor_id')->constrained('donors')->cascadeOnDelete();
             $table->foreignId('facility_id')->constrained('facilities')->cascadeOnDelete();
-            $table->enum('status', ['registered', 'cancelled'])->default('registered');
+            $table->enum('status', ['registered', 'cancelled', 'attended', 'no_show'])->default('registered');
             $table->timestamp('registered_at')->nullable();
             $table->timestamps();
 

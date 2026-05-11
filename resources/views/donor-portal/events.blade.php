@@ -29,10 +29,18 @@
                             <td>{{ $registration->event?->facility?->name ?? '-' }}</td>
                             <td>{{ $registration->event?->event_date?->toDateString() ?? '-' }}</td>
                             <td>{{ $registration->event?->start_time ?? '-' }} - {{ $registration->event?->end_time ?? '-' }}</td>
-                            <td>{{ ucfirst($registration->status) }}</td>
+                            <td>{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</td>
                             <td>
-                                @if($registration->status === 'registered' && $registration->event)
-                                    <form method="POST" action="{{ route('donor.events.cancel', $registration->event) }}" class="d-inline">
+                                @if($registration->status === 'registered' && $registration->event?->isRegistrationOpen())
+                                    <form
+                                        method="POST"
+                                        action="{{ route('donor.events.cancel', $registration->event) }}"
+                                        class="d-inline js-confirm-action"
+                                        data-confirm-title="Cancel registration?"
+                                        data-confirm-message="This will cancel your registration for {{ $registration->event->title }}."
+                                        data-confirm-button="Cancel Registration"
+                                        data-confirm-variant="danger"
+                                    >
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger">Cancel</button>

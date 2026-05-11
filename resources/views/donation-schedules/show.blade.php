@@ -12,7 +12,7 @@
             action="{{ route('donation-schedules.end', $donationSchedule) }}"
             class="js-confirm-action"
             data-confirm-title="End event?"
-            data-confirm-message="This will mark {{ $donationSchedule->title }} as completed and remove it from public upcoming event listings."
+            data-confirm-message="This will mark {{ $donationSchedule->title }} as completed, remove it from public upcoming event listings, and mark remaining registered donors as no-show."
             data-confirm-button="End Event"
             data-confirm-variant="success"
         >
@@ -40,7 +40,7 @@
 </div>
 
 <div class="card mt-3">
-    <div class="card-header">Registered Donors</div>
+    <div class="card-header">Event Registrations</div>
     <div class="card-body p-0">
         <table class="table table-striped mb-0">
             <thead>
@@ -49,19 +49,39 @@
                     <th>Blood Type</th>
                     <th>Contact</th>
                     <th>Registered At</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($donationSchedule->eventRegistrations as $registration)
+                    @php
+                        $statusClasses = [
+                            'registered' => 'cbis-status-active',
+                            'attended' => 'text-bg-success',
+                            'no_show' => 'text-bg-warning',
+                            'cancelled' => 'text-bg-secondary',
+                        ];
+                        $statusLabels = [
+                            'registered' => 'Registered',
+                            'attended' => 'Attended',
+                            'no_show' => 'No-show',
+                            'cancelled' => 'Cancelled',
+                        ];
+                    @endphp
                     <tr>
                         <td>{{ $registration->donor?->full_name ?? '-' }}</td>
                         <td>{{ $registration->donor?->blood_type ?? '-' }}</td>
                         <td>{{ $registration->donor?->contact_number ?? '-' }}</td>
                         <td>{{ $registration->registered_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                        <td>
+                            <span class="badge {{ $statusClasses[$registration->status] ?? 'text-bg-secondary' }}">
+                                {{ $statusLabels[$registration->status] ?? ucfirst($registration->status) }}
+                            </span>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center">No donor registrations yet.</td>
+                        <td colspan="5" class="text-center">No donor registrations yet.</td>
                     </tr>
                 @endforelse
             </tbody>

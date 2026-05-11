@@ -65,7 +65,7 @@
                 <th>Time</th>
                 <th>Venue</th>
                 <th>Status</th>
-                <th>Registrations</th>
+                <th>Registration Status</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -79,7 +79,14 @@
                     <td>{{ $schedule->start_time }} - {{ $schedule->end_time }}</td>
                     <td>{{ $schedule->venue }}</td>
                     <td><span class="badge {{ in_array($schedule->status, ['planned', 'ongoing']) ? 'cbis-status-active' : 'cbis-status-expired' }}">{{ ucfirst($schedule->status) }}</span></td>
-                    <td>{{ $schedule->registrations_count ?? 0 }}</td>
+                    <td>
+                        <div class="small">
+                            <span class="badge cbis-status-active">Registered {{ $schedule->registrations_count ?? 0 }}</span>
+                            <span class="badge text-bg-success">Attended {{ $schedule->attended_count ?? 0 }}</span>
+                            <span class="badge text-bg-warning">No-show {{ $schedule->no_show_count ?? 0 }}</span>
+                            <span class="badge text-bg-secondary">Cancelled {{ $schedule->cancelled_count ?? 0 }}</span>
+                        </div>
+                    </td>
                     <td class="text-nowrap">
                         <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View</a>
                         @if($canManageSchedules)
@@ -90,7 +97,7 @@
                                     action="{{ route('donation-schedules.end', $schedule) }}"
                                     class="d-inline js-confirm-action"
                                     data-confirm-title="End event?"
-                                    data-confirm-message="This will mark {{ $schedule->title }} as completed and remove it from public upcoming event listings."
+                                    data-confirm-message="This will mark {{ $schedule->title }} as completed, remove it from public upcoming event listings, and mark remaining registered donors as no-show."
                                     data-confirm-button="End Event"
                                     data-confirm-variant="success"
                                 >

@@ -43,10 +43,19 @@ class DonorEventRegistrationController extends Controller
     {
         $donor = auth('donor')->user();
 
-        EventRegistration::query()
+        if (! $donationSchedule->isRegistrationOpen()) {
+            return back()->withErrors(['event' => 'This event registration can no longer be cancelled.']);
+        }
+
+        $cancelled = EventRegistration::query()
             ->where('donation_schedule_id', $donationSchedule->id)
             ->where('donor_id', $donor->id)
+            ->where('status', 'registered')
             ->update(['status' => 'cancelled']);
+
+        if (! $cancelled) {
+            return back()->withErrors(['event' => 'This event registration was already closed.']);
+        }
 
         return back()->with('success', 'Your event registration has been cancelled.');
     }
@@ -60,7 +69,7 @@ class DonorEventRegistrationController extends Controller
             ->where('donor_id', $donor->id)
             ->first();
 
-        if ($existingRegistration?->status === 'registered') {
+        if (in_array($existingRegistration?->status, ['registered', 'attended'], true)) {
             return false;
         }
 

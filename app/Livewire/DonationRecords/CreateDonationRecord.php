@@ -15,6 +15,7 @@ use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateDonationRecord extends Component
@@ -140,6 +141,14 @@ class CreateDonationRecord extends Component
             $data['facility_id'] = $user->facility_id;
         }
 
+        if ($this->selected_event_id !== null && ! $this->selectedEventRegistrationExists((int) $data['donor_id'], (int) $data['facility_id'])) {
+            $this->addError('selected_event_id', 'The selected donor is not registered for this event.');
+
+            return null;
+        }
+
+        unset($data['selected_event_id']);
+
         // Keep donation number fixed in UI but still protect against edge-case collision.
         if (DonationRecord::query()->where('donation_no', $data['donation_no'])->exists()) {
             $data['donation_no'] = $this->generateDonationNumber();
@@ -148,6 +157,8 @@ class CreateDonationRecord extends Component
 
         $data['recorded_by'] = $user->id;
         $record = DonationRecord::create($data);
+
+        $this->markEventRegistrationAsAttended($record);
 
         event(new DonationRecorded($record));
         $this->logAudit('donation_record.created', $record, $data);
@@ -166,6 +177,14 @@ class CreateDonationRecord extends Component
     {
         return [
             'facility_id' => [$this->isCentralAdmin ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
+            'selected_event_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('donation_schedules', 'id')
+                    ->where(fn ($query) => $query
+                        ->where('facility_id', $this->facility_id)
+                        ->whereIn('status', ['planned', 'ongoing'])),
+            ],
             'donor_id' => ['required', 'integer', 'exists:donors,id'],
             'donation_no' => ['required', 'string', 'max:50', 'unique:donation_records,donation_no'],
             'donated_at' => ['required', 'date'],
@@ -194,6 +213,34 @@ class CreateDonationRecord extends Component
             ->map(fn (Donor $donor): array => $this->donorOption($donor))
             ->values()
             ->all();
+    }
+
+    private function markEventRegistrationAsAttended(DonationRecord $record): void
+    {
+        if ($this->selected_event_id === null) {
+            return;
+        }
+
+        EventRegistration::query()
+            ->where('donation_schedule_id', $this->selected_event_id)
+            ->where('donor_id', $record->donor_id)
+            ->where('facility_id', $record->facility_id)
+            ->where('status', 'registered')
+            ->update(['status' => 'attended']);
+    }
+
+    private function selectedEventRegistrationExists(int $donorId, int $facilityId): bool
+    {
+        if ($this->selected_event_id === null) {
+            return true;
+        }
+
+        return EventRegistration::query()
+            ->where('donation_schedule_id', $this->selected_event_id)
+            ->where('donor_id', $donorId)
+            ->where('facility_id', $facilityId)
+            ->where('status', 'registered')
+            ->exists();
     }
 
     private function loadEvents(): void

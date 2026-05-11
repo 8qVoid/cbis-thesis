@@ -249,7 +249,7 @@ class PublicPortalController extends Controller
 
         return EventRegistration::query()
             ->where('donor_id', $donor->id)
-            ->where('status', 'registered')
+            ->whereIn('status', ['registered', 'attended'])
             ->whereIn('donation_schedule_id', $eventIds)
             ->pluck('donation_schedule_id')
             ->all();
