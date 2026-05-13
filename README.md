@@ -66,12 +66,6 @@ Laravel 13 thesis system implementing centralized, multi-facility blood inventor
 - Facility Facilitator: `facility.admin@cbis.local` / `password`
 - Medical Staff / Nurse: `medical.staff@cbis.local` / `password`
 
-The default seeder also loads demo presentation data: three approved facilities, facilitator accounts, map photos, approved application records, and public events. Uploaded demo images are copied from tracked seeder assets into public storage when `php artisan migrate:fresh --seed` runs.
-
-Additional demo facility accounts use `password`:
-- Negros First Provincial Blood Center: `moosec06+bloodbank2@gmail.com`
-- Corazon Locsin Montelibano Memorial Regional Hospital: `moosec06+bloodbank3@gmail.com`
-
 ## Role Boundaries
 
 ### Super Administrator
