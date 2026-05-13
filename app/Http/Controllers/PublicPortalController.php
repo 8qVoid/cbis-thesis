@@ -147,6 +147,7 @@ class PublicPortalController extends Controller
                     'date' => $event->event_date?->toDateString(),
                     'time' => trim(($event->start_time ?? '').' - '.($event->end_time ?? ''), ' -'),
                     'venue' => $event->venue,
+                    'description' => $event->description,
                     'contact_person' => $event->contact_person ?: ($event->facility?->contact_person ?? 'N/A'),
                     'contact_number' => $event->contact_number ?: ($event->facility?->contact_number ?? 'N/A'),
                     'lat' => (float) $lat,

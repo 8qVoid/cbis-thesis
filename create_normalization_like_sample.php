@@ -62,7 +62,7 @@ setCell($sheet, 'A1', 'UNF', true);
 $unfHeaders = ['record_id','facility_name','donor_names','donor_ids','event_title','event_type','event_date','blood_types','statuses'];
 $unfRows = [
     [1,'NorthLand Blood Bank','Chris P Bacon, Cholo Mollica','D-001, D-002','Community Donation Drive, Community Donation Drive','blood_donation, blood_donation','2026-04-05, 2026-04-05','A+, O+','planned, planned'],
-    [2,'City Blood Center','Mike Hawk','D-003','Bloodletting Activity','bloodletting','2026-04-10','B+','ongoing'],
+    [2,'PHILIPPINE RED CROSS Bacolod City Chapter','Mike Hawk','D-003','Bloodletting Activity','bloodletting','2026-04-10','B+','ongoing'],
 ];
 $nextRow = writeTable($sheet, 'A', 2, $unfHeaders, $unfRows);
 
@@ -72,7 +72,7 @@ $oneHeaders = ['row_id','facility_name','donor_id','donor_name','event_title','e
 $oneRows = [
     [1,'NorthLand Blood Bank','D-001','Chris P Bacon','Community Donation Drive','blood_donation','2026-04-05','A+','planned'],
     [2,'NorthLand Blood Bank','D-002','Cholo Mollica','Community Donation Drive','blood_donation','2026-04-05','O+','planned'],
-    [3,'City Blood Center','D-003','Mike Hawk','Bloodletting Activity','bloodletting','2026-04-10','B+','ongoing'],
+    [3,'PHILIPPINE RED CROSS Bacolod City Chapter','D-003','Mike Hawk','Bloodletting Activity','bloodletting','2026-04-10','B+','ongoing'],
 ];
 $nextRow = writeTable($sheet, 'A', $nextRow + 1, $oneHeaders, $oneRows);
 
@@ -86,7 +86,7 @@ writeTable(
     $base2,
     ['facility_id','facility_name'],
     [
-        [1,'City Blood Center'],
+        [1,'PHILIPPINE RED CROSS Bacolod City Chapter'],
         [6,'NorthLand Blood Bank'],
     ],
     'Facilities'
@@ -141,7 +141,7 @@ writeTable(
     $base3,
     ['facility_id','code','name','type'],
     [
-        [1,'FAC-001','City Blood Center','blood_bank'],
+        [1,'FAC-001','PHILIPPINE RED CROSS Bacolod City Chapter','blood_bank'],
         [6,'FAC-006','NorthLand Blood Bank','blood_bank'],
     ],
     'Facilities Table'

@@ -66,6 +66,12 @@ Laravel 13 thesis system implementing centralized, multi-facility blood inventor
 - Facility Facilitator: `facility.admin@cbis.local` / `password`
 - Medical Staff / Nurse: `medical.staff@cbis.local` / `password`
 
+The default seeder also loads demo presentation data: three approved facilities, facilitator accounts, map photos, approved application records, and public events. Uploaded demo images are copied from tracked seeder assets into public storage when `php artisan migrate:fresh --seed` runs.
+
+Additional demo facility accounts use `password`:
+- Negros First Provincial Blood Center: `moosec06+bloodbank2@gmail.com`
+- Corazon Locsin Montelibano Memorial Regional Hospital: `moosec06+bloodbank3@gmail.com`
+
 ## Role Boundaries
 
 ### Super Administrator
@@ -79,8 +85,6 @@ Can access:
 - Blood inventory
 - Blood releases
 - Event schedules
-- Blood bank locations
-- Reports
 - Notifications
 - Facilities
 - Staff accounts
@@ -90,10 +94,9 @@ Can do:
 - Approve or reject facility applications
 - Automatically onboard an approved facility's first Facilitator account through the approval workflow
 - Manage approved facilities
-- Manage central facility and location records
 - View records across all facilities
-- Generate reports
 - Monitor facility application alerts
+- Monitor low-stock alerts across facilities
 - View staff accounts across facilities
 - Create facility staff accounts when needed
 
@@ -104,7 +107,8 @@ Cannot do:
 - Create or edit inventory as a facility
 - Create blood release records as a facility
 - Create event schedules as a facility
-- Receive low-stock alerts
+- Manage facility location pins
+- Generate reports
 
 ### Facility Facilitator
 The approved facility account for front desk and facility operations.
@@ -117,7 +121,6 @@ Can access:
 - Event schedules
 - Staff accounts
 - Blood bank locations
-- Reports
 - Notifications
 
 Can do:
@@ -127,7 +130,6 @@ Can do:
 - Create and manage donation events or schedules with required uploaded event photos
 - Create facility staff accounts, such as Medical Staff / Nurse
 - Pin their assigned facility location on the map and upload a required location photo
-- Download reports for their assigned facility
 - View dashboard summaries for their assigned facility
 - Receive low-stock alerts for their assigned facility
 
@@ -136,6 +138,7 @@ Cannot access:
 - All-facility management
 - Inventory management
 - Blood releases
+- Reports
 - Super administrator controls
 
 ### Medical Staff / Nurse
@@ -182,7 +185,8 @@ Can do:
 - `inventory:notify-low-stock`
 
 ## Low Stock Alerts (In-App + Email)
-- In-app low-stock alerts are available for Facility Facilitators and Medical Staff / Nurse users through the navbar notification center and `/notifications`.
+- In-app low-stock alerts are available for Super Administrators, Facility Facilitators, and Medical Staff / Nurse users through the navbar notification center and `/notifications`.
+- Super Administrators can filter notifications between facility application alerts and low-stock alerts.
 - Email alerts are sent through `LowStockAlert` when inventory enters low-stock state.
 - Required runtime processes:
   - `php artisan schedule:work`
@@ -195,7 +199,7 @@ Can do:
 - When a public facility application is submitted, the Super Administrator receives:
   - one in-app dashboard/navbar notification
   - one email notification through `FacilityApplicationSubmitted`
-- The Super Administrator notification center is dedicated to facility application alerts, not low-stock alerts.
+- The Super Administrator notification center includes separate filters for facility application alerts and low-stock alerts.
 - When a facility application is approved, the system creates or reactivates the first Facilitator account for the applicant email, generates a temporary password, and sends it through `FacilityApplicationApproved`.
 
 ## Event Notifications
@@ -208,7 +212,7 @@ Can do:
   - Blue pins: public events and activities
   - Red pins: blood bank or hospital facility locations
 - Map controls allow users to show or hide events and facilities.
-- Event map popups show the uploaded event photo, event details, and a registration action.
+- Event map popups show the uploaded event photo, event details, description, and a registration action.
 - Facility map popups show the uploaded location photo and facility contact information.
 - Public events stay visible while they are public, dated today or later, and have status `planned` or `ongoing`.
 - A facility can remove an event from the public map by editing the event status to `completed` or `cancelled`, or by setting `Show to Public` to `No`.

@@ -16,12 +16,13 @@
 </div>
 <div class="table-responsive">
 <table class="table table-striped bg-white">
-    <thead><tr><th>Name</th><th>Email</th><th>Facility</th><th>Role</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Facility</th><th>Role</th></tr></thead>
     <tbody>
     @foreach($users as $user)
         <tr>
             <td>{{ $user->name }}</td>
             <td>{{ $user->email }}</td>
+            <td>{{ $user->phone ?? '-' }}</td>
             <td>{{ $user->facility->name ?? '-' }}</td>
             <td>{{ $user->getRoleNames()->implode(', ') }}</td>
         </tr>

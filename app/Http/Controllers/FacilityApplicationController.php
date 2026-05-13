@@ -105,6 +105,7 @@ class FacilityApplicationController extends Controller
         DB::transaction(function () use ($data, $facilityApplication, $request, &$temporaryPassword): void {
             $facilityId = $facilityApplication->facility_id;
             $facility = $facilityApplication->facility;
+            $accountName = $facilityApplication->contact_person ?: $facilityApplication->organization_name;
 
             if ($data['status'] === 'approved' && ! $facilityId) {
                 $facility = Facility::create([
@@ -146,7 +147,7 @@ class FacilityApplicationController extends Controller
 
                     $temporaryPassword = Str::password(12);
                     $staffData = [
-                        'name' => $existingStaff->name ?: $facilityApplication->contact_person,
+                        'name' => $existingStaff->name ?: $accountName,
                         'phone' => $existingStaff->phone ?: $this->primaryContactNumber($facilityApplication->contact_number),
                         'facility_id' => $facilityId,
                         'password' => $temporaryPassword,
@@ -159,7 +160,7 @@ class FacilityApplicationController extends Controller
                 } else {
                     $temporaryPassword = Str::password(12);
                     $staffUser = User::create([
-                        'name' => $facilityApplication->contact_person,
+                        'name' => $accountName,
                         'email' => $facilityApplication->email,
                         'phone' => $this->primaryContactNumber($facilityApplication->contact_number),
                         'facility_id' => $facilityId,
@@ -200,7 +201,7 @@ class FacilityApplicationController extends Controller
                     Notification::route('mail', $facilityApplication->email)->notify(
                         new FacilityApplicationApproved(
                             facility: $facility,
-                            recipientName: $facilityApplication->contact_person,
+                            recipientName: $facilityApplication->contact_person ?: $facilityApplication->organization_name,
                             recipientEmail: $facilityApplication->email,
                             temporaryPassword: $temporaryPassword,
                             reviewNotes: $data['review_notes'] ?? null,

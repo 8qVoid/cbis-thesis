@@ -41,7 +41,7 @@
                 <tr>
                     <td>{{ $application->organization_name }}</td>
                     <td>{{ $application->facility_type }}</td>
-                    <td>{{ $application->contact_person }} / {{ $application->contact_number }}</td>
+                    <td>{{ $application->contact_person ?: '-' }} / {{ $application->contact_number }}</td>
                     <td><span class="badge {{ $application->status === 'approved' ? 'cbis-status-active' : ($application->status === 'rejected' ? 'cbis-status-expired' : 'cbis-status-low') }}">{{ ucfirst($application->status) }}</span></td>
                     <td>{{ $application->reviewer?->name ?? '-' }}</td>
                     <td><a href="{{ route('facility-applications.show', $application) }}" class="btn btn-sm btn-outline-primary">Review</a></td>

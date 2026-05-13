@@ -47,7 +47,7 @@ class FacilityApplicationSubmitted extends Notification
             ->line('A new facility application has been submitted for review.')
             ->line('Organization: '.$this->application->organization_name)
             ->line('Facility Type: '.$this->application->facility_type)
-            ->line('Contact Person: '.$this->application->contact_person)
+            ->line('Contact Person: '.($this->application->contact_person ?: 'Not provided'))
             ->line('Email: '.$this->application->email)
             ->action('Review Application', route('facility-applications.show', $this->application))
             ->line('Please review the legitimacy and DOH accreditation documents.');

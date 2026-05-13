@@ -32,7 +32,7 @@ addRows($sheet, $r, [[
 ],[
     1,'NorthLand Blood Bank','FAC-006','NorthLand Admin','Chris P Bacon, Cholo Mollica','D-001, D-002','Community Donation Drive, Community Donation Drive','blood_donation, blood_donation','2026-04-05, 2026-04-05','A+, O+','3, 2','planned, planned'
 ],[
-    2,'City Blood Center','FAC-001','Facility Admin','Mike Hawk','D-003','Bloodletting Activity','bloodletting','2026-04-10','B+','1','ongoing'
+    2,'PHILIPPINE RED CROSS Bacolod City Chapter','FAC-001','Facility Admin','Mike Hawk','D-003','Bloodletting Activity','bloodletting','2026-04-10','B+','1','ongoing'
 ]]);
 autoSize($sheet, 'L');
 
@@ -44,7 +44,7 @@ addRows($sheet1, $r, [[
     'row_id','facility_code','facility_name','staff_name','donor_id','donor_name','event_title','event_type','event_date','blood_type','inventory_units','status'
 ],[1,'FAC-006','NorthLand Blood Bank','NorthLand Admin','D-001','Chris P Bacon','Community Donation Drive','blood_donation','2026-04-05','A+',3,'planned'],
 [2,'FAC-006','NorthLand Blood Bank','NorthLand Admin','D-002','Cholo Mollica','Community Donation Drive','blood_donation','2026-04-05','O+',2,'planned'],
-[3,'FAC-001','City Blood Center','Facility Admin','D-003','Mike Hawk','Bloodletting Activity','bloodletting','2026-04-10','B+',1,'ongoing']
+[3,'FAC-001','PHILIPPINE RED CROSS Bacolod City Chapter','Facility Admin','D-003','Mike Hawk','Bloodletting Activity','bloodletting','2026-04-10','B+',1,'ongoing']
 ]);
 autoSize($sheet1, 'L');
 
@@ -55,7 +55,7 @@ $r = 1;
 addRows($sheet2, $r, [['Facilities Table']]);
 $r++;
 addRows($sheet2, $r, [['facility_id','code','name','type','contact_person','contact_number','is_active'],
-[1,'FAC-001','City Blood Center','blood_bank','Facility Admin','+639170000000',1],
+[1,'FAC-001','PHILIPPINE RED CROSS Bacolod City Chapter','blood_bank','Facility Admin','+639170000000',1],
 [6,'FAC-006','NorthLand Blood Bank','blood_bank','NorthLand Contact','+639171234567',1]]);
 $r++;
 addRows($sheet2, $r, [['Donors Table']]);

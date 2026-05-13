@@ -86,7 +86,10 @@
                     @if($showNotificationCenter)
                         <div class="dropdown me-2">
                             <button class="btn btn-outline-light btn-sm position-relative cbis-bell-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
-                                <span aria-hidden="true">&#128276;</span>
+                                <svg class="cbis-bell-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M18 8.2a6 6 0 0 0-12 0v3.1c0 .7-.24 1.38-.68 1.92L4 14.8V17h16v-2.2l-1.32-1.58A2.98 2.98 0 0 1 18 11.3V8.2Z" />
+                                    <path d="M9.75 19a2.25 2.25 0 0 0 4.5 0" />
+                                </svg>
                                 @if($unreadCount > 0)
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
                                         {{ $unreadCount }}

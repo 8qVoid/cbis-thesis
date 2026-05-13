@@ -87,6 +87,7 @@ a:hover {
     gap: 0.5rem;
     justify-content: flex-end;
     min-width: 0;
+    flex: 0 1 auto;
 }
 
 .cbis-user-pill {
@@ -100,7 +101,9 @@ a:hover {
 
 .cbis-user-meta {
     color: #fff;
-    max-width: 230px;
+    flex: 0 1 360px;
+    min-width: 240px;
+    max-width: min(360px, 30vw);
     text-align: right;
     line-height: 1.1;
 }
@@ -122,9 +125,22 @@ a:hover {
 }
 
 .cbis-bell-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 42px;
-    font-size: 1rem;
+    min-height: 34px;
     line-height: 1;
+}
+
+.cbis-bell-icon {
+    width: 1.08rem;
+    height: 1.08rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .cbis-notification-menu {

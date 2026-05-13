@@ -18,8 +18,8 @@
             </select>
         </div>
         <div class="col-md-3">
-            <label class="form-label">Contact Person</label>
-            <input name="contact_person" class="form-control js-person-name" value="{{ old('contact_person') }}" maxlength="80" pattern="[\p{L}\s.'-]+" required>
+            <label class="form-label">Contact Person <span class="text-muted">(Optional)</span></label>
+            <input name="contact_person" class="form-control js-person-name" value="{{ old('contact_person') }}" maxlength="80" pattern="[\p{L}\s.'-]+">
         </div>
         <div class="col-md-4">
             <label class="form-label">Contact Number</label>
@@ -29,6 +29,7 @@
         <div class="col-md-4">
             <label class="form-label">Email</label>
             <input name="email" type="email" class="form-control" value="{{ old('email') }}" required>
+            <div class="form-text">Use an accessible email. Approval updates and the temporary login password will be sent here.</div>
         </div>
         <div class="col-md-4">
             <label class="form-label">DOH Accreditation Number</label>

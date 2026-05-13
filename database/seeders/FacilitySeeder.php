@@ -14,7 +14,7 @@ class FacilitySeeder extends Seeder
         $facility = Facility::firstOrCreate(
             ['code' => 'FAC-001'],
             [
-                'name' => 'City Blood Center',
+                'name' => 'PHILIPPINE RED CROSS Bacolod City Chapter',
                 'type' => 'blood_bank',
                 'contact_person' => 'Facility Facilitator',
                 'contact_number' => '09170000000',

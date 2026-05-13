@@ -109,6 +109,11 @@
     .cbis-map-popup-row {
         margin-bottom: .25rem;
     }
+
+    .cbis-map-popup-description {
+        line-height: 1.35;
+        margin-top: .35rem;
+    }
 </style>
 
 <div id="map" style="height:520px" class="rounded border mb-3 cbis-card"></div>
@@ -215,6 +220,7 @@ const eventPopup = (item) => {
             <div class="cbis-map-popup-row"><strong>Date:</strong> ${escapeHtml(item.date)}</div>
             <div class="cbis-map-popup-row"><strong>Time:</strong> ${escapeHtml(item.time)}</div>
             <div class="cbis-map-popup-row"><strong>Venue:</strong> ${escapeHtml(item.venue)}</div>
+            ${item.description ? `<div class="cbis-map-popup-row cbis-map-popup-description"><strong>Description:</strong> ${escapeHtml(item.description)}</div>` : ''}
             <div class="cbis-map-popup-row"><strong>Contact:</strong> ${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</div>
             ${action}
         </div>

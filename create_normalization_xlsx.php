@@ -28,7 +28,7 @@ $sheet = $spreadsheet->getActiveSheet();
 writeSheet($sheet, 'UNF', [
     ['record_id', 'facility_name', 'donor_names', 'donor_ids', 'course_or_event_codes', 'event_titles', 'blood_types', 'statuses'],
     [1, 'NorthLand Blood Bank', 'Chris P Bacon, Cholo Mollica', 'D-001, D-002', 'EV-001, EV-001', 'Community Donation Drive, Community Donation Drive', 'A+, O+', 'planned, planned'],
-    [2, 'City Blood Center', 'Mike Hawk', 'D-003', 'EV-002', 'Bloodletting Activity', 'B+', 'ongoing'],
+    [2, 'PHILIPPINE RED CROSS Bacolod City Chapter', 'Mike Hawk', 'D-003', 'EV-002', 'Bloodletting Activity', 'B+', 'ongoing'],
 ]);
 
 // 1NF
@@ -37,7 +37,7 @@ writeSheet($sheet1, '1NF', [
     ['record_id', 'facility_name', 'donor_id', 'donor_name', 'event_code', 'event_title', 'event_type', 'blood_type', 'status'],
     [1, 'NorthLand Blood Bank', 'D-001', 'Chris P Bacon', 'EV-001', 'Community Donation Drive', 'blood_donation', 'A+', 'planned'],
     [2, 'NorthLand Blood Bank', 'D-002', 'Cholo Mollica', 'EV-001', 'Community Donation Drive', 'blood_donation', 'O+', 'planned'],
-    [3, 'City Blood Center', 'D-003', 'Mike Hawk', 'EV-002', 'Bloodletting Activity', 'bloodletting', 'B+', 'ongoing'],
+    [3, 'PHILIPPINE RED CROSS Bacolod City Chapter', 'D-003', 'Mike Hawk', 'EV-002', 'Bloodletting Activity', 'bloodletting', 'B+', 'ongoing'],
 ]);
 
 // 2NF

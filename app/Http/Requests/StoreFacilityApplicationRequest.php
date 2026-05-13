@@ -30,7 +30,7 @@ class StoreFacilityApplicationRequest extends BaseFormRequest
         return [
             'organization_name' => ['required', 'string', 'max:255'],
             'facility_type' => ['required', 'in:blood_bank,hospital'],
-            'contact_person' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'contact_person' => ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
             'contact_number' => [
                 'required',
                 'string',

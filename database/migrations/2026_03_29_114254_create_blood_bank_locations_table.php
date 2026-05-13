@@ -10,8 +10,8 @@ return new class extends Migration {
         Schema::create('blood_bank_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('facility_id')->constrained('facilities')->cascadeOnDelete();
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
+            $table->decimal('latitude', 18, 15);
+            $table->decimal('longitude', 18, 15);
             $table->string('address');
             $table->string('contact_number', 30)->nullable();
             $table->timestamps();

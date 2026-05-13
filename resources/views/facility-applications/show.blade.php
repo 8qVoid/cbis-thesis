@@ -5,7 +5,7 @@
 <div class="card card-body mb-3">
     <p><strong>Organization:</strong> {{ $application->organization_name }}</p>
     <p><strong>Type:</strong> {{ $application->facility_type }}</p>
-    <p><strong>Contact Person:</strong> {{ $application->contact_person }}</p>
+    <p><strong>Contact Person:</strong> {{ $application->contact_person ?: '-' }}</p>
     <p><strong>Contact Number:</strong> {{ $application->contact_number }}</p>
     <p><strong>Email:</strong> {{ $application->email }}</p>
     <p><strong>Address:</strong> {{ $application->address }}</p>
@@ -18,7 +18,13 @@
     <p><strong>DOH Accreditation Proof:</strong> <a href="{{ route('facility-applications.proof', ['facilityApplication' => $application, 'type' => 'doh']) }}" target="_blank">View File</a></p>
 </div>
 
-<form method="POST" action="{{ route('facility-applications.review', $application) }}" class="card card-body js-facility-review-form" data-current-status="{{ $application->status }}" data-has-facility="{{ $application->facility_id ? '1' : '0' }}">
+<form
+    method="POST"
+    action="{{ route('facility-applications.review', $application) }}"
+    class="card card-body js-confirm-action js-facility-review-form"
+    data-current-status="{{ $application->status }}"
+    data-has-facility="{{ $application->facility_id ? '1' : '0' }}"
+>
     @csrf
     @method('PUT')
     <div class="row g-3">
@@ -44,25 +50,55 @@
 @push('scripts')
 <script>
 document.querySelectorAll('.js-facility-review-form').forEach((form) => {
-    form.addEventListener('submit', (event) => {
+    const decisionInput = form.querySelector('[name="status"]');
+
+    const updateConfirmation = () => {
         const decision = form.querySelector('[name="status"]')?.value;
         const currentStatus = form.dataset.currentStatus;
         const hasFacility = form.dataset.hasFacility === '1';
 
-        const messages = {
-            approved: 'Approve this facility application? The system will create or reactivate the facility account and email a temporary password to the applicant.',
-            rejected: hasFacility
-                ? 'Reject this facility application? The linked facility and all assigned staff accounts will be deactivated, but records will be kept.'
-                : 'Reject this facility application?',
-            pending: hasFacility
-                ? 'Move this application back to pending? The linked facility and all assigned staff accounts will be temporarily deactivated.'
-                : 'Move this application back to pending?',
+        const confirmations = {
+            approved: {
+                title: 'Approve facility application?',
+                message: 'The system will create or reactivate the facility account and email a temporary password to the applicant.',
+                button: 'Approve Application',
+                variant: 'danger',
+            },
+            rejected: {
+                title: 'Reject facility application?',
+                message: hasFacility
+                    ? 'The linked facility and all assigned staff accounts will be deactivated, but records will be kept.'
+                    : 'This application will be marked as rejected.',
+                button: 'Reject Application',
+                variant: 'danger',
+            },
+            pending: {
+                title: 'Move application to pending?',
+                message: hasFacility
+                    ? 'The linked facility and all assigned staff accounts will be temporarily deactivated while the application is pending.'
+                    : 'This application will be returned to pending review.',
+                button: 'Mark Pending',
+                variant: 'warning',
+            },
         };
 
-        if (decision !== currentStatus && messages[decision] && !confirm(messages[decision])) {
-            event.preventDefault();
+        const confirmation = confirmations[decision];
+
+        if (decision === currentStatus || !confirmation) {
+            form.dataset.confirmed = 'true';
+            return;
         }
-    });
+
+        form.dataset.confirmed = 'false';
+        form.dataset.confirmTitle = confirmation.title;
+        form.dataset.confirmMessage = confirmation.message;
+        form.dataset.confirmButton = confirmation.button;
+        form.dataset.confirmVariant = confirmation.variant;
+    };
+
+    decisionInput?.addEventListener('change', updateConfirmation);
+    form.addEventListener('submit', updateConfirmation, true);
+    updateConfirmation();
 });
 </script>
 @endpush

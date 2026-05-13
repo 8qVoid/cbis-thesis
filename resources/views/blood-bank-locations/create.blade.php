@@ -54,8 +54,8 @@ if (typedPoint && NEGROS_BOUNDS.contains(typedPoint)) {
 
 map.on('click', (event) => {
     const { lat, lng } = event.latlng;
-    document.getElementById('latitude').value = lat.toFixed(7);
-    document.getElementById('longitude').value = lng.toFixed(7);
+    document.getElementById('latitude').value = lat.toFixed(15);
+    document.getElementById('longitude').value = lng.toFixed(15);
 
     if (marker) {
         marker.setLatLng([lat, lng]);
