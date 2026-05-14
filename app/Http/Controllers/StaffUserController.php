@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStaffUserRequest;
+use App\Http\Requests\UpdateStaffUserRequest;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Role;
 
@@ -65,5 +67,39 @@ class StaffUserController extends Controller
         $user->syncRoles([$data['role']]);
 
         return redirect()->route('staff-users.index')->with('success', 'Staff account created by admin.');
+    }
+
+    public function edit(Request $request, User $staffUser): View
+    {
+        $this->authorizeStaffAccess($request->user(), $staffUser);
+
+        return view('staff-users.edit', compact('staffUser'));
+    }
+
+    public function update(UpdateStaffUserRequest $request, User $staffUser): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $staffUser->update([
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+        ]);
+
+        return redirect()->route('staff-users.index')->with('success', 'Staff contact details updated.');
+    }
+
+    private function authorizeStaffAccess(User $currentUser, User $staffUser): void
+    {
+        if ($currentUser->isCentralAdmin()) {
+            return;
+        }
+
+        if (
+            ! $currentUser->can('manage users')
+            || $currentUser->facility_id === null
+            || $staffUser->facility_id !== $currentUser->facility_id
+        ) {
+            abort(403);
+        }
     }
 }

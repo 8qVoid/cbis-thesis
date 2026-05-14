@@ -34,8 +34,8 @@ class UpdateDonorPortalRequest extends BaseFormRequest
             'birth_date' => ['required', 'date', 'before:today'],
             'sex' => ['required', 'in:male,female'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/', Rule::unique('donors', 'contact_number')->ignore($donorId)],
-            'address' => ['nullable', 'string', 'max:500'],
+            'contact_number' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('donors', 'contact_number')->ignore($donorId)],
+            'address' => ['required', 'string', 'max:500'],
         ];
     }
 }

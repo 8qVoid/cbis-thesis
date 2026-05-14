@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\BloodReleased;
 use App\Http\Requests\StoreBloodReleaseRequest;
-use App\Http\Requests\UpdateBloodReleaseRequest;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
-use App\Models\Facility;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
@@ -37,9 +35,8 @@ class BloodReleaseController extends Controller
                 ->whereDate('expiration_date', '>=', now()->toDateString()),
             $user
         )->get();
-        $facilities = Facility::orderBy('name')->get();
 
-        return view('blood-releases.create', compact('inventory', 'facilities'));
+        return view('blood-releases.create', compact('inventory'));
     }
 
     public function store(StoreBloodReleaseRequest $request): RedirectResponse
@@ -63,47 +60,6 @@ class BloodReleaseController extends Controller
         $this->authorizeRecord($bloodRelease);
 
         return view('blood-releases.show', compact('bloodRelease'));
-    }
-
-    public function edit(BloodRelease $bloodRelease): View
-    {
-        $this->authorizeRecord($bloodRelease);
-        $user = auth()->user();
-        $inventory = FacilityScope::apply(
-            BloodInventory::query()
-                ->with('facility')
-                ->where('status', '!=', 'expired')
-                ->where('units_available', '>', 0)
-                ->whereDate('expiration_date', '>=', now()->toDateString()),
-            $user
-        )->get();
-        $facilities = Facility::orderBy('name')->get();
-
-        return view('blood-releases.edit', compact('bloodRelease', 'inventory', 'facilities'));
-    }
-
-    public function update(UpdateBloodReleaseRequest $request, BloodRelease $bloodRelease): RedirectResponse
-    {
-        $this->authorizeRecord($bloodRelease);
-
-        $data = $request->validated();
-        $inventory = FacilityScope::apply(BloodInventory::query(), auth()->user())
-            ->findOrFail($data['blood_inventory_id']);
-        $data['facility_id'] = $inventory->facility_id;
-
-        $bloodRelease->update($data);
-        $this->logAudit('blood_release.updated', $bloodRelease, $data, $request);
-
-        return redirect()->route('blood-releases.index')->with('success', 'Blood release updated.');
-    }
-
-    public function destroy(BloodRelease $bloodRelease): RedirectResponse
-    {
-        $this->authorizeRecord($bloodRelease);
-        $bloodRelease->delete();
-        $this->logAudit('blood_release.deleted', $bloodRelease);
-
-        return redirect()->route('blood-releases.index')->with('success', 'Blood release deleted.');
     }
 
     private function authorizeRecord(BloodRelease $record): void

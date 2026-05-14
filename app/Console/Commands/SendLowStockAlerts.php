@@ -22,13 +22,24 @@ class SendLowStockAlerts extends Command
             ->where('status', 'low_stock')
             ->where('units_available', '>', $threshold)
             ->whereDate('expiration_date', '>=', now()->toDateString())
-            ->update(['status' => 'active']);
+            ->update([
+                'status' => 'active',
+                'last_low_stock_alert_at' => null,
+            ]);
 
         $lowStockItems = BloodInventory::query()
             ->with('facility')
             ->where('units_available', '<=', $threshold)
-            ->where('status', 'active')
             ->whereDate('expiration_date', '>=', now()->toDateString())
+            ->where(function ($query): void {
+                $query
+                    ->where('status', 'active')
+                    ->orWhere(function ($nested): void {
+                        $nested
+                            ->where('status', 'low_stock')
+                            ->whereNull('last_low_stock_alert_at');
+                    });
+            })
             ->get();
 
         $facilityAlertStaff = User::query()

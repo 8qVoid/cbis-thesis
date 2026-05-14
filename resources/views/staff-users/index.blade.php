@@ -16,7 +16,7 @@
 </div>
 <div class="table-responsive">
 <table class="table table-striped bg-white">
-    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Facility</th><th>Role</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Facility</th><th>Role</th><th>Action</th></tr></thead>
     <tbody>
     @foreach($users as $user)
         <tr>
@@ -25,6 +25,7 @@
             <td>{{ $user->phone ?? '-' }}</td>
             <td>{{ $user->facility->name ?? '-' }}</td>
             <td>{{ $user->getRoleNames()->implode(', ') }}</td>
+            <td><a href="{{ route('staff-users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a></td>
         </tr>
     @endforeach
     </tbody>

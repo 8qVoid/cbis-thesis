@@ -33,9 +33,9 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'birth_date' => ['required', 'date', 'before:today'],
             'sex' => ['required', 'in:male,female'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/', 'unique:donors,contact_number'],
+            'contact_number' => ['required', 'regex:/^\+639\d{9}$/', 'unique:donors,contact_number'],
             'email' => ['required', 'email', 'max:255', 'unique:donors,email'],
-            'address' => ['nullable', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
         ];

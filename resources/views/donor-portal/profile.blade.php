@@ -23,7 +23,15 @@
     </div>
 </div>
 
-<form method="POST" action="{{ route('donor.portal.profile.update') }}" class="card cbis-profile-card">
+<form
+    method="POST"
+    action="{{ route('donor.portal.profile.update') }}"
+    class="card cbis-profile-card js-confirm-action"
+    data-confirm-title="Update profile?"
+    data-confirm-message="Are you sure you want to update your profile? Please check your information before continuing."
+    data-confirm-button="Update Profile"
+    data-confirm-variant="danger"
+>
     @csrf
     @method('PUT')
     <div class="card-header">
@@ -45,11 +53,11 @@
                 <label class="form-label">Mobile Number</label>
                 <div class="input-group">
                     <span class="input-group-text">09</span>
-                    <input name="contact_number" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number', $donor->contact_number)) }}" class="form-control js-mobile-suffix" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789">
+                    <input name="contact_number" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number', $donor->contact_number)) }}" class="form-control js-mobile-suffix" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789" required>
                 </div>
                 <small class="text-muted">Enter the 9 digits after 09.</small>
             </div>
-            <div class="col-md-8"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control"></div>
+            <div class="col-md-8"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control" required></div>
             <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>
         </div>
     </div>

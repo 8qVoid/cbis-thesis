@@ -51,6 +51,12 @@
         <input class="form-check-input js-map-toggle" type="checkbox" id="toggleFacilities" value="facility" checked>
         <label class="form-check-label small" for="toggleFacilities">Show facilities</label>
     </div>
+    <select class="form-select form-select-sm js-near-me-type" style="width:auto">
+        <option value="event">Near events only</option>
+        <option value="facility">Near facilities only</option>
+    </select>
+    <button type="button" class="btn btn-sm btn-outline-danger js-near-me">Near Me</button>
+    <span class="small text-muted js-location-status" aria-live="polite"></span>
 </div>
 
 <style>
@@ -114,6 +120,22 @@
         line-height: 1.35;
         margin-top: .35rem;
     }
+
+    .cbis-map-user-pin {
+        display: block;
+        width: 18px;
+        height: 18px;
+        border: 3px solid #fff;
+        border-radius: 999px;
+        background: #198754;
+        box-shadow: 0 0 0 6px rgba(25, 135, 84, .18), 0 3px 12px rgba(20, 24, 31, .28);
+    }
+
+    .cbis-map-route-note {
+        margin-top: .45rem;
+        color: #198754;
+        font-weight: 700;
+    }
 </style>
 
 <div id="map" style="height:520px" class="rounded border mb-3 cbis-card"></div>
@@ -173,6 +195,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
 const data = @json($mapLocations);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
+const markerItems = [];
+let userLatLng = null;
+let userMarker = null;
+let routeLine = null;
 
 const markerIcons = {
     event: L.divIcon({
@@ -191,6 +217,14 @@ const markerIcons = {
     }),
 };
 
+const userIcon = L.divIcon({
+    className: 'cbis-map-user-pin-wrap',
+    html: '<span class="cbis-map-user-pin"></span>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12],
+});
+
 const escapeHtml = (value) => String(value ?? 'N/A')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
@@ -204,6 +238,36 @@ const popupImage = (item) => {
     }
 
     return `<img src="${escapeHtml(item.photo_url)}" alt="${escapeHtml(item.title)}">`;
+};
+
+const googleDirectionsUrl = (item) => {
+    const params = new URLSearchParams({
+        api: '1',
+        destination: `${item.lat},${item.lng}`,
+        travelmode: 'driving',
+    });
+
+    if (userLatLng) {
+        params.set('origin', `${userLatLng.lat},${userLatLng.lng}`);
+    }
+
+    return `https://www.google.com/maps/dir/?${params.toString()}`;
+};
+
+const directionsButton = (item) => `
+    <a href="${googleDirectionsUrl(item)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success mt-2">
+        Open Directions
+    </a>
+`;
+
+const routeDistanceNote = (item) => {
+    if (!userLatLng) {
+        return '';
+    }
+
+    const distanceKm = userLatLng.distanceTo(L.latLng(item.lat, item.lng)) / 1000;
+
+    return `<div class="cbis-map-route-note">Approx. ${distanceKm.toFixed(1)} km from your location</div>`;
 };
 
 const eventPopup = (item) => {
@@ -222,6 +286,8 @@ const eventPopup = (item) => {
             <div class="cbis-map-popup-row"><strong>Venue:</strong> ${escapeHtml(item.venue)}</div>
             ${item.description ? `<div class="cbis-map-popup-row cbis-map-popup-description"><strong>Description:</strong> ${escapeHtml(item.description)}</div>` : ''}
             <div class="cbis-map-popup-row"><strong>Contact:</strong> ${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</div>
+            ${routeDistanceNote(item)}
+            ${directionsButton(item)}
             ${action}
         </div>
     `;
@@ -235,10 +301,62 @@ const facilityPopup = (item) => `
         <div class="cbis-map-popup-row"><strong>Address:</strong> ${escapeHtml(item.address)}</div>
         <div class="cbis-map-popup-row"><strong>Contact:</strong> ${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</div>
         <div class="cbis-map-popup-row"><strong>Email:</strong> ${escapeHtml(item.email)}</div>
+        ${routeDistanceNote(item)}
+        ${directionsButton(item)}
     </div>
 `;
 
 const buildPopup = (item) => item.type === 'facility' ? facilityPopup(item) : eventPopup(item);
+
+const drawRouteTo = (item) => {
+    if (!userLatLng) {
+        return;
+    }
+
+    const destination = L.latLng(item.lat, item.lng);
+
+    if (routeLine) {
+        routeLine.remove();
+    }
+
+    routeLine = L.polyline([userLatLng, destination], {
+        color: '#198754',
+        weight: 3,
+        opacity: .9,
+        dashArray: '6, 8',
+    }).addTo(map);
+
+    map.fitBounds(L.latLngBounds([userLatLng, destination]).pad(0.25));
+};
+
+const focusNearestPin = () => {
+    if (!userLatLng || markerItems.length === 0) {
+        return;
+    }
+
+    const nearMeType = document.querySelector('.js-near-me-type')?.value ?? 'event';
+    const candidates = markerItems
+        .filter(({ item, marker }) => {
+            return item.type === nearMeType && map.hasLayer(marker);
+        })
+        .map(({ item, marker }) => ({
+            item,
+            marker,
+            distance: userLatLng.distanceTo(L.latLng(item.lat, item.lng)),
+        }))
+        .sort((a, b) => a.distance - b.distance);
+
+    if (candidates.length === 0) {
+        setLocationStatus('No visible pins found for the selected Near Me option.', true);
+        return;
+    }
+
+    const nearest = candidates[0];
+    drawRouteTo(nearest.item);
+    nearest.marker.setPopupContent(buildPopup(nearest.item));
+    nearest.marker.openPopup();
+    setLocationStatus(`Nearest ${nearest.item.type === 'facility' ? 'facility' : 'event'} found. Approx. ${(nearest.distance / 1000).toFixed(1)} km away.`);
+};
 
 data.forEach((item) => {
     if (!NEGROS_BOUNDS.contains([item.lat, item.lng])) {
@@ -249,7 +367,12 @@ data.forEach((item) => {
     }).addTo(map);
     inBoundsMarkers.push(marker);
     markersByType[item.type]?.push(marker);
+    markerItems.push({ marker, item });
     marker.bindPopup(buildPopup(item), { maxWidth: 320 });
+    marker.on('click', () => {
+        drawRouteTo(item);
+        marker.setPopupContent(buildPopup(item));
+    });
 });
 
 if (inBoundsMarkers.length === 0) {
@@ -273,6 +396,58 @@ document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
                 marker.removeFrom(map);
             }
         });
+    });
+});
+
+const nearMeButton = document.querySelector('.js-near-me');
+const locationStatus = document.querySelector('.js-location-status');
+
+const setLocationStatus = (message, isError = false) => {
+    if (!locationStatus) {
+        return;
+    }
+
+    locationStatus.textContent = message;
+    locationStatus.classList.toggle('text-danger', isError);
+    locationStatus.classList.toggle('text-muted', !isError);
+};
+
+nearMeButton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        setLocationStatus('Location is not supported by this browser.', true);
+        return;
+    }
+
+    nearMeButton.disabled = true;
+    setLocationStatus('Getting your location...');
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+
+        if (userMarker) {
+            userMarker.setLatLng(userLatLng);
+        } else {
+            userMarker = L.marker(userLatLng, { icon: userIcon })
+                .addTo(map)
+                .bindPopup('You are here');
+        }
+
+        map.setView(userLatLng, 15);
+        userMarker.openPopup();
+        setLocationStatus('Location found. Finding the nearest matching pin...');
+        focusNearestPin();
+        nearMeButton.disabled = false;
+    }, (error) => {
+        const message = error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied.'
+            : 'Could not get your current location.';
+
+        setLocationStatus(message, true);
+        nearMeButton.disabled = false;
+    }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
     });
 });
 </script>
