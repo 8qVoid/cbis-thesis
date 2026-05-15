@@ -2,13 +2,13 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-lg-7">
+    <div class="col-lg-10 col-xl-9">
         <div class="mb-3">
             <h1 class="cbis-page-title mb-0">Confirm Event Registration</h1>
             <p class="cbis-page-subtitle">Registering means you plan to attend. The actual blood donation is still confirmed by facility staff on site.</p>
         </div>
 
-        <div class="card cbis-card">
+        <div class="card cbis-card {{ $donationSchedule->photo_path ? 'cbis-event-confirm-card' : '' }}">
             @if($donationSchedule->photo_path)
                 <img
                     src="{{ asset('storage/'.$donationSchedule->photo_path) }}"

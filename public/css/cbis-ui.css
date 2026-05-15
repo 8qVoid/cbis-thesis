@@ -527,7 +527,24 @@ table.table.bg-white {
     width: 100%;
     height: clamp(180px, 28vw, 320px);
     object-fit: contain;
+    object-position: center;
     background: #f8fafc;
+}
+
+.cbis-event-confirm-card {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.95fr) minmax(0, 1.05fr);
+    align-items: stretch;
+}
+
+.cbis-event-confirm-card .cbis-event-confirm-photo {
+    height: 100%;
+    min-height: 360px;
+}
+
+.cbis-event-confirm-card .card-body {
+    min-width: 0;
+    align-self: center;
 }
 
 .cbis-profile-card .card-header {
@@ -643,6 +660,15 @@ table.table.bg-white {
 
     .cbis-donor-summary {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cbis-event-confirm-card {
+        grid-template-columns: 1fr;
+    }
+
+    .cbis-event-confirm-card .cbis-event-confirm-photo {
+        height: clamp(220px, 52vw, 360px);
+        min-height: 0;
     }
 }
 
