@@ -19,7 +19,7 @@
                     <dd class="col-sm-8">{{ $donationSchedule->event_date?->toFormattedDateString() ?? 'N/A' }}</dd>
 
                     <dt class="col-sm-4">Time</dt>
-                    <dd class="col-sm-8">{{ $donationSchedule->start_time }} - {{ $donationSchedule->end_time }}</dd>
+                    <dd class="col-sm-8">{{ $donationSchedule->time_range_label }}</dd>
 
                     <dt class="col-sm-4">Venue</dt>
                     <dd class="col-sm-8">{{ $donationSchedule->venue }}</dd>

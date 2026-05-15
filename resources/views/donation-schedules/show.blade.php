@@ -30,7 +30,7 @@
     <p><strong>Type:</strong> {{ $donationSchedule->event_type_label }}</p>
     <p><strong>Facility:</strong> {{ $donationSchedule->facility?->name ?? '-' }}</p>
     <p><strong>Date:</strong> {{ $donationSchedule->event_date?->toDateString() }}</p>
-    <p><strong>Time:</strong> {{ $donationSchedule->start_time }} - {{ $donationSchedule->end_time }}</p>
+    <p><strong>Time:</strong> {{ $donationSchedule->time_range_label }}</p>
     <p><strong>Venue / Address:</strong> {{ $donationSchedule->venue }}</p>
     <p><strong>Contact:</strong> {{ $donationSchedule->contact_person ?? '-' }} / {{ $donationSchedule->contact_number ?? '-' }}</p>
     <p><strong>Status:</strong> {{ ucfirst($donationSchedule->status) }}</p>

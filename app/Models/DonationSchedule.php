@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 class DonationSchedule extends Model
 {
@@ -62,6 +63,14 @@ class DonationSchedule extends Model
         return $this->event_type === 'bloodletting' ? 'Bloodletting' : 'Blood Donation';
     }
 
+    public function getTimeRangeLabelAttribute(): string
+    {
+        $start = $this->formatDisplayTime($this->start_time);
+        $end = $this->formatDisplayTime($this->end_time);
+
+        return trim(($start ?? '').' - '.($end ?? ''), ' -') ?: 'Time not set';
+    }
+
     public function isRegistrationOpen(): bool
     {
         if (! $this->is_public || ! in_array($this->status, ['planned', 'ongoing'], true)) {
@@ -73,5 +82,20 @@ class DonationSchedule extends Model
             ?? $this->event_date?->copy()->endOfDay();
 
         return $registrationDeadline === null || $registrationDeadline->isFuture();
+    }
+
+    private function formatDisplayTime(?string $time): ?string
+    {
+        if (blank($time)) {
+            return null;
+        }
+
+        try {
+            $normalized = strlen($time) === 5 ? $time.':00' : $time;
+
+            return Carbon::createFromFormat('H:i:s', $normalized)->format('g:i A');
+        } catch (\Throwable) {
+            return $time;
+        }
     }
 }

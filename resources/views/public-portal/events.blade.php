@@ -58,7 +58,7 @@
                             <td>{{ $event->event_type_label }}</td>
                             <td>{{ $event->facility?->name ?? '-' }}</td>
                             <td>{{ $event->event_date?->toDateString() }}</td>
-                            <td>{{ $event->start_time }} - {{ $event->end_time }}</td>
+                            <td>{{ $event->time_range_label }}</td>
                             <td>{{ $event->venue }}</td>
                             <td>{{ $event->contact_person ?? '-' }} / {{ $event->contact_number ?? '-' }}</td>
                             <td>{{ ucfirst($event->status) }}</td>

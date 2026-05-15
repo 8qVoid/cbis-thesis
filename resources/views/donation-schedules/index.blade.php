@@ -76,7 +76,7 @@
                     <td>{{ $schedule->event_type_label }}</td>
                     <td>{{ $schedule->facility?->name ?? '-' }}</td>
                     <td>{{ $schedule->event_date?->toDateString() }}</td>
-                    <td>{{ $schedule->start_time }} - {{ $schedule->end_time }}</td>
+                    <td>{{ $schedule->time_range_label }}</td>
                     <td>{{ $schedule->venue }}</td>
                     <td><span class="badge {{ in_array($schedule->status, ['planned', 'ongoing']) ? 'cbis-status-active' : 'cbis-status-expired' }}">{{ ucfirst($schedule->status) }}</span></td>
                     <td>

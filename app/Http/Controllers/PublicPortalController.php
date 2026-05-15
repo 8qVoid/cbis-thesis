@@ -145,7 +145,7 @@ class PublicPortalController extends Controller
                     'event_type' => $event->event_type_label,
                     'facility' => $event->facility?->name ?? 'Unknown Facility',
                     'date' => $event->event_date?->toDateString(),
-                    'time' => trim(($event->start_time ?? '').' - '.($event->end_time ?? ''), ' -'),
+                    'time' => $event->time_range_label,
                     'venue' => $event->venue,
                     'description' => $event->description,
                     'contact_person' => $event->contact_person ?: ($event->facility?->contact_person ?? 'N/A'),

@@ -93,32 +93,89 @@
     .cbis-map-pin-event { background: #0d6efd; }
     .cbis-map-pin-facility { background: #dc3545; }
 
+    .leaflet-popup-content {
+        margin: 0;
+    }
+
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, .2);
+        overflow: hidden;
+    }
+
     .cbis-map-popup {
-        width: min(280px, 72vw);
+        width: min(300px, 78vw);
+        max-height: min(360px, 58vh);
+        overflow-y: auto;
+        padding: .9rem;
+        color: #10233f;
     }
 
     .cbis-map-popup img {
         width: 100%;
-        height: 130px;
+        height: 92px;
         object-fit: cover;
-        border-radius: 8px;
+        border-radius: 10px;
         margin-bottom: .75rem;
         background: #f1f3f5;
     }
 
     .cbis-map-popup-title {
-        font-size: 1rem;
+        font-size: 1.02rem;
+        line-height: 1.2;
         font-weight: 800;
-        margin-bottom: .35rem;
+        margin-bottom: .45rem;
+    }
+
+    .cbis-map-popup-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        margin-bottom: .55rem;
+    }
+
+    .cbis-map-popup-chip {
+        border-radius: 999px;
+        background: #f3f6fa;
+        color: #43566f;
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .18rem .5rem;
     }
 
     .cbis-map-popup-row {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: .5rem;
+        font-size: .86rem;
+        line-height: 1.35;
         margin-bottom: .25rem;
+    }
+
+    .cbis-map-popup-row strong {
+        color: #4d5f78;
+        font-size: .75rem;
+        text-transform: uppercase;
     }
 
     .cbis-map-popup-description {
         line-height: 1.35;
-        margin-top: .35rem;
+        margin: .5rem 0 .35rem;
+        padding: .55rem .65rem;
+        border-radius: 10px;
+        background: #f7f9fc;
+        font-size: .84rem;
+    }
+
+    .cbis-map-popup-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+        margin-top: .65rem;
+    }
+
+    .cbis-map-popup-actions .btn {
+        margin-top: 0 !important;
     }
 
     .cbis-map-user-pin {
@@ -163,7 +220,7 @@
                             <td>{{ $event->event_type_label }}</td>
                             <td>{{ $event->facility?->name ?? '-' }}</td>
                             <td>{{ $event->event_date?->toDateString() }}</td>
-                            <td>{{ $event->start_time }} - {{ $event->end_time }}</td>
+                            <td>{{ $event->time_range_label }}</td>
                             <td>{{ $event->venue }}</td>
                             <td>
                                 @if(in_array($event->id, $registeredEventIds ?? [], true))
@@ -255,7 +312,7 @@ const googleDirectionsUrl = (item) => {
 };
 
 const directionsButton = (item) => `
-    <a href="${googleDirectionsUrl(item)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success mt-2">
+    <a href="${googleDirectionsUrl(item)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">
         Open Directions
     </a>
 `;
@@ -272,23 +329,27 @@ const routeDistanceNote = (item) => {
 
 const eventPopup = (item) => {
     const action = item.is_registered
-        ? '<span class="badge text-bg-success mt-2">Already Registered</span>'
-        : `<a href="${escapeHtml(item.action_url)}" class="btn btn-sm btn-outline-danger mt-2">Register for this Event</a>`;
+        ? '<span class="badge text-bg-success align-self-center">Already Registered</span>'
+        : `<a href="${escapeHtml(item.action_url)}" class="btn btn-sm btn-outline-danger">Register</a>`;
 
     return `
         <div class="cbis-map-popup">
             ${popupImage(item)}
             <div class="cbis-map-popup-title">${escapeHtml(item.title)}</div>
-            <div class="cbis-map-popup-row"><strong>Type:</strong> ${escapeHtml(item.event_type)}</div>
-            <div class="cbis-map-popup-row"><strong>Facility:</strong> ${escapeHtml(item.facility)}</div>
-            <div class="cbis-map-popup-row"><strong>Date:</strong> ${escapeHtml(item.date)}</div>
-            <div class="cbis-map-popup-row"><strong>Time:</strong> ${escapeHtml(item.time)}</div>
-            <div class="cbis-map-popup-row"><strong>Venue:</strong> ${escapeHtml(item.venue)}</div>
-            ${item.description ? `<div class="cbis-map-popup-row cbis-map-popup-description"><strong>Description:</strong> ${escapeHtml(item.description)}</div>` : ''}
-            <div class="cbis-map-popup-row"><strong>Contact:</strong> ${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</div>
+            <div class="cbis-map-popup-meta">
+                <span class="cbis-map-popup-chip">${escapeHtml(item.event_type)}</span>
+                <span class="cbis-map-popup-chip">${escapeHtml(item.date)}</span>
+            </div>
+            <div class="cbis-map-popup-row"><strong>Time</strong><span>${escapeHtml(item.time)}</span></div>
+            <div class="cbis-map-popup-row"><strong>Facility</strong><span>${escapeHtml(item.facility)}</span></div>
+            <div class="cbis-map-popup-row"><strong>Venue</strong><span>${escapeHtml(item.venue)}</span></div>
+            ${item.description ? `<div class="cbis-map-popup-description">${escapeHtml(item.description)}</div>` : ''}
+            <div class="cbis-map-popup-row"><strong>Contact</strong><span>${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</span></div>
             ${routeDistanceNote(item)}
-            ${directionsButton(item)}
-            ${action}
+            <div class="cbis-map-popup-actions">
+                ${directionsButton(item)}
+                ${action}
+            </div>
         </div>
     `;
 };
@@ -297,12 +358,16 @@ const facilityPopup = (item) => `
     <div class="cbis-map-popup">
         ${popupImage(item)}
         <div class="cbis-map-popup-title">${escapeHtml(item.title)}</div>
-        <div class="cbis-map-popup-row"><strong>Type:</strong> ${escapeHtml(item.facility_type)}</div>
-        <div class="cbis-map-popup-row"><strong>Address:</strong> ${escapeHtml(item.address)}</div>
-        <div class="cbis-map-popup-row"><strong>Contact:</strong> ${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</div>
-        <div class="cbis-map-popup-row"><strong>Email:</strong> ${escapeHtml(item.email)}</div>
+        <div class="cbis-map-popup-meta">
+            <span class="cbis-map-popup-chip">${escapeHtml(item.facility_type)}</span>
+        </div>
+        <div class="cbis-map-popup-row"><strong>Address</strong><span>${escapeHtml(item.address)}</span></div>
+        <div class="cbis-map-popup-row"><strong>Contact</strong><span>${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</span></div>
+        <div class="cbis-map-popup-row"><strong>Email</strong><span>${escapeHtml(item.email)}</span></div>
         ${routeDistanceNote(item)}
-        ${directionsButton(item)}
+        <div class="cbis-map-popup-actions">
+            ${directionsButton(item)}
+        </div>
     </div>
 `;
 
@@ -368,7 +433,14 @@ data.forEach((item) => {
     inBoundsMarkers.push(marker);
     markersByType[item.type]?.push(marker);
     markerItems.push({ marker, item });
-    marker.bindPopup(buildPopup(item), { maxWidth: 320 });
+    marker.bindPopup(buildPopup(item), {
+        maxWidth: 320,
+        minWidth: 260,
+        autoPan: true,
+        keepInView: true,
+        autoPanPaddingTopLeft: L.point(24, 120),
+        autoPanPaddingBottomRight: L.point(24, 24),
+    });
     marker.on('click', () => {
         drawRouteTo(item);
         marker.setPopupContent(buildPopup(item));

@@ -28,7 +28,7 @@
                             <td>{{ $registration->event?->event_type_label ?? '-' }}</td>
                             <td>{{ $registration->event?->facility?->name ?? '-' }}</td>
                             <td>{{ $registration->event?->event_date?->toDateString() ?? '-' }}</td>
-                            <td>{{ $registration->event?->start_time ?? '-' }} - {{ $registration->event?->end_time ?? '-' }}</td>
+                            <td>{{ $registration->event?->time_range_label ?? '-' }}</td>
                             <td>{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</td>
                             <td>
                                 @if($registration->status === 'registered' && $registration->event?->isRegistrationOpen())

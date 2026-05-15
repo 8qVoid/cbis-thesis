@@ -60,7 +60,7 @@
                             <td>{{ $schedule->title }}</td>
                             <td>{{ $schedule->event_type_label }}</td>
                             <td>{{ $schedule->event_date?->toDateString() }}</td>
-                            <td>{{ $schedule->start_time }} - {{ $schedule->end_time }}</td>
+                            <td>{{ $schedule->time_range_label }}</td>
                             <td>{{ $schedule->venue }}</td>
                             <td>{{ $schedule->contact_person ?? '-' }} / {{ $schedule->contact_number ?? '-' }}</td>
                             <td>
