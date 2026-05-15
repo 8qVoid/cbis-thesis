@@ -102,6 +102,9 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::put('/staff-users/{staffUser}', [StaffUserController::class, 'update'])
         ->middleware('role_or_permission:Super Administrator|manage users')
         ->name('staff-users.update');
+    Route::patch('/staff-users/{staffUser}/status', [StaffUserController::class, 'updateStatus'])
+        ->middleware(['role_or_permission:manage users', 'facility.operator'])
+        ->name('staff-users.status');
 
     Route::get('/facility-applications', [FacilityApplicationController::class, 'index'])
         ->middleware('central.control')

@@ -535,16 +535,20 @@ table.table.bg-white {
     display: grid;
     grid-template-columns: minmax(260px, 0.95fr) minmax(0, 1.05fr);
     align-items: stretch;
+    gap: 1rem;
+    padding: 1rem 0 1rem 1rem;
 }
 
 .cbis-event-confirm-card .cbis-event-confirm-photo {
     height: 100%;
     min-height: 360px;
+    border-radius: var(--cbis-radius-sm);
 }
 
 .cbis-event-confirm-card .card-body {
     min-width: 0;
     align-self: center;
+    padding-left: 0;
 }
 
 .cbis-profile-card .card-header {
@@ -664,11 +668,17 @@ table.table.bg-white {
 
     .cbis-event-confirm-card {
         grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0.85rem;
     }
 
     .cbis-event-confirm-card .cbis-event-confirm-photo {
         height: clamp(220px, 52vw, 360px);
         min-height: 0;
+    }
+
+    .cbis-event-confirm-card .card-body {
+        padding: 1rem 0 0;
     }
 }
 

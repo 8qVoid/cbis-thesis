@@ -88,6 +88,29 @@ class StaffUserController extends Controller
         return redirect()->route('staff-users.index')->with('success', 'Staff contact details updated.');
     }
 
+    public function updateStatus(Request $request, User $staffUser): RedirectResponse
+    {
+        $this->authorizeStaffAccess($request->user(), $staffUser);
+
+        if ($staffUser->is($request->user())) {
+            return back()->withErrors(['staff' => 'You cannot deactivate your own staff account.']);
+        }
+
+        $data = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $staffUser->forceFill([
+            'is_active' => (bool) $data['is_active'],
+        ])->save();
+
+        $message = $staffUser->is_active
+            ? 'Staff account reactivated.'
+            : 'Staff account deactivated. The user can no longer log in.';
+
+        return redirect()->route('staff-users.index')->with('success', $message);
+    }
+
     private function authorizeStaffAccess(User $currentUser, User $staffUser): void
     {
         if (

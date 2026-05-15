@@ -37,8 +37,13 @@
                 @endforeach
             </small>
         </div>
-        <div class="col-md-4"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
-        <div class="col-md-4"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
+        <div class="col-12">
+            <hr class="my-1">
+            <h5 class="mb-1">Login password</h5>
+            <p class="text-muted small mb-0">Set the temporary password the staff member will use for their first login.</p>
+        </div>
+        <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
         <div class="col-12"><button class="btn btn-danger">Create Staff User</button></div>
     </div>
 </form>

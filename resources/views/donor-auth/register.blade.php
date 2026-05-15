@@ -36,9 +36,14 @@
                             </div>
                             <small class="text-muted">Enter the 9 digits after 09.</small>
                         </div>
+                        <div class="col-12"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address') }}" required></div>
+                        <div class="col-12">
+                            <hr class="my-1">
+                            <h5 class="mb-1">Account password</h5>
+                            <p class="text-muted small mb-0">Use this password when signing in to your donor profile.</p>
+                        </div>
                         <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
                         <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
-                        <div class="col-12"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address') }}" required></div>
                         <div class="col-12"><button class="btn btn-danger">Register</button></div>
                     </div>
                 </form>
