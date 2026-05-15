@@ -526,8 +526,8 @@ table.table.bg-white {
     display: block;
     width: 100%;
     height: clamp(180px, 28vw, 320px);
-    object-fit: cover;
-    background: #edf2f7;
+    object-fit: contain;
+    background: #f8fafc;
 }
 
 .cbis-profile-card .card-header {
