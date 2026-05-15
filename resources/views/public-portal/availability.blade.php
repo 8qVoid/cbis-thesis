@@ -7,7 +7,7 @@
 
 @include('public-portal.partials.nav')
 
-<form method="GET" class="card card-body mb-3 cbis-filter-card">
+<form method="GET" class="card card-body mb-3 cbis-filter-card" data-auto-filter="true">
     <div class="row g-2">
         <div class="col-md-4">
             <label class="form-label">Blood Type</label>
@@ -26,9 +26,6 @@
                     <option value="{{ $facility->id }}" @selected((int) request('facility_id') === $facility->id)>{{ $facility->name }}</option>
                 @endforeach
             </select>
-        </div>
-        <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-outline-danger w-100">Filter Availability</button>
         </div>
     </div>
 </form>

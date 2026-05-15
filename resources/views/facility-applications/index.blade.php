@@ -7,7 +7,7 @@
     </div>
 </div>
 
-<form method="GET" class="card card-body mb-3 cbis-filter-card">
+<form method="GET" class="card card-body mb-3 cbis-filter-card" data-auto-filter="true">
     <div class="row g-2">
         <div class="col-md-3">
             <label class="form-label">Status</label>
@@ -17,9 +17,6 @@
                     <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
                 @endforeach
             </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-outline-danger w-100">Filter</button>
         </div>
     </div>
 </form>

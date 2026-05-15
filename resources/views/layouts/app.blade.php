@@ -261,6 +261,42 @@ document.querySelectorAll('.js-contact-numbers').forEach((input) => {
     });
 });
 
+document.querySelectorAll('form[data-auto-filter="true"]').forEach((form) => {
+    let submitTimer = null;
+
+    const scheduleSubmit = () => {
+        window.clearTimeout(submitTimer);
+        submitTimer = window.setTimeout(() => {
+            if (form.dataset.autoSubmitting === 'true') {
+                return;
+            }
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            form.dataset.autoSubmitting = 'true';
+            form.requestSubmit ? form.requestSubmit() : form.submit();
+        }, 450);
+    };
+
+    form.querySelectorAll('select, input').forEach((field) => {
+        if (field.matches('[type="hidden"], [type="submit"], [type="button"], [data-auto-filter-ignore]')) {
+            return;
+        }
+
+        field.addEventListener('change', scheduleSubmit);
+
+        if (field.matches('[type="date"], [type="month"]')) {
+            field.addEventListener('input', () => {
+                if (field.validity.valid) {
+                    scheduleSubmit();
+                }
+            });
+        }
+    });
+});
+
 window.addEventListener('storage', (event) => {
     if (event.key === 'cbis_logout') {
         window.location.href = "{{ route('login') }}";

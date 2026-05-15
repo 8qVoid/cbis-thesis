@@ -22,7 +22,7 @@
     }
 </style>
 
-<form class="mb-3 cbis-filter-card p-3">
+<form method="GET" class="mb-3 cbis-filter-card p-3" data-auto-filter="true">
     <div class="row g-3 align-items-start">
     <div class="col-lg-3">
         <label class="form-label">Report Period</label>
@@ -67,7 +67,6 @@
 
     <div class="col-12">
         <div class="cbis-report-actions">
-            <button class="btn btn-danger">Filter</button>
             <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Current Month</a>
             <a href="{{ route('reports.pdf', $exportQuery) }}" class="btn btn-outline-danger">Download PDF</a>
             <a href="{{ route('reports.excel', $exportQuery) }}" class="btn btn-outline-success">Download Excel</a>

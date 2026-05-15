@@ -7,7 +7,7 @@
 
 @include('public-portal.partials.nav')
 
-<form method="GET" class="card card-body mb-3 cbis-filter-card">
+<form method="GET" class="card card-body mb-3 cbis-filter-card" data-auto-filter="true">
     <div class="row g-2">
         <div class="col-md-3">
             <label class="form-label">Event Type</label>
@@ -29,9 +29,6 @@
         <div class="col-md-3">
             <label class="form-label">Date</label>
             <input type="date" name="event_date" class="form-control" value="{{ request('event_date') }}">
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-outline-danger w-100">Apply Filters</button>
         </div>
     </div>
 </form>
@@ -103,12 +100,38 @@
         overflow: hidden;
     }
 
+    .leaflet-container .leaflet-popup-close-button {
+        top: 9px;
+        right: 9px;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .94);
+        color: #526173;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1;
+        box-shadow: 0 5px 15px rgba(15, 23, 42, .18);
+        z-index: 20;
+    }
+
+    .leaflet-container .leaflet-popup-close-button:hover,
+    .leaflet-container .leaflet-popup-close-button:focus {
+        background: #fff;
+        color: #c91f42;
+        text-decoration: none;
+    }
+
     .cbis-map-popup {
         width: min(300px, 78vw);
         max-height: min(360px, 58vh);
         overflow-y: auto;
-        padding: .9rem;
+        padding: 1rem 1.15rem 1rem .9rem;
         color: #10233f;
+        scrollbar-gutter: stable;
     }
 
     .cbis-map-popup img {
