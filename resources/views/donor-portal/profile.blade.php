@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $homeFacilityName = $donor->facility?->name ?? 'Not set';
+@endphp
 <div class="cbis-donor-hero mb-4">
     <div>
         <div class="cbis-eyebrow">Profile</div>
@@ -14,7 +17,7 @@
         </div>
         <div class="cbis-donor-summary-item">
             <span>Home facility</span>
-            <strong>{{ $donor->facility?->name ?? 'Not set' }}</strong>
+            <strong title="{{ $homeFacilityName }}">{{ $homeFacilityName }}</strong>
         </div>
         <div class="cbis-donor-summary-item">
             <span>Event registrations</span>

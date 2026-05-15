@@ -477,15 +477,21 @@ table.table.bg-white {
 
 .cbis-donor-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(220px, 0.75fr) minmax(0, 2.25fr);
     gap: 1.25rem;
     align-items: end;
 }
 
+.cbis-donor-hero > * {
+    min-width: 0;
+}
+
 .cbis-donor-summary {
     display: grid;
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.6rem;
+    min-width: 0;
+    width: 100%;
 }
 
 .cbis-donor-summary-item {
