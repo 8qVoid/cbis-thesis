@@ -6,6 +6,7 @@
 <div class="row g-3">
 @if(auth('web')->user()?->isCentralAdmin())<div class="col-md-4"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}">{{ $facility->name }}</option>@endforeach</select></div>@endif
 <div class="col-md-4"><label class="form-label">First Name</label><input name="first_name" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+" required></div>
+<div class="col-md-4"><label class="form-label">Middle Name</label><input name="middle_name" value="{{ old('middle_name') }}" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+"></div>
 <div class="col-md-4"><label class="form-label">Last Name</label><input name="last_name" class="form-control js-person-name" maxlength="80" pattern="[\p{L}\s.'-]+" required></div>
 <div class="col-md-4"><label class="form-label">Birth Date</label><input type="date" name="birth_date" class="form-control" required></div>
 <div class="col-md-4"><label class="form-label">Sex</label><select name="sex" class="form-select"><option>male</option><option>female</option></select></div>

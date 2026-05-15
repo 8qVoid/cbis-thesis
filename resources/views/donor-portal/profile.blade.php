@@ -3,11 +3,14 @@
 @section('content')
 @php
     $homeFacilityName = $donor->facility?->name ?? 'Not set';
+    $donorFullName = collect([$donor->first_name, $donor->middle_name, $donor->last_name])
+        ->filter(fn ($name) => filled($name))
+        ->implode(' ');
 @endphp
 <div class="cbis-donor-hero mb-4">
     <div>
         <div class="cbis-eyebrow">Profile</div>
-        <h1 class="cbis-page-title mb-1">{{ $donor->first_name }} {{ $donor->last_name }}</h1>
+        <h1 class="cbis-page-title mb-1">{{ $donorFullName }}</h1>
         <p class="cbis-page-subtitle">Keep your contact details updated and track your blood donation activity.</p>
     </div>
     <div class="cbis-donor-summary">
