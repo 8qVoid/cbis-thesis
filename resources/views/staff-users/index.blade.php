@@ -4,6 +4,7 @@
 @php
     $currentUser = auth('web')->user();
     $canCreateStaff = ($currentUser?->isCentralAdmin() ?? false) || ($currentUser?->can('manage users') ?? false);
+    $canEditStaff = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage users') ?? false);
 @endphp
 <div class="d-flex justify-content-between mb-3">
     <div>
@@ -25,7 +26,13 @@
             <td>{{ $user->phone ?? '-' }}</td>
             <td>{{ $user->facility->name ?? '-' }}</td>
             <td>{{ $user->getRoleNames()->implode(', ') }}</td>
-            <td><a href="{{ route('staff-users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a></td>
+            <td>
+                @if($canEditStaff)
+                    <a href="{{ route('staff-users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                @else
+                    <span class="text-muted small">View only</span>
+                @endif
+            </td>
         </tr>
     @endforeach
     </tbody>

@@ -104,6 +104,37 @@ class FacilityStaffRoleAccessTest extends TestCase
         ]);
     }
 
+    public function test_super_administrator_can_monitor_but_not_edit_staff_accounts(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $facility = $this->facility();
+        $staffUser = User::factory()->create([
+            'facility_id' => $facility->id,
+            'name' => 'Facility Staff',
+            'phone' => '+639171234567',
+        ]);
+        $staffUser->assignRole('Facilitator');
+        $superAdmin = User::where('email', 'admin@cbis.local')->firstOrFail();
+
+        $this->actingAs($superAdmin)
+            ->get(route('staff-users.index'))
+            ->assertOk()
+            ->assertSee('View only')
+            ->assertDontSee(route('staff-users.edit', $staffUser));
+
+        $this->actingAs($superAdmin)
+            ->get(route('staff-users.edit', $staffUser))
+            ->assertForbidden();
+
+        $this->actingAs($superAdmin)
+            ->put(route('staff-users.update', $staffUser), [
+                'name' => 'Edited by Super Admin',
+                'phone' => '+639179999999',
+            ])
+            ->assertForbidden();
+    }
+
     private function facility(): Facility
     {
         return Facility::create([

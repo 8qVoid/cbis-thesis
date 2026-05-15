@@ -9,6 +9,13 @@
         </div>
 
         <div class="card cbis-card">
+            @if($donationSchedule->photo_path)
+                <img
+                    src="{{ asset('storage/'.$donationSchedule->photo_path) }}"
+                    alt="{{ $donationSchedule->title }}"
+                    class="cbis-event-confirm-photo"
+                >
+            @endif
             <div class="card-body">
                 <h2 class="h4 mb-3">{{ $donationSchedule->title }}</h2>
                 <dl class="row mb-4">

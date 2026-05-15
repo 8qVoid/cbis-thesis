@@ -1,7 +1,15 @@
 @extends('layouts.app')
 @section('content')
 <h4 class="mb-3">Edit Facility</h4>
-<form method="POST" action="{{ route('facilities.update',$facility) }}" class="card card-body">
+<form
+    method="POST"
+    action="{{ route('facilities.update',$facility) }}"
+    class="card card-body js-confirm-action"
+    data-confirm-title="Update facility?"
+    data-confirm-message="Please review this facility's details and active status before saving. Setting Active to No will prevent assigned staff from accessing facility modules."
+    data-confirm-button="Update Facility"
+    data-confirm-variant="danger"
+>
 @csrf @method('PUT')
 <div class="row g-3">
 <div class="col-md-4"><label class="form-label">Code</label><input name="code" class="form-control" value="{{ old('code',$facility->code) }}" required></div>

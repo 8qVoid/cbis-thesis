@@ -90,11 +90,9 @@ class StaffUserController extends Controller
 
     private function authorizeStaffAccess(User $currentUser, User $staffUser): void
     {
-        if ($currentUser->isCentralAdmin()) {
-            return;
-        }
-
         if (
+            $currentUser->isCentralAdmin()
+            ||
             ! $currentUser->can('manage users')
             || $currentUser->facility_id === null
             || $staffUser->facility_id !== $currentUser->facility_id

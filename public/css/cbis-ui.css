@@ -522,6 +522,14 @@ table.table.bg-white {
     white-space: nowrap;
 }
 
+.cbis-event-confirm-photo {
+    display: block;
+    width: 100%;
+    height: clamp(180px, 28vw, 320px);
+    object-fit: cover;
+    background: #edf2f7;
+}
+
 .cbis-profile-card .card-header {
     background: linear-gradient(180deg, #fff, #fbfcfe);
 }
