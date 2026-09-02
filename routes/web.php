@@ -20,17 +20,15 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffUserController;
+use App\Http\Controllers\AccountDashboardController;
+use App\Http\Controllers\BloodReservationController;
+use App\Http\Controllers\AccountProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/portal/map');
 Route::get('/portal', [PublicPortalController::class, 'index'])->name('public.index');
 Route::redirect('/portal/events', '/portal/map')->name('public.events');
 Route::get('/portal/map', [PublicPortalController::class, 'map'])->name('public.map');
-Route::get('/portal/availability', [PublicPortalController::class, 'availability'])->name('public.availability');
-Route::get('/facility/apply', [FacilityApplicationController::class, 'create'])->name('facility-application.create');
-Route::post('/facility/apply', [FacilityApplicationController::class, 'store'])
-    ->middleware('throttle:facility-apply')
-    ->name('facility-application.store');
 
 Route::middleware('guest:web,donor')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -50,6 +48,18 @@ Route::middleware('guest:web,donor')->group(function () {
         ->name('password.reset.update');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/account', AccountDashboardController::class)->name('account.dashboard');
+    Route::get('/account/services', [AccountProfileController::class, 'edit'])->name('account.profile.edit');
+    Route::put('/account/services', [AccountProfileController::class, 'update'])->name('account.profile.update');
+    Route::get('/reservations', [BloodReservationController::class, 'index'])->name('reservations.index');
+    Route::get('/reservations/create', [BloodReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [BloodReservationController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}', [BloodReservationController::class, 'show'])->name('reservations.show');
+    Route::get('/reservations/{reservation}/documents/{document}', [BloodReservationController::class, 'document'])->name('reservations.documents.show');
+    Route::patch('/reservations/{reservation}/review', [BloodReservationController::class, 'review'])->name('reservations.review');
+});
+
 Route::prefix('donor')->group(function () {
     Route::middleware('guest:web,donor')->group(function () {
         Route::get('/login', fn () => redirect()->route('login'))->name('donor.login');
@@ -60,9 +70,9 @@ Route::prefix('donor')->group(function () {
             ->name('donor.register.store');
     });
 
-    Route::middleware('auth:donor')->group(function () {
-        Route::get('/portal/profile', [DonorPortalController::class, 'profile'])->name('donor.portal.profile');
-        Route::put('/portal/profile', [DonorPortalController::class, 'update'])->name('donor.portal.profile.update');
+    Route::middleware(['auth', 'role:Donor'])->group(function () {
+        Route::get('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile');
+        Route::put('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile.update');
         Route::get('/events', [DonorEventRegistrationController::class, 'index'])->name('donor.events.index');
         Route::get('/events/{donationSchedule}/join', [DonorEventRegistrationController::class, 'join'])->name('donor.events.join');
         Route::post('/events/{donationSchedule}/register', [DonorEventRegistrationController::class, 'store'])->name('donor.events.register');
@@ -125,7 +135,7 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware(['permission:manage donors', 'facility.operator']);
     Route::resource('donors', DonorController::class)
         ->only(['index', 'show'])
-        ->middleware('role_or_permission:Super Administrator|manage donors');
+        ->middleware('role_or_permission:manage donors|view limited donors|view detailed donors');
 
     Route::resource('donation-records', DonationRecordController::class)
         ->except(['index', 'show'])
@@ -158,35 +168,37 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::patch('/donation-schedules/{donationSchedule}/end', [DonationScheduleController::class, 'end'])
         ->middleware(['permission:manage schedules', 'facility.operator'])
         ->name('donation-schedules.end');
+    Route::patch('/donation-schedules/{donationSchedule}/review', [DonationScheduleController::class, 'review'])
+        ->middleware('permission:review activities')->name('donation-schedules.review');
     Route::resource('donation-schedules', DonationScheduleController::class)
         ->except(['index', 'show'])
         ->middleware(['permission:manage schedules', 'facility.operator']);
     Route::resource('donation-schedules', DonationScheduleController::class)
         ->only(['index', 'show'])
-        ->middleware('role_or_permission:Super Administrator|manage schedules');
+        ->middleware('role_or_permission:Quality Assurance Officer|manage schedules');
 
     Route::resource('blood-bank-locations', BloodBankLocationController::class)
         ->middleware('permission:manage locations');
 
     Route::get('/reports', [ReportController::class, 'index'])
-        ->middleware('permission:view reports')
+        ->middleware('role_or_permission:view reports|request summaries')
         ->name('reports.index');
 
     Route::get('/reports/pdf', [ReportController::class, 'pdf'])
-        ->middleware('permission:view reports')
+        ->middleware('permission:export reports')
         ->name('reports.pdf');
 
     Route::get('/reports/excel', [ReportController::class, 'excel'])
-        ->middleware('permission:view reports')
+        ->middleware('permission:export reports')
         ->name('reports.excel');
 
     Route::get('/notifications', [NotificationController::class, 'index'])
-        ->middleware('role_or_permission:Super Administrator|Facilitator|manage inventory')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
         ->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])
-        ->middleware('role_or_permission:Super Administrator|Facilitator|manage inventory')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
         ->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])
-        ->middleware('role_or_permission:Super Administrator|Facilitator|manage inventory')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
         ->name('notifications.read-all');
 });

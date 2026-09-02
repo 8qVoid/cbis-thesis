@@ -11,7 +11,8 @@ class DonorEventRegistrationController extends Controller
 {
     public function index(): View
     {
-        $donor = auth('donor')->user();
+        $donor = auth()->user()?->donorProfile;
+        abort_unless($donor, 403);
 
         $registrations = EventRegistration::query()
             ->with(['event.facility'])
@@ -41,7 +42,8 @@ class DonorEventRegistrationController extends Controller
 
     public function destroy(DonationSchedule $donationSchedule): RedirectResponse
     {
-        $donor = auth('donor')->user();
+        $donor = auth()->user()?->donorProfile;
+        abort_unless($donor, 403);
 
         if (! $donationSchedule->isRegistrationOpen()) {
             return back()->withErrors(['event' => 'This event registration can no longer be cancelled.']);
@@ -62,7 +64,8 @@ class DonorEventRegistrationController extends Controller
 
     private function registerForEvent(DonationSchedule $donationSchedule): bool
     {
-        $donor = auth('donor')->user();
+        $donor = auth()->user()?->donorProfile;
+        abort_unless($donor, 403);
 
         $existingRegistration = EventRegistration::query()
             ->where('donation_schedule_id', $donationSchedule->id)

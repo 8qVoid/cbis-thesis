@@ -4,7 +4,7 @@
 @php
     $currentUser = auth('web')->user();
     $canCreateStaff = ($currentUser?->isCentralAdmin() ?? false) || ($currentUser?->can('manage users') ?? false);
-    $canEditStaff = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage users') ?? false);
+    $canEditStaff = $currentUser?->can('manage users') ?? false;
 @endphp
 <div class="d-flex justify-content-between mb-3">
     <div>

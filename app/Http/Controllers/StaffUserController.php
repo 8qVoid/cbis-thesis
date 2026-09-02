@@ -34,8 +34,8 @@ class StaffUserController extends Controller
             ? Facility::query()->where('is_active', true)->orderBy('name')->get()
             : Facility::query()->where('is_active', true)->whereKey($user->facility_id)->get();
         $roleNames = [
-            'Facilitator',
-            'Medical Staff / Nurse',
+            'Event Facilitator',
+            'Blood Bank Staff',
         ];
         $roles = Role::query()
             ->whereIn('name', $roleNames)
@@ -113,9 +113,11 @@ class StaffUserController extends Controller
 
     private function authorizeStaffAccess(User $currentUser, User $staffUser): void
     {
+        if ($currentUser->isCentralAdmin() && $currentUser->can('manage users')) {
+            return;
+        }
+
         if (
-            $currentUser->isCentralAdmin()
-            ||
             ! $currentUser->can('manage users')
             || $currentUser->facility_id === null
             || $staffUser->facility_id !== $currentUser->facility_id

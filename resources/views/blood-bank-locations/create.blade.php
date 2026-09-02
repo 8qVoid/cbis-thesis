@@ -3,7 +3,11 @@
 <h4>Add Blood Bank Location</h4>
 <form method="POST" action="{{ route('blood-bank-locations.store') }}" class="card card-body" enctype="multipart/form-data">@csrf
 <div class="row g-3">
+@if(auth()->user()?->isQao())
+<div class="col-md-6"><label class="form-label">Facility</label><select name="facility_id" class="form-select" required><option value="">Select facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string) old('facility_id') === (string) $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
+@else
 <div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly></div>
+@endif
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" required></div>
 <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control" maxlength="30" placeholder="09171234567 or (034) 433 0313"><small class="text-muted">Mobile or landline accepted.</small></div>
 <div class="col-md-6"><label class="form-label">Location Photo</label><input name="photo" type="file" class="form-control" accept="image/jpeg,image/png,image/webp" required><small class="text-muted">Upload a JPG, PNG, or WebP image up to 4 MB.</small></div>

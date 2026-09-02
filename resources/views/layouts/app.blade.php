@@ -18,19 +18,21 @@
     $webAuthenticated = auth('web')->check();
     $donorAuthenticated = auth('donor')->check();
     $webUser = $webAuthenticated ? auth('web')->user() : null;
-    $isCentralAdmin = $webAuthenticated && $webUser?->isCentralAdmin();
-
     $lowStockType = \App\Notifications\LowStockAlert::class;
-    $facilityApplicationType = \App\Notifications\FacilityApplicationSubmitted::class;
+    $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
+    $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
     $notificationTypes = [];
     $notificationTitle = 'Notifications';
 
-    if ($webAuthenticated && $webUser?->isCentralAdmin()) {
-        $notificationTypes = [$facilityApplicationType, $lowStockType];
-        $notificationTitle = 'System Alerts';
-    } elseif ($webAuthenticated && ($webUser?->hasRole('Facilitator') || $webUser?->can('manage inventory'))) {
-        $notificationTypes = [$lowStockType];
-        $notificationTitle = 'Low Stock Alerts';
+    if ($webAuthenticated && $webUser?->isQao()) {
+        $notificationTypes = [$lowStockType, $reservationSubmittedType];
+        $notificationTitle = 'QAO Alerts';
+    } elseif ($webAuthenticated && $webUser?->isBloodBankStaff()) {
+        $notificationTypes = [$lowStockType, $reservationSubmittedType];
+        $notificationTitle = 'Blood Bank Alerts';
+    } elseif ($webAuthenticated && $webUser?->isEventFacilitator()) {
+        $notificationTypes = [$activityReviewType];
+        $notificationTitle = 'Activity Alerts';
     }
 
     $showNotificationCenter = $webAuthenticated && $notificationTypes !== [];
@@ -52,19 +54,19 @@
 @endphp
 <nav class="navbar navbar-expand-lg navbar-dark cbis-navbar">
     <div class="container">
-        <a class="navbar-brand" href="{{ $webAuthenticated ? route('dashboard') : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}">CBIS</a>
+        <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}">CBIS</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 @if($webAuthenticated)
-                    <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ $webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard') }}">Home</a></li>
+                    @if($webUser?->hasPatientAccess())<li class="nav-item"><a class="nav-link" href="{{ route('reservations.index') }}">Blood Requests</a></li>@endif
+                    @if($webUser?->hasDonorAccess())<li class="nav-item"><a class="nav-link" href="{{ route('donor.events.index') }}">Donation Events</a></li>@endif
                 @else
                     @if(! $donorAuthenticated)
                         <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('facility-application.create') }}">Apply Facility</a></li>
                     @endif
                     <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('public.availability') }}">Available Bloods</a></li>
                 @endif
             </ul>
             <div class="d-flex align-items-center cbis-nav-actions">
@@ -104,10 +106,10 @@
                                         <button class="btn btn-link btn-sm text-decoration-none p-0">Mark all read</button>
                                     </form>
                                 </div>
-                                @if($webUser?->isCentralAdmin())
+                                @if($webUser?->isQao() || $webUser?->isBloodBankStaff())
                                     <div class="d-flex gap-2 px-3 py-2 border-bottom">
-                                        <a href="{{ route('notifications.index', ['type' => 'facility_application']) }}" class="btn btn-sm btn-outline-danger flex-fill">Applications</a>
                                         <a href="{{ route('notifications.index', ['type' => 'low_stock']) }}" class="btn btn-sm btn-outline-danger flex-fill">Low stock</a>
+                                        <a href="{{ route('notifications.index', ['type' => 'reservation']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reservations</a>
                                     </div>
                                 @endif
                                 <div class="list-group list-group-flush">
@@ -117,9 +119,11 @@
                                         @endphp
                                         <div class="list-group-item small">
                                             <div class="fw-semibold">{{ $data['title'] ?? 'Notification' }}</div>
-                                            @if($notification->type === $facilityApplicationType)
-                                                <div>Organization: {{ $data['organization_name'] ?? 'N/A' }}</div>
-                                                <div>Contact: {{ $data['contact_person'] ?? 'N/A' }}</div>
+                                            @if($notification->type === $reservationSubmittedType)
+                                                <div>Reservation: {{ $data['reference'] ?? 'N/A' }}</div>
+                                                <div>{{ $data['blood_type'] ?? 'N/A' }} · {{ \App\Models\BloodInventory::COMPONENTS[$data['component'] ?? ''] ?? ($data['component'] ?? 'N/A') }}</div>
+                                            @elseif($notification->type === $activityReviewType)
+                                                <div>{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
                                             @else
                                                 <div>Facility: {{ $data['facility_name'] ?? 'N/A' }}</div>
                                                 <div>Blood Type: {{ $data['blood_type'] ?? 'N/A' }} | Units: {{ $data['units_available'] ?? 'N/A' }}</div>
@@ -155,7 +159,7 @@
         </div>
     </div>
 </nav>
-@if($webAuthenticated)
+@if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
     @include('partials.section-tabs')
 @endif
 <main id="main-content" class="container cbis-main py-4">

@@ -62,6 +62,7 @@
                 <th>Time</th>
                 <th>Venue</th>
                 <th>Status</th>
+                <th>QAO Approval</th>
                 <th>Registration Status</th>
                 <th>Action</th>
             </tr>
@@ -76,6 +77,7 @@
                     <td>{{ $schedule->time_range_label }}</td>
                     <td>{{ $schedule->venue }}</td>
                     <td><span class="badge {{ in_array($schedule->status, ['planned', 'ongoing']) ? 'cbis-status-active' : 'cbis-status-expired' }}">{{ ucfirst($schedule->status) }}</span></td>
+                    <td><span class="badge text-bg-{{ $schedule->approval_status === 'approved' ? 'success' : ($schedule->approval_status === 'rejected' ? 'danger' : 'warning') }}">{{ ucfirst($schedule->approval_status) }}</span></td>
                     <td>
                         <div class="small">
                             <span class="badge cbis-status-active">Registered {{ $schedule->registrations_count ?? 0 }}</span>
@@ -86,6 +88,10 @@
                     </td>
                     <td class="text-nowrap">
                         <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                        @can('review activities')
+                            <form method="POST" action="{{ route('donation-schedules.review',$schedule) }}" class="d-inline">@csrf @method('PATCH')<input type="hidden" name="approval_status" value="approved"><button class="btn btn-sm btn-outline-success">Approve</button></form>
+                            <form method="POST" action="{{ route('donation-schedules.review',$schedule) }}" class="d-inline">@csrf @method('PATCH')<input type="hidden" name="approval_status" value="rejected"><button class="btn btn-sm btn-outline-danger">Reject</button></form>
+                        @endcan
                         @if($canManageSchedules)
                             <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                             @if(in_array($schedule->status, ['planned', 'ongoing'], true))
@@ -121,7 +127,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="text-center">No events found.</td>
+                    <td colspan="10" class="text-center">No events found.</td>
                 </tr>
             @endforelse
         </tbody>

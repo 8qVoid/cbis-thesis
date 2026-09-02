@@ -68,8 +68,12 @@
     <div class="col-12">
         <div class="cbis-report-actions">
             <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Current Month</a>
-            <a href="{{ route('reports.pdf', $exportQuery) }}" class="btn btn-outline-danger">Download PDF</a>
-            <a href="{{ route('reports.excel', $exportQuery) }}" class="btn btn-outline-success">Download Excel</a>
+            @can('export reports')
+                <a href="{{ route('reports.pdf', $exportQuery) }}" class="btn btn-outline-danger">Download PDF</a>
+                <a href="{{ route('reports.excel', $exportQuery) }}" class="btn btn-outline-success">Download Excel</a>
+            @else
+                <span class="text-muted small align-self-center">Summary view only. Export is restricted to QAO.</span>
+            @endcan
         </div>
     </div>
     </div>
@@ -98,6 +102,7 @@
                 <thead>
                     <tr>
                         <th>Blood Type</th>
+                        <th>Component</th>
                         <th>Units</th>
                         <th>Status</th>
                     </tr>
@@ -106,6 +111,7 @@
                     @forelse($inventory as $item)
                         <tr>
                             <td>{{ $item->blood_type }}</td>
+                            <td>{{ $item->component_label }}</td>
                             <td>{{ $item->units_available }}</td>
                             <td>
                                 <span class="badge {{ $item->status === 'low_stock' ? 'cbis-status-low' : ($item->status === 'expired' ? 'cbis-status-expired' : 'cbis-status-active') }}">
@@ -115,7 +121,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center text-muted py-4">No inventory records for this period.</td>
+                            <td colspan="4" class="text-center text-muted py-4">No inventory records for this period.</td>
                         </tr>
                     @endforelse
                 </tbody>

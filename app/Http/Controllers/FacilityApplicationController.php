@@ -156,7 +156,7 @@ class FacilityApplicationController extends Controller
 
                     $existingStaff->forceFill($staffData)->save();
 
-                    $existingStaff->syncRoles(['Facilitator']);
+                    $existingStaff->syncRoles(['Event Facilitator']);
                 } else {
                     $temporaryPassword = Str::password(12);
                     $staffUser = User::create([
@@ -168,7 +168,7 @@ class FacilityApplicationController extends Controller
                         'is_active' => true,
                     ]);
 
-                    $staffUser->syncRoles(['Facilitator']);
+                    $staffUser->syncRoles(['Event Facilitator']);
                 }
             }
 

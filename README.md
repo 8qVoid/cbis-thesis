@@ -1,233 +1,178 @@
-# Centralized Web-Based Real-Time Blood Inventory System with Donation and Bloodletting Records
+# Centralized Blood Inventory System
 
-Laravel 13 thesis system implementing centralized, multi-facility blood inventory management with real-time transaction updates.
+A Laravel-based thesis system for Philippine Red Cross blood inventory, donation events, donor records, and patient blood reservations across multiple Negros Occidental branches.
 
-## Scope Alignment
-- Centralized single-platform architecture
-- One database for many facilities
-- Facility applications reviewed by the Red Cross super administrator
-- Real-time inventory updates via events/listeners
-- Role-based access per approved thesis roles
+Each facility maintains its own inventory. The Quality Assurance Officer (QAO) can monitor branches centrally, while operational actions remain assigned to the responsible facility staff.
 
-## Tech Stack
-- Laravel 13, PHP 8.3+
-- MySQL
-- Blade + Bootstrap
-- Spatie Laravel Permission (RBAC)
-- Laravel Notifications + Queues
-- Leaflet + OpenStreetMap
-- DomPDF
-- Laravel Excel
+## Core Features
 
-## Core Modules
-1. Authentication and RBAC
-2. Role dashboards
-3. Facility management
-4. Donor management
-5. Blood donation records
-6. Bloodletting records
-7. Blood inventory
-8. Blood release/usage
-9. Notifications
-10. Reports (PDF/Excel)
-11. Mapping module with event and facility pins
-12. Public portal and donor event registration
-13. Required event/location photo uploads
+- Separate real-time inventory for every Red Cross facility
+- Four blood components: whole blood, packed red blood cells, platelet concentrate, and fresh frozen plasma
+- Donation and bloodletting records
+- Patient blood reservations with ID, prescription, and supporting-document uploads
+- Event scheduling with QAO approval before map publication
+- Low-stock, reservation, and event-review notifications
+- Facility-specific summaries and QAO report exports
+- Public facility and approved-event map
+- One public account that can enable Donor services, Patient services, or both
 
-## Recent Updates
-- Facility approval now automatically creates or reactivates the facility's first Facilitator account using the application email.
-- Approved facilities receive an onboarding email with their login email and a generated temporary password.
-- Super Administrators can create facility staff accounts when needed.
-- Facility Facilitators can pin their own facility location on the map and upload a required location photo.
-- Facility Facilitators can access Reports, matching Medical Staff / Nurse report access.
-- Location latitude and longitude fields are read-only and are filled by clicking the map picker.
+## Role Access
 
-## Installation
-1. Clone project
-2. Create `.env` from `.env.example`
-3. Configure MySQL connection
-4. Install dependencies:
-   - `php C:\laragon\bin\composer\composer.phar install --ignore-platform-req=php --ignore-platform-req=ext-zip`
-5. Generate app key:
-   - `php artisan key:generate`
-6. Run migrations and seeders:
-   - `php artisan migrate:fresh --seed`
-7. Ensure public uploaded files are available:
-   - `php artisan storage:link`
-8. Run queue worker:
-   - `php artisan queue:work`
-9. Run scheduler:
-   - `php artisan schedule:work`
-10. Serve app:
-   - `php artisan serve`
+### Quality Assurance Officer (QAO)
 
-## Default Users (Seeder)
-- Super Administrator: `admin@cbis.local` / `password`
-- Facility Facilitator: `facility.admin@cbis.local` / `password`
-- Medical Staff / Nurse: `medical.staff@cbis.local` / `password`
+Can:
 
-## Role Boundaries
+- Monitor inventory across all facilities
+- Receive low-stock and new-reservation notifications
+- View reservation status without processing the request
+- Review and approve or reject event map publication
+- Manage facilities, blood-bank locations, and staff accounts
+- View limited donor information
+- Generate system reports and export PDF/Excel files
 
-### Super Administrator
-The Red Cross main administrator for central oversight and approval.
+Cannot:
 
-Can access:
-- Dashboard
-- Donor records
-- Donation records
-- Bloodletting records
-- Blood inventory
-- Blood releases
-- Event schedules
-- Notifications
-- Facilities
-- Staff accounts
-- Facility applications
+- Approve, reject, or fulfill patient blood reservations
+- Add operational donation or release transactions for a facility
+- View private patient reservation documents
+- View detailed donor medical information
 
-Can do:
-- Approve or reject facility applications
-- Automatically onboard an approved facility's first Facilitator account through the approval workflow
-- Manage approved facilities
-- View records across all facilities
-- Monitor facility application alerts
-- Monitor low-stock alerts across facilities
-- View staff accounts across facilities
-- Create facility staff accounts when needed
+### Blood Bank Staff (BBS)
 
-Cannot do:
-- Create donor records for a facility
-- Create donation records as a facility
-- Create bloodletting records as a facility
-- Create or edit inventory as a facility
-- Create blood release records as a facility
-- Create event schedules as a facility
-- Manage facility location pins
+Can:
+
+- Work only with their assigned facility's records and inventory
+- View detailed donor records
+- Manage donation, bloodletting, inventory, and blood-release transactions
+- Review patient requirements and approve, reject, or fulfill blood reservations
+- Monitor their facility's stock and receive low-stock notifications
+- Request and view system-generated summaries
+
+Cannot:
+
+- Access another facility's inventory or records
+- Generate downloadable Excel/PDF reports
+- Create or publish map pins
+- Approve event map publication
+- Manage system roles or staff accounts
+
+### Event Facilitator
+
+Can:
+
+- Create and manage event schedules for their assigned facility
+- Propose an event location and map coordinates
+- Receive event approval or rejection notifications
+- Maintain their facility's event information
+
+Cannot:
+
+- Publish an event location without QAO approval
+- Process patient blood reservations
+- Manage blood inventory, releases, donor medical records, or staff accounts
 - Generate reports
 
-### Facility Facilitator
-The approved facility account for front desk and facility operations.
+### Donor
 
-Can access:
-- Dashboard
-- Donor records
-- Donation records
-- Bloodletting records
-- Event schedules
-- Staff accounts
-- Blood bank locations
-- Notifications
+Can:
 
-Can do:
-- Manage donors under their assigned facility
-- Record donation transactions
-- Manage bloodletting records
-- Create and manage donation events or schedules with required uploaded event photos
-- Create facility staff accounts, such as Medical Staff / Nurse
-- Pin their assigned facility location on the map and upload a required location photo
-- View dashboard summaries for their assigned facility
-- Receive low-stock alerts for their assigned facility
+- Register and sign in using a public account
+- Maintain a donor profile
+- View public facilities and approved donation events
+- Register for or cancel registration to an eligible event
+- View their donation-related information
 
-Cannot access:
-- Facility approval
-- All-facility management
-- Inventory management
-- Blood releases
-- Reports
-- Super administrator controls
+Cannot:
 
-### Medical Staff / Nurse
-The facility inventory user.
+- Access staff dashboards or internal inventory management
+- Process reservations, events, or facility records
 
-Can access:
-- Dashboard
-- Blood inventory
-- Notifications
-- Reports
+### Patient
 
-Can do:
-- View current stock
-- Add or update inventory records
-- Monitor low-stock alerts
-- Manage inventory for their assigned facility only
-- Download reports for their assigned facility
+Can:
 
-Cannot access:
-- Donor records
-- Donation records
-- Bloodletting records
-- Event schedules
-- Staff management
-- Facility approval
-- Other facilities' data
+- Register and sign in using a public account
+- Submit a blood reservation to a selected facility
+- Upload the required identification, prescription, and supporting documents
+- View reservation status and receive status notifications
+- Maintain their patient profile
 
-### Public User
-The public-facing portal user role for non-staff access.
+Cannot:
 
-Can access:
-- Public event list and combined map
-- Blood availability
-- Facility application form
-- Donor portal profile after donor login
+- Approve or process their own reservation
+- View internal inventory quantities or other patients' records
 
-Can do:
-- View upcoming public blood donation and bloodletting events
-- Register for public events when registration is still open
-- View red facility pins and blue event/activity pins on one map
+## Donor and Patient Accounts
 
-## Scheduled Commands
-- `inventory:flag-expired`
-- `inventory:notify-low-stock`
+A person uses one account and one personal profile. During registration, they may select Donor, Patient, or both services. Services can be enabled later without creating a duplicate person or losing existing history.
 
-## Low Stock Alerts (In-App + Email)
-- In-app low-stock alerts are available for Super Administrators, Facility Facilitators, and Medical Staff / Nurse users through the navbar notification center and `/notifications`.
-- Super Administrators can filter notifications between facility application alerts and low-stock alerts.
-- Email alerts are sent through `LowStockAlert` when inventory enters low-stock state.
-- Required runtime processes:
-  - `php artisan schedule:work`
-  - `php artisan queue:work`
-- Configure SMTP in `.env`:
-  - `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
-  - `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
+## Reservation Workflow
 
-## Facility Application Alerts
-- When a public facility application is submitted, the Super Administrator receives:
-  - one in-app dashboard/navbar notification
-  - one email notification through `FacilityApplicationSubmitted`
-- The Super Administrator notification center includes separate filters for facility application alerts and low-stock alerts.
-- When a facility application is approved, the system creates or reactivates the first Facilitator account for the applicant email, generates a temporary password, and sends it through `FacilityApplicationApproved`.
+1. A patient submits a reservation and required documents.
+2. QAO and the selected facility's Blood Bank Staff receive a notification.
+3. Blood Bank Staff review the requirements.
+4. The request moves through `Submitted`, `Under Review`, `Approved` or `Rejected`, then `Fulfilled` when released.
+5. Approval is blocked when the selected facility lacks sufficient unexpired stock for the requested blood type and component.
 
-## Event Notifications
-- When a public event is created with status `planned` or `ongoing`, verified online registered donors receive an email notification.
-- Donors are notified only when they have an email, an online portal account, and are marked eligible.
-- The event email includes the event title, type, facility, date, time, venue, contact details, and a link to the public event map.
+## Event Publication Workflow
 
-## Event and Facility Map
-- The public map shows both marker types on one Leaflet/OpenStreetMap map:
-  - Blue pins: public events and activities
-  - Red pins: blood bank or hospital facility locations
-- Map controls allow users to show or hide events and facilities.
-- Event map popups show the uploaded event photo, event details, description, and a registration action.
-- Facility map popups show the uploaded location photo and facility contact information.
-- Public events stay visible while they are public, dated today or later, and have status `planned` or `ongoing`.
-- A facility can remove an event from the public map by editing the event status to `completed` or `cancelled`, or by setting `Show to Public` to `No`.
+1. An Event Facilitator creates an event and proposes its map location.
+2. The event remains pending and is not shown publicly.
+3. QAO approves or rejects the event.
+4. The Facilitator receives the decision notification.
+5. An approved public event becomes visible on the map.
 
-## Required Photo Uploads
-- Creating an event schedule requires an uploaded event photo.
-- Creating a blood bank location requires an uploaded location photo.
-- Editing an existing event or location keeps the current photo unless a replacement image is uploaded.
-- Accepted formats: JPG, JPEG, PNG, and WebP.
-- Maximum upload size: 4 MB.
-- Uploaded files are stored on the Laravel public disk:
-  - `storage/app/public/event-photos`
-  - `storage/app/public/location-photos`
+## Technology
 
-## Thesis Constraints Observed
-Excluded features (as required):
-- AI/ML
-- third-party hospital or national blood bank integration
-- forecasting
-- mobile app
-- payment or chat systems
+- Laravel 13 and PHP 8.3+
+- MySQL
+- Blade, Vite, and Tailwind CSS
+- Spatie Laravel Permission
+- Laravel Notifications
+- Leaflet and OpenStreetMap
+- Laravel Excel and DomPDF
 
-## Documentation
-- Architecture and phase breakdown: `docs/thesis-system-architecture.md`
+## Local Installation
+
+```powershell
+git clone https://github.com/8qVoid/cbis-thesis.git
+cd cbis-thesis
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan storage:link
+npm install
+npm run build
+php artisan serve
+```
+
+Open [http://localhost:8000](http://localhost:8000).
+
+For Laragon-specific setup, see [`docs/local-setup.md`](docs/local-setup.md).
+
+## Seeded Development Accounts
+
+These credentials are for local development only:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| QAO | `admin@cbis.local` | `password` |
+| Event Facilitator | `facility.admin@cbis.local` | `password` |
+| Blood Bank Staff | `medical.staff@cbis.local` | `password` |
+
+## Testing
+
+```powershell
+php artisan test
+npm run build
+```
+
+The feature suite covers role boundaries, unified Donor/Patient registration, reservation documents and status transitions, facility stock isolation, event approval, alerts, reports, donation verification, and blood releases.
+
+## Scope Exclusions
+
+- AI or machine-learning forecasting
+- Third-party hospital or national blood-bank integration
+- Payments and chat
+- Mobile application

@@ -3,7 +3,7 @@
 <h4>Edit Blood Bank Location</h4>
 <form method="POST" action="{{ route('blood-bank-locations.update',$bloodBankLocation) }}" class="card card-body" enctype="multipart/form-data">@csrf @method('PUT')
 <div class="row g-3">
-<div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ $bloodBankLocation->facility?->name ?? auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly></div>
+<div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ $bloodBankLocation->facility?->name ?? auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly><input type="hidden" name="facility_id" value="{{ $bloodBankLocation->facility_id }}"></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address',$bloodBankLocation->address) }}" required></div>
 <div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control" value="{{ old('contact_number',$bloodBankLocation->contact_number) }}" maxlength="30" placeholder="09171234567 or (034) 433 0313"><small class="text-muted">Mobile or landline accepted.</small></div>
 <div class="col-md-6">

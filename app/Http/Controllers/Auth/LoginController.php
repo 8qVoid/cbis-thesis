@@ -44,8 +44,8 @@ class LoginController extends Controller
 
         if (Auth::guard('web')->attempt($webCredentials, $remember)) {
             $request->session()->regenerate();
-
-            return redirect()->intended(route('dashboard'));
+            $user = Auth::guard('web')->user();
+            return redirect()->intended($user->hasAnyRole(['Donor', 'Patient']) ? route('account.dashboard') : route('dashboard'));
         }
 
         // Fallback to donor account.

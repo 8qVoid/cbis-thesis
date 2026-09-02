@@ -29,6 +29,10 @@ class DonationSchedule extends Model
         'contact_person',
         'contact_number',
         'is_public',
+        'approval_status',
+        'reviewed_by',
+        'reviewed_at',
+        'review_notes',
         'status',
         'start_at',
         'end_at',
@@ -41,6 +45,7 @@ class DonationSchedule extends Model
             'end_at' => 'datetime',
             'event_date' => 'date',
             'is_public' => 'boolean',
+            'reviewed_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
@@ -73,7 +78,7 @@ class DonationSchedule extends Model
 
     public function isRegistrationOpen(): bool
     {
-        if (! $this->is_public || ! in_array($this->status, ['planned', 'ongoing'], true)) {
+        if (! $this->is_public || $this->approval_status !== 'approved' || ! in_array($this->status, ['planned', 'ongoing'], true)) {
             return false;
         }
 

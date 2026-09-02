@@ -1,18 +1,19 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void
     {
-        DB::statement('ALTER TABLE facilities MODIFY contact_number VARCHAR(120) NULL');
-        DB::statement('ALTER TABLE facility_applications MODIFY contact_number VARCHAR(120) NOT NULL');
+        Schema::table('facilities', fn (Blueprint $table) => $table->string('contact_number', 120)->nullable()->change());
+        Schema::table('facility_applications', fn (Blueprint $table) => $table->string('contact_number', 120)->change());
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE facilities MODIFY contact_number VARCHAR(30) NULL');
-        DB::statement('ALTER TABLE facility_applications MODIFY contact_number VARCHAR(30) NOT NULL');
+        Schema::table('facilities', fn (Blueprint $table) => $table->string('contact_number', 30)->nullable()->change());
+        Schema::table('facility_applications', fn (Blueprint $table) => $table->string('contact_number', 30)->change());
     }
 };

@@ -21,6 +21,7 @@ class PublicPortalController extends Controller
         $schedulesQuery = DonationSchedule::query()
             ->with('facility')
             ->where('is_public', true)
+            ->where('approval_status', 'approved')
             ->whereDate('event_date', '>=', now()->toDateString())
             ->whereIn('status', ['planned', 'ongoing']);
 
@@ -56,6 +57,7 @@ class PublicPortalController extends Controller
         $eventsQuery = DonationSchedule::query()
             ->with('facility')
             ->where('is_public', true)
+            ->where('approval_status', 'approved')
             ->whereDate('event_date', '>=', now()->toDateString())
             ->whereIn('status', ['planned', 'ongoing']);
 
@@ -91,6 +93,7 @@ class PublicPortalController extends Controller
         $eventsQuery = DonationSchedule::query()
             ->with('facility')
             ->where('is_public', true)
+            ->where('approval_status', 'approved')
             ->whereDate('event_date', '>=', now()->toDateString())
             ->whereIn('status', ['planned', 'ongoing']);
 

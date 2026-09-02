@@ -38,8 +38,8 @@ class StoreStaffUserRequest extends BaseFormRequest
             'role' => [
                 'required',
                 Rule::in([
-                    'Facilitator',
-                    'Medical Staff / Nurse',
+                    'Event Facilitator',
+                    'Blood Bank Staff',
                 ]),
             ],
         ];

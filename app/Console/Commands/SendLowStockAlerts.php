@@ -11,16 +11,16 @@ class SendLowStockAlerts extends Command
 {
     protected $signature = 'inventory:notify-low-stock';
 
-    protected $description = 'Send low stock notifications to super administrators and facility facilitators and medical staff';
+    protected $description = 'Send component-aware low stock notifications to QAO and assigned Blood Bank Staff';
 
     public function handle(): int
     {
-        $threshold = (int) env('LOW_STOCK_THRESHOLD', 5);
+        $defaultThreshold = (int) env('LOW_STOCK_THRESHOLD', 5);
 
         // If stock has recovered, return status from low_stock to active.
         BloodInventory::query()
             ->where('status', 'low_stock')
-            ->where('units_available', '>', $threshold)
+            ->whereRaw("units_available > CASE component WHEN 'whole_blood' THEN 20 WHEN 'packed_red_blood_cells' THEN 20 WHEN 'platelet_concentrate' THEN 5 WHEN 'fresh_frozen_plasma' THEN 10 ELSE ? END", [$defaultThreshold])
             ->whereDate('expiration_date', '>=', now()->toDateString())
             ->update([
                 'status' => 'active',
@@ -29,7 +29,7 @@ class SendLowStockAlerts extends Command
 
         $lowStockItems = BloodInventory::query()
             ->with('facility')
-            ->where('units_available', '<=', $threshold)
+            ->whereRaw("units_available <= CASE component WHEN 'whole_blood' THEN 20 WHEN 'packed_red_blood_cells' THEN 20 WHEN 'platelet_concentrate' THEN 5 WHEN 'fresh_frozen_plasma' THEN 10 ELSE ? END", [$defaultThreshold])
             ->whereDate('expiration_date', '>=', now()->toDateString())
             ->where(function ($query): void {
                 $query
@@ -47,7 +47,7 @@ class SendLowStockAlerts extends Command
             ->whereNotNull('facility_id')
             ->where(function ($query): void {
                 $query
-                    ->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'Facilitator'))
+                    ->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'Blood Bank Staff'))
                     ->orWhereHas('roles.permissions', fn ($permissionQuery) => $permissionQuery->where('name', 'manage inventory'))
                     ->orWhereHas('permissions', fn ($permissionQuery) => $permissionQuery->where('name', 'manage inventory'));
             })
@@ -57,7 +57,7 @@ class SendLowStockAlerts extends Command
         $centralAdmins = User::query()
             ->where('is_active', true)
             ->whereNull('facility_id')
-            ->whereHas('roles', fn ($query) => $query->where('name', 'Super Administrator'))
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['Quality Assurance Officer', 'Super Administrator']))
             ->get();
 
         foreach ($lowStockItems as $item) {

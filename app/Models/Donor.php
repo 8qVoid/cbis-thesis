@@ -16,7 +16,7 @@ class Donor extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
-        'facility_id', 'first_name', 'last_name', 'middle_name', 'birth_date', 'sex', 'blood_type',
+        'user_id', 'facility_id', 'first_name', 'last_name', 'middle_name', 'birth_date', 'sex', 'blood_type',
         'contact_number', 'email', 'address', 'is_eligible', 'password', 'is_online_registered',
     ];
 
@@ -39,6 +39,8 @@ class Donor extends Authenticatable
     {
         return $this->belongsTo(Facility::class);
     }
+
+    public function user(): BelongsTo { return $this->belongsTo(User::class); }
 
     public function homeFacility(): BelongsTo
     {

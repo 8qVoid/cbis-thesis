@@ -3,9 +3,9 @@
 @section('content')
 @php
     $user = auth('web')->user();
-    $canSeeDonors = $user?->isCentralAdmin() || $user?->can('manage donors');
-    $canSeeDonations = $user?->isCentralAdmin() || $user?->can('manage donation records');
-    $canSeeReleases = $user?->isCentralAdmin() || $user?->can('view blood releases') || $user?->can('manage blood releases');
+    $canSeeDonors = $user?->can('manage donors') || $user?->can('view limited donors') || $user?->can('view detailed donors');
+    $canSeeDonations = $user?->can('manage donation records');
+    $canSeeReleases = $user?->can('view blood releases') || $user?->can('manage blood releases');
     $canOperateDonationRecords = ! ($user?->isCentralAdmin() ?? false) && ($user?->can('manage donation records') ?? false);
     $canOperateBloodReleases = ! ($user?->isCentralAdmin() ?? false) && ($user?->can('manage blood releases') ?? false);
 @endphp

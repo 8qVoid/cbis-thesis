@@ -23,11 +23,11 @@ class BloodInventoryExport implements FromCollection, WithHeadings
         return FacilityScope::apply(BloodInventory::query(), $this->user)
             ->when($this->from, fn ($query) => $query->whereDate('created_at', '>=', $this->from))
             ->when($this->to, fn ($query) => $query->whereDate('created_at', '<=', $this->to))
-            ->get(['blood_type', 'units_available', 'expiration_date', 'status', 'created_at']);
+            ->get(['blood_type', 'component', 'units_available', 'expiration_date', 'status', 'created_at']);
     }
 
     public function headings(): array
     {
-        return ['Blood Type', 'Units Available', 'Expiration Date', 'Status', 'Created At'];
+        return ['Blood Type', 'Blood Component', 'Units Available', 'Expiration Date', 'Status', 'Created At'];
     }
 }

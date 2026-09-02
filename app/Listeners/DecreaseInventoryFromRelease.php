@@ -16,7 +16,12 @@ class DecreaseInventoryFromRelease
         }
 
         $remaining = max(0, $inventory->units_available - $release->units_released);
-        $threshold = (int) env('LOW_STOCK_THRESHOLD', 5);
+        $threshold = match ($inventory->component) {
+            'whole_blood', 'packed_red_blood_cells' => 20,
+            'platelet_concentrate' => 5,
+            'fresh_frozen_plasma' => 10,
+            default => 5,
+        };
 
         $inventory->units_available = $remaining;
         $inventory->status = $remaining <= $threshold ? 'low_stock' : 'active';

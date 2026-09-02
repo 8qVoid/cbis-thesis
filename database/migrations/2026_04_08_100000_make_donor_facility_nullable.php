@@ -12,7 +12,9 @@ return new class extends Migration {
             $table->dropForeign(['facility_id']);
         });
 
-        DB::statement('ALTER TABLE donors MODIFY facility_id BIGINT UNSIGNED NULL');
+        Schema::table('donors', function (Blueprint $table) {
+            $table->unsignedBigInteger('facility_id')->nullable()->change();
+        });
 
         Schema::table('donors', function (Blueprint $table) {
             $table->foreign('facility_id')->references('id')->on('facilities')->nullOnDelete();
@@ -31,7 +33,9 @@ return new class extends Migration {
         }
 
         DB::statement('UPDATE donors SET facility_id = '.$defaultFacilityId.' WHERE facility_id IS NULL');
-        DB::statement('ALTER TABLE donors MODIFY facility_id BIGINT UNSIGNED NOT NULL');
+        Schema::table('donors', function (Blueprint $table) {
+            $table->unsignedBigInteger('facility_id')->nullable(false)->change();
+        });
 
         Schema::table('donors', function (Blueprint $table) {
             $table->foreign('facility_id')->references('id')->on('facilities')->cascadeOnDelete();

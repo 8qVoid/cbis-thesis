@@ -18,7 +18,7 @@ class UpdateStaffUserRequest extends BaseFormRequest
         }
 
         if ($currentUser->isCentralAdmin()) {
-            return false;
+            return $currentUser->can('manage users');
         }
 
         return $this->facilityOperatorCan('manage users')

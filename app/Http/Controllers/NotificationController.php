@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterNotificationsRequest;
 use App\Models\User;
-use App\Notifications\FacilityApplicationSubmitted;
+use App\Notifications\ActivityReviewStatusChanged;
+use App\Notifications\BloodReservationSubmitted;
 use App\Notifications\LowStockAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -91,11 +92,17 @@ class NotificationController extends Controller
      */
     private function notificationTypesFor(User $user): array
     {
-        if ($user->isCentralAdmin()) {
-            return [FacilityApplicationSubmitted::class, LowStockAlert::class];
+        if ($user->isQao()) {
+            return [LowStockAlert::class, BloodReservationSubmitted::class];
+        }
+        if ($user->isBloodBankStaff()) {
+            return [LowStockAlert::class, BloodReservationSubmitted::class];
+        }
+        if ($user->isEventFacilitator()) {
+            return [ActivityReviewStatusChanged::class];
         }
 
-        return [LowStockAlert::class];
+        return [];
     }
 
     /**
@@ -104,8 +111,9 @@ class NotificationController extends Controller
     private function notificationClassForFilter(string $type): ?string
     {
         return match ($type) {
-            'facility_application' => FacilityApplicationSubmitted::class,
             'low_stock' => LowStockAlert::class,
+            'reservation' => BloodReservationSubmitted::class,
+            'activity' => ActivityReviewStatusChanged::class,
             default => null,
         };
     }

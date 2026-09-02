@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Support\PhilippinePhone;
+use Illuminate\Validation\Rule;
 
 class StoreBloodBankLocationRequest extends BaseFormRequest
 {
@@ -24,7 +25,7 @@ class StoreBloodBankLocationRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'facility_id' => ['nullable', 'exists:facilities,id'],
+            'facility_id' => [Rule::requiredIf(fn () => $this->user()?->isQao() ?? false), 'nullable', 'exists:facilities,id'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'address' => ['required', 'string', 'max:255'],

@@ -3,8 +3,8 @@
 @section('content')
 @php
     $roleDescriptions = [
-        'Facilitator' => 'Approved facility front desk access for staff, donor records, donation records, bloodletting records, and event scheduling.',
-        'Medical Staff / Nurse' => 'Inventory-only access for blood stock updates.',
+        'Event Facilitator' => 'Creates and manages donation activities. A QAO must approve a location before it becomes public.',
+        'Blood Bank Staff' => 'Processes patient reservations, manages the facility inventory, and views detailed donor records.',
     ];
 @endphp
 <h4>Create Staff Account</h4>

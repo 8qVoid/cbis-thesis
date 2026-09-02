@@ -264,7 +264,7 @@ class ReportController extends Controller
 
     private function authorizeFacilityReports(): void
     {
-        if (auth()->user()?->isCentralAdmin() || ! auth()->user()?->can('manage inventory')) {
+        if (! auth()->user()?->canAny(['view reports', 'request summaries'])) {
             abort(403);
         }
     }

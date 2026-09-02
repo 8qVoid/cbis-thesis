@@ -74,6 +74,7 @@ class DonationRecordController extends Controller
         }
 
         $donationRecord->update($data);
+        event(new DonationRecorded($donationRecord->fresh()));
         $this->logAudit('donation_record.updated', $donationRecord, $data, $request);
 
         return redirect()->route('donation-records.index')->with('success', 'Donation record updated.');

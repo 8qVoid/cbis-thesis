@@ -6,12 +6,14 @@ use App\Http\Requests\FilterDonationScheduleRequest;
 use App\Http\Requests\StoreDonationScheduleRequest;
 use App\Http\Requests\UpdateDonationScheduleRequest;
 use App\Models\DonationSchedule;
-use App\Models\Donor;
 use App\Models\Facility;
+use App\Models\User;
+use App\Notifications\ActivityReviewStatusChanged;
 use App\Notifications\EventPostedNotification;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -81,6 +83,8 @@ class DonationScheduleController extends Controller
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
         unset($data['photo']);
+        $data['is_public'] = false;
+        $data['approval_status'] = 'pending';
 
         if ($request->hasFile('photo')) {
             $data['photo_path'] = $request->file('photo')->store('event-photos', 'public');
@@ -127,6 +131,11 @@ class DonationScheduleController extends Controller
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
         unset($data['photo']);
+        $data['is_public'] = false;
+        $data['approval_status'] = 'pending';
+        $data['reviewed_by'] = null;
+        $data['reviewed_at'] = null;
+        $data['review_notes'] = null;
 
         if ($request->hasFile('photo')) {
             if ($donationSchedule->photo_path) {
@@ -170,6 +179,25 @@ class DonationScheduleController extends Controller
         return redirect()->route('donation-schedules.index')->with('success', 'Schedule deleted.');
     }
 
+    public function review(Request $request, DonationSchedule $donationSchedule): RedirectResponse
+    {
+        abort_unless(auth()->user()->can('review activities'), 403);
+        $data = $request->validate(['approval_status' => ['required', 'in:approved,rejected'], 'review_notes' => ['nullable', 'string', 'max:1000']]);
+        $donationSchedule->update([
+            ...$data, 'is_public' => $data['approval_status'] === 'approved',
+            'reviewed_by' => auth()->id(), 'reviewed_at' => now(),
+        ]);
+        User::role('Event Facilitator')
+            ->where('is_active', true)
+            ->where('facility_id', $donationSchedule->facility_id)
+            ->each(fn (User $user) => $user->notify(new ActivityReviewStatusChanged($donationSchedule->fresh())));
+        if ($data['approval_status'] === 'approved') {
+            $this->notifyVerifiedDonors($donationSchedule->fresh());
+        }
+
+        return back()->with('success', 'Activity review saved.');
+    }
+
     private function authorizeRecord(DonationSchedule $record): void
     {
         if (! auth()->user()->isCentralAdmin() && $record->facility_id !== auth()->user()->facility_id) {
@@ -179,17 +207,16 @@ class DonationScheduleController extends Controller
 
     private function notifyVerifiedDonors(DonationSchedule $schedule): void
     {
-        if (! $schedule->is_public || ! in_array($schedule->status, ['planned', 'ongoing'], true)) {
+        if (! $schedule->is_public || $schedule->approval_status !== 'approved' || ! in_array($schedule->status, ['planned', 'ongoing'], true)) {
             return;
         }
 
         $schedule->loadMissing('facility');
 
-        Donor::query()
-            ->where('is_online_registered', true)
-            ->where('is_eligible', true)
+        User::role('Donor')
+            ->where('is_active', true)
             ->whereNotNull('email')
-            ->whereNotNull('password')
+            ->whereHas('donorProfile', fn ($query) => $query->where('is_eligible', true))
             ->chunkById(100, function ($donors) use ($schedule): void {
                 try {
                     Notification::send($donors, new EventPostedNotification($schedule));

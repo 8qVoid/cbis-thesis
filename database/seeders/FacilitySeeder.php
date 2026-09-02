@@ -38,7 +38,7 @@ class FacilitySeeder extends Seeder
             'facility_id' => $facility->id,
             'is_active' => true,
         ])->save();
-        $facilitator->syncRoles(['Facilitator']);
+        $facilitator->syncRoles(['Event Facilitator']);
 
         $medicalStaff = User::firstOrCreate(
             ['email' => 'medical.staff@cbis.local'],
@@ -53,7 +53,7 @@ class FacilitySeeder extends Seeder
             'facility_id' => $facility->id,
             'is_active' => true,
         ])->save();
-        $medicalStaff->syncRoles(['Medical Staff / Nurse']);
+        $medicalStaff->syncRoles(['Blood Bank Staff']);
 
         $legacyMedTech = User::withTrashed()->firstWhere('email', 'medtech@cbis.local');
 
@@ -69,7 +69,7 @@ class FacilitySeeder extends Seeder
             }
 
             $legacyMedTech->save();
-            $legacyMedTech->syncRoles(['Medical Staff / Nurse']);
+            $legacyMedTech->syncRoles(['Blood Bank Staff']);
         }
     }
 }

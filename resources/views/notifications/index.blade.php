@@ -2,13 +2,13 @@
 
 @section('content')
 @php
-    $facilityApplicationType = \App\Notifications\FacilityApplicationSubmitted::class;
-    $isCentralAdmin = auth('web')->user()?->isCentralAdmin() ?? false;
+    $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
+    $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Notifications</h1>
-        <p class="cbis-page-subtitle">{{ $isCentralAdmin ? 'Facility application and low stock alerts for central review.' : 'Low stock alerts for your assigned facility.' }}</p>
+        <p class="cbis-page-subtitle">Role-specific reservation, inventory, and activity alerts.</p>
     </div>
     <form method="POST" action="{{ route('notifications.read-all') }}">
         @csrf
@@ -25,13 +25,13 @@
                 <option value="unread" @selected(($status ?? 'all') === 'unread')>Unread</option>
             </select>
         </div>
-        @if($isCentralAdmin)
+        @if(auth()->user()->isQao() || auth()->user()->isBloodBankStaff())
             <div class="col-md-3">
                 <label class="form-label">Alert Type</label>
                 <select name="type" class="form-select">
                     <option value="all" @selected(($alertType ?? 'all') === 'all')>All alerts</option>
-                    <option value="facility_application" @selected(($alertType ?? 'all') === 'facility_application')>Facility applications</option>
                     <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
+                    <option value="reservation" @selected(($alertType ?? 'all') === 'reservation')>Blood reservations</option>
                 </select>
             </div>
         @endif
@@ -67,11 +67,12 @@
                         <tr>
                             <td>{{ $data['title'] ?? 'Low stock alert' }}</td>
                             <td>
-                                @if($notification->type === $facilityApplicationType)
-                                    <div>{{ $data['organization_name'] ?? 'N/A' }}</div>
-                                    <div class="text-muted small">
-                                        {{ $data['facility_type'] ?? 'N/A' }} | {{ $data['contact_person'] ?? 'N/A' }} | {{ $data['email'] ?? 'N/A' }}
-                                    </div>
+                                @if($notification->type === $reservationSubmittedType)
+                                    <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
+                                    <div class="text-muted small">{{ $data['blood_type'] ?? 'N/A' }} · {{ \App\Models\BloodInventory::COMPONENTS[$data['component'] ?? ''] ?? ($data['component'] ?? 'N/A') }}</div>
+                                @elseif($notification->type === $activityReviewType)
+                                    <div>{{ $data['activity_title'] ?? 'Activity' }}</div>
+                                    <div class="text-muted small">Status: {{ str($data['approval_status'] ?? 'updated')->title() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
                                 @else
                                     <div>{{ $data['facility_name'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">

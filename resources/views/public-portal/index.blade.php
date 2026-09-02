@@ -79,6 +79,5 @@
 
 <div class="mt-3 d-flex gap-2">
     <a href="{{ route('public.map') }}" class="btn btn-danger">View Events & Map</a>
-    <a href="{{ route('public.availability') }}" class="btn btn-outline-danger">View Available Bloods</a>
 </div>
 @endsection

@@ -14,9 +14,9 @@
     @endif
 </div>
 <div class="table-responsive">
-<table class="table table-striped bg-white"><thead><tr><th>Blood Type</th><th>Units</th><th>Expiry</th><th>Source</th><th>Status</th><th>Action</th></tr></thead><tbody>
+<table class="table table-striped bg-white"><thead><tr><th>Blood Type</th><th>Component</th><th>Units</th><th>Expiry</th><th>Source</th><th>Status</th><th>Action</th></tr></thead><tbody>
 @foreach($inventory as $item)
-<tr><td>{{ $item->blood_type }}</td><td>{{ $item->units_available }}</td><td>{{ $item->expiration_date?->toDateString() }}</td><td>{{ $item->donationRecord ? 'Donation record' : 'Manual adjustment' }}</td><td><span class="badge {{ $item->status === 'low_stock' ? 'cbis-status-low' : ($item->status === 'expired' ? 'cbis-status-expired' : 'cbis-status-active') }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span></td><td><a href="{{ route('blood-inventory.show',$item) }}" class="btn btn-sm btn-outline-secondary">View</a></td></tr>
+<tr><td>{{ $item->blood_type }}</td><td>{{ $item->component_label }}</td><td>{{ $item->units_available }}</td><td>{{ $item->expiration_date?->toDateString() }}</td><td>{{ $item->donationRecord ? 'Donation record' : 'Manual adjustment' }}</td><td><span class="badge {{ $item->status === 'low_stock' ? 'cbis-status-low' : ($item->status === 'expired' ? 'cbis-status-expired' : 'cbis-status-active') }}">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</span></td><td><a href="{{ route('blood-inventory.show',$item) }}" class="btn btn-sm btn-outline-secondary">View</a></td></tr>
 @endforeach
 </tbody></table></div>{{ $inventory->links() }}
 @endsection

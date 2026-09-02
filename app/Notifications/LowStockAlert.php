@@ -34,6 +34,7 @@ class LowStockAlert extends Notification implements ShouldQueue
             'facility_id' => $this->inventory->facility_id,
             'facility_name' => $this->inventory->facility?->name,
             'blood_type' => $this->inventory->blood_type,
+            'component' => $this->inventory->component_label,
             'units_available' => $this->inventory->units_available,
             'expiration_date' => $this->inventory->expiration_date?->toDateString(),
         ];
@@ -47,6 +48,7 @@ class LowStockAlert extends Notification implements ShouldQueue
             ->line('A low stock inventory item was detected.')
             ->line('Facility: '.($this->inventory->facility?->name ?? 'N/A'))
             ->line('Blood Type: '.$this->inventory->blood_type)
+            ->line('Component: '.$this->inventory->component_label)
             ->line('Units Available: '.$this->inventory->units_available)
             ->line('Expiration Date: '.($this->inventory->expiration_date?->toDateString() ?? 'N/A'))
             ->line('Please review and replenish stock as needed.');
