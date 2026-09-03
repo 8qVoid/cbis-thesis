@@ -52,7 +52,7 @@ class RolePermissionSeeder extends Seeder
         $donorRole = Role::findOrCreate('Donor', 'web');
         $patientRole = Role::findOrCreate('Patient', 'web');
 
-        $qao->syncPermissions(['manage facilities', 'manage users', 'manage roles', 'view inventory', 'view blood releases', 'view reports', 'export reports', 'review activities', 'monitor reservations', 'view limited donors', 'manage locations', 'view public portal']);
+        $qao->syncPermissions(['manage facilities', 'manage users', 'manage roles', 'view inventory', 'view blood releases', 'view reports', 'export reports', 'review activities', 'manage schedules', 'monitor reservations', 'view limited donors', 'manage locations', 'view public portal']);
         $bloodBankStaff->syncPermissions(['manage donors', 'view detailed donors', 'manage donation records', 'manage bloodletting records', 'view inventory', 'manage inventory', 'view blood releases', 'manage blood releases', 'process reservations', 'request summaries', 'view public portal']);
         $eventFacilitator->syncPermissions(['manage schedules', 'view public portal']);
         $donorRole->syncPermissions(['view public portal']);

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<p class="alert alert-info">Blood Bank Staff must be assigned to the Bacolod main chapter. Branches have Event Facilitators for activity coordination.</p>
 @php
     $roleDescriptions = [
         'Event Facilitator' => 'Creates and manages donation activities. A QAO must approve a location before it becomes public.',

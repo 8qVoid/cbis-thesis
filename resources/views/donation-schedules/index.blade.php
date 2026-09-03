@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageSchedules = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage schedules') ?? false);
+    $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>

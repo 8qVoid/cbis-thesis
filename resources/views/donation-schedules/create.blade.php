@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <h4>Create Event Schedule</h4>
+<p class="alert alert-info">{{ auth()->user()->isQao() ? 'QAO activities are approved automatically. Select a map location; current or upcoming planned/ongoing activities will appear publicly.' : 'Your activity and map location remain private until QAO approval.' }}</p>
 <form method="POST" action="{{ route('donation-schedules.store') }}" class="card card-body" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
@@ -68,14 +69,11 @@
             <small class="text-muted">Upload a JPG, PNG, or WebP image up to 4 MB.</small>
         </div>
         <div class="col-md-3">
-            <label class="form-label">Show to Public</label>
-            <select name="is_public" class="form-select">
-                <option value="1" @selected(old('is_public', '1') === '1')>Yes</option>
-                <option value="0" @selected(old('is_public') === '0')>No</option>
-            </select>
+            <label class="form-label">Publication</label>
+            <p>{{ auth()->user()->isQao() ? 'Automatic QAO approval' : 'Requires QAO approval' }}</p>
         </div>
         <div class="col-12">
-            <label class="form-label">Pick Coordinates on Map (optional)</label>
+            <label class="form-label">Pick Coordinates on Map {{ auth()->user()->isQao() ? '(required)' : '(optional)' }}</label>
             <div id="event-map" class="rounded border" style="height: 320px"></div>
             <small class="text-muted">Click map to set latitude and longitude.</small>
         </div>

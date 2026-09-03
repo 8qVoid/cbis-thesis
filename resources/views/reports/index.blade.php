@@ -69,8 +69,7 @@
         <div class="cbis-report-actions">
             <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Current Month</a>
             @can('export reports')
-                <a href="{{ route('reports.pdf', $exportQuery) }}" class="btn btn-outline-danger">Download PDF</a>
-                <a href="{{ route('reports.excel', $exportQuery) }}" class="btn btn-outline-success">Download Excel</a>
+                <span class="text-muted small">Select export contents below.</span>
             @else
                 <span class="text-muted small align-self-center">Summary view only. Export is restricted to QAO.</span>
             @endcan
@@ -78,6 +77,25 @@
     </div>
     </div>
 </form>
+
+@can('export reports')
+<form method="GET" action="{{ route('reports.excel') }}" class="card card-body mb-3">
+    <input type="hidden" name="export_selection" value="1">
+    <h2 class="h5">Choose what to export</h2>
+    <p class="text-muted">Bacolod main chapter records for {{ $periodLabel }}. Private documents and clinical notes are excluded.</p>
+    @foreach($exportQuery as $key=>$value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+    <div class="d-flex flex-wrap gap-3 mb-3">
+    @foreach(\App\Support\ReportData::TYPES as $value=>$label)
+        <label><input type="checkbox" name="records[]" value="{{ $value }}" @checked(in_array($value, $selectedRecords))> {{ $label }}</label>
+    @endforeach
+    </div>
+    <label for="report-detail" class="form-label">Export contents</label>
+    <select id="report-detail" name="detail" class="form-select mb-3">
+        @foreach(['details'=>'Detailed records','summary'=>'Totals only','both'=>'Detailed records and totals'] as $value=>$label)<option value="{{ $value }}" @selected($selectedDetail===$value)>{{ $label }}</option>@endforeach
+    </select>
+    <div class="d-flex gap-2"><button type="submit" class="btn btn-outline-success">Download Excel</button><button type="submit" formaction="{{ route('reports.pdf') }}" class="btn btn-outline-danger">Download PDF</button></div>
+</form>
+@endcan
 
 <div class="row g-3 mb-3">
     <div class="col-md-3">

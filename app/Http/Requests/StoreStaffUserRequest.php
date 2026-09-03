@@ -32,7 +32,7 @@ class StoreStaffUserRequest extends BaseFormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'regex:/^\+639\d{9}$/', 'unique:users,phone'],
-            'facility_id' => [$isCentralAdmin ? 'required' : 'nullable', 'integer', 'exists:facilities,id'],
+            'facility_id' => [$isCentralAdmin ? 'required' : 'nullable', 'integer', Rule::exists('facilities', 'id')->where(fn ($q) => $q->where('is_active', true)->when($this->input('role') === 'Blood Bank Staff', fn ($q) => $q->where('is_main_chapter', true)))],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
             'role' => [

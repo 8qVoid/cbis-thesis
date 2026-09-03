@@ -24,6 +24,8 @@ class FacilitySeeder extends Seeder
             ]
         );
 
+        $facility->update(['is_main_chapter' => true]);
+
         $facilitator = User::firstOrCreate(
             ['email' => 'facility.admin@cbis.local'],
             [

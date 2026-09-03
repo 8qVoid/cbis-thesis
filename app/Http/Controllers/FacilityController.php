@@ -53,6 +53,7 @@ class FacilityController extends Controller
 
     public function destroy(Facility $facility): RedirectResponse
     {
+        abort_if($facility->is_main_chapter, 403, 'The Bacolod main chapter cannot be deleted.');
         $facility->delete();
         $this->logAudit('facility.deleted', $facility);
 

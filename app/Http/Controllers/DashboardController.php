@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
 use App\Models\DonationRecord;
+use App\Models\DonationSchedule;
 use App\Models\Donor;
 use App\Support\DonorScope;
 use App\Support\FacilityScope;
@@ -16,6 +17,13 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $user = auth()->user();
+
+        if ($user->isEventFacilitator()) {
+            $events = FacilityScope::apply(DonationSchedule::query(), $user)
+                ->orderByDesc('event_date')->limit(10)->get();
+
+            return view('dashboard.facilitator', compact('events'));
+        }
 
         $donors = DonorScope::apply(Donor::query(), $user)->count();
         $donations = FacilityScope::apply(DonationRecord::query(), $user)->count();

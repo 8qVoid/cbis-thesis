@@ -83,8 +83,10 @@ class DonationScheduleController extends Controller
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
         unset($data['photo']);
-        $data['is_public'] = false;
-        $data['approval_status'] = 'pending';
+        $data['is_public'] = auth()->user()->isQao();
+        $data['approval_status'] = auth()->user()->isQao() ? 'approved' : 'pending';
+        $data['reviewed_by'] = auth()->user()->isQao() ? auth()->id() : null;
+        $data['reviewed_at'] = auth()->user()->isQao() ? now() : null;
 
         if ($request->hasFile('photo')) {
             $data['photo_path'] = $request->file('photo')->store('event-photos', 'public');
@@ -131,10 +133,10 @@ class DonationScheduleController extends Controller
         $data['start_at'] = "{$data['event_date']} {$data['start_time']}:00";
         $data['end_at'] = "{$data['event_date']} {$data['end_time']}:00";
         unset($data['photo']);
-        $data['is_public'] = false;
-        $data['approval_status'] = 'pending';
-        $data['reviewed_by'] = null;
-        $data['reviewed_at'] = null;
+        $data['is_public'] = auth()->user()->isQao();
+        $data['approval_status'] = auth()->user()->isQao() ? 'approved' : 'pending';
+        $data['reviewed_by'] = auth()->user()->isQao() ? auth()->id() : null;
+        $data['reviewed_at'] = auth()->user()->isQao() ? now() : null;
         $data['review_notes'] = null;
 
         if ($request->hasFile('photo')) {

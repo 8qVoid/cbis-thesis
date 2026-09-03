@@ -79,7 +79,7 @@
                     </form>
                 @elseif($webAuthenticated)
                     @php
-                        $roleLabel = $webUser?->getRoleNames()->first() ?? 'Staff User';
+                        $roleLabel = $webUser?->getRoleNames()->join(' & ') ?: 'Staff User';
                     @endphp
                     <div class="cbis-user-meta me-3" title="{{ $webUser?->name }} ({{ $roleLabel }})">
                         <div class="cbis-user-name">{{ $webUser?->name }}</div>

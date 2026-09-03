@@ -22,7 +22,7 @@ class RoleSurfaceAuditTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
         $this->facility = Facility::create([
             'code' => 'ROLE-AUDIT', 'name' => 'Red Cross Role Audit',
-            'type' => 'blood_bank', 'is_active' => true,
+            'type' => 'blood_bank', 'is_active' => true, 'is_main_chapter' => true,
         ]);
     }
 
@@ -32,12 +32,12 @@ class RoleSurfaceAuditTest extends TestCase
         $this->assertPagesOk($qao, [
             'dashboard', 'donors.index', 'blood-inventory.index', 'blood-releases.index',
             'reservations.index', 'donation-schedules.index', 'blood-bank-locations.index',
-            'blood-bank-locations.create', 'reports.index', 'reports.pdf', 'reports.excel',
+            'blood-bank-locations.create', 'donation-schedules.create', 'reports.index', 'reports.pdf', 'reports.excel',
             'notifications.index', 'facilities.index', 'staff-users.index', 'staff-users.create',
         ]);
         $this->assertPagesForbidden($qao, [
             'donation-records.index', 'bloodletting-records.index', 'blood-inventory.create',
-            'blood-releases.create', 'donation-schedules.create', 'reservations.create',
+            'blood-releases.create', 'reservations.create',
         ]);
     }
 
@@ -78,6 +78,12 @@ class RoleSurfaceAuditTest extends TestCase
     public function test_event_facilitator_pages_render_and_blood_operations_are_blocked(): void
     {
         $facilitator = $this->staff('Event Facilitator');
+        $this->actingAs($facilitator)->get(route('dashboard'))
+            ->assertOk()
+            ->assertViewIs('dashboard.facilitator')
+            ->assertViewMissing('inventoryByType')
+            ->assertSee('Activity Dashboard')
+            ->assertDontSee('Current Stock by Blood Type');
         $this->assertPagesOk($facilitator, [
             'dashboard', 'donation-schedules.index', 'donation-schedules.create', 'notifications.index',
         ]);

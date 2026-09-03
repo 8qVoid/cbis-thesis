@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\MainChapter;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,6 +16,17 @@ class EnsureFacilityAccess
 
         if (! $user) {
             abort(401);
+        }
+
+        if ($user->isBloodBankStaff()) {
+            abort_unless(MainChapter::contains($user->facility_id), 403, 'Blood operations are restricted to the Bacolod main chapter.');
+        }
+
+        foreach ($request->route()->parameters() as $record) {
+            if ($record instanceof Model
+                && in_array($record->getTable(), ['blood_inventory', 'blood_releases', 'donation_records', 'bloodletting_records'], true)) {
+                abort_unless(MainChapter::contains($record->facility_id), 403, 'This historical record is outside the main chapter.');
+            }
         }
 
         if (! $user->isCentralAdmin() && ! $user->facility_id) {

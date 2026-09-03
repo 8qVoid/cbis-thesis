@@ -74,14 +74,11 @@
             <small class="text-muted">{{ $donationSchedule->photo_path ? 'Upload a new image only if you want to replace the current photo.' : 'Upload a JPG, PNG, or WebP image up to 4 MB.' }}</small>
         </div>
         <div class="col-md-3">
-            <label class="form-label">Show to Public</label>
-            <select name="is_public" class="form-select">
-                <option value="1" @selected((string) old('is_public', (int) $donationSchedule->is_public) === '1')>Yes</option>
-                <option value="0" @selected((string) old('is_public', (int) $donationSchedule->is_public) === '0')>No</option>
-            </select>
+            <label class="form-label">Publication</label>
+            <p>{{ auth()->user()->isQao() ? 'Automatic QAO approval' : 'Changes require QAO approval again' }}</p>
         </div>
         <div class="col-12">
-            <label class="form-label">Pick Coordinates on Map (optional)</label>
+            <label class="form-label">Pick Coordinates on Map {{ auth()->user()->isQao() ? '(required)' : '(optional)' }}</label>
             <div id="event-map" class="rounded border" style="height: 320px"></div>
             <small class="text-muted">Click map to update latitude and longitude.</small>
         </div>

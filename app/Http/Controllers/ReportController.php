@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\BloodInventoryExport;
+use App\Exports\SelectedReportsExport;
 use App\Http\Requests\FilterReportsRequest;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
 use App\Models\DonationRecord;
 use App\Support\FacilityScope;
+use App\Support\ReportData;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -29,6 +30,8 @@ class ReportController extends Controller
             : $currentMonth->copy();
 
         return view('reports.index', [
+            'selectedRecords' => $filters['records'] ?? ['inventory'],
+            'selectedDetail' => $filters['detail'] ?? 'both',
             ...$report,
             'from' => $from,
             'to' => $to,
@@ -50,18 +53,15 @@ class ReportController extends Controller
         $filters = $request->validated();
         [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
 
-        $inventory = FacilityScope::apply(BloodInventory::query(), auth()->user())
-            ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
-            ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to))
-            ->orderBy('blood_type')
-            ->get();
-
-        $pdf = Pdf::loadView('reports.pdf.inventory', [
-            'records' => $inventory,
+        abort_unless(auth()->user()->can('export reports'), 403);
+        $detail = $filters['detail'] ?? 'both';
+        $pdf = Pdf::loadView('reports.pdf.selected', [
+            'sections' => ReportData::sections($filters['records'] ?? ['inventory'], $detail, $from, $to, auth()->user()),
+            'detail' => $detail,
             'periodLabel' => $periodLabel,
         ]);
 
-        $fileName = 'blood-inventory-report-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.pdf';
+        $fileName = 'bacolod-reports-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.pdf';
 
         return $pdf->download($fileName);
     }
@@ -73,10 +73,11 @@ class ReportController extends Controller
         $filters = $request->validated();
         [$from, $to, $selectedMonth, $selectedDay, $periodMode] = $this->resolvePeriod($filters);
 
-        $fileName = 'blood-inventory-report-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.xlsx';
+        abort_unless(auth()->user()->can('export reports'), 403);
+        $fileName = 'bacolod-reports-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.xlsx';
 
         return Excel::download(
-            new BloodInventoryExport($from, $to, auth()->user()),
+            new SelectedReportsExport(ReportData::sections($filters['records'] ?? ['inventory'], $filters['detail'] ?? 'both', $from, $to, auth()->user())),
             $fileName
         );
     }

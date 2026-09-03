@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageSchedules = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage schedules') ?? false);
+    $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
 @endphp
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h4 class="mb-0">Event Details</h4>

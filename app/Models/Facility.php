@@ -20,12 +20,14 @@ class Facility extends Model
         'email',
         'address',
         'is_active',
+        'is_main_chapter',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_main_chapter' => 'boolean',
         ];
     }
 

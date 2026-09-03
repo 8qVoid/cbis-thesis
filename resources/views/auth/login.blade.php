@@ -33,7 +33,7 @@
                     <a href="{{ route('password.request') }}" class="text-danger text-decoration-none">Forgot password?</a>
                 </div>
                 <hr>
-                <a href="{{ route('donor.register') }}" class="btn btn-outline-secondary w-100">Donor Online Registration</a>
+                <a href="{{ route('donor.register') }}" class="btn btn-outline-secondary w-100">Register as Donor or Patient</a>
             </div>
         </div>
     </div>

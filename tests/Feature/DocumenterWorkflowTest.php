@@ -79,12 +79,12 @@ class DocumenterWorkflowTest extends TestCase
             'facility_id' => $facility->id, 'blood_type' => 'O+', 'component' => 'packed_red_blood_cells',
             'units_requested' => 2, 'needed_on' => now()->addDays(2)->toDateString(),
             'clinical_purpose' => 'Scheduled treatment', 'blood_request' => $file('blood-request.pdf'),
-            'identification' => $file('id.pdf'), 'referral_letter' => $file('referral.pdf'),
-            'prescription' => $file('prescription.pdf'),
+            'identification' => $file('id.pdf'),
         ])->assertRedirect(route('reservations.index'));
 
         $reservation = BloodReservation::with('documents')->firstOrFail();
-        $this->assertCount(4, $reservation->documents);
+        $this->assertCount(2, $reservation->documents);
+        $this->assertEqualsCanonicalizing(['blood_request', 'identification'], $reservation->documents->pluck('type')->all());
         Notification::assertSentTo($qao, BloodReservationSubmitted::class);
         Notification::assertSentTo($bbs, BloodReservationSubmitted::class);
 
@@ -101,6 +101,30 @@ class DocumenterWorkflowTest extends TestCase
         ]);
         $this->actingAs($bbs)->patch(route('reservations.review', $reservation->fresh()), ['status' => 'approved'])->assertRedirect();
         $this->assertSame('approved', $reservation->fresh()->status);
+    }
+
+    public function test_reservation_requires_both_separate_documents_before_creating_a_request(): void
+    {
+        Storage::fake('local');
+        Notification::fake();
+        $facility = $this->facility();
+        $patient = User::factory()->create();
+        $patient->assignRole('Patient');
+
+        foreach (['identification', 'blood_request'] as $missing) {
+            $data = [
+                'facility_id' => $facility->id, 'blood_type' => 'O+', 'component' => 'whole_blood',
+                'units_requested' => 1, 'needed_on' => now()->addDay()->toDateString(),
+                'identification' => UploadedFile::fake()->image('id.jpg'),
+                'blood_request' => UploadedFile::fake()->image('doctors-request.jpg'),
+            ];
+            unset($data[$missing]);
+            $this->actingAs($patient)->post(route('reservations.store'), $data)->assertSessionHasErrors($missing);
+        }
+
+        $this->assertDatabaseCount('blood_reservations', 0);
+        $this->assertDatabaseCount('blood_reservation_documents', 0);
+        Notification::assertNothingSent();
     }
 
     public function test_qao_monitors_reservations_while_only_bbs_can_process_them(): void
@@ -263,6 +287,6 @@ class DocumenterWorkflowTest extends TestCase
 
     private function facility(string $code = 'FAC-TEST'): Facility
     {
-        return Facility::create(['code' => $code, 'name' => "Red Cross {$code}", 'type' => 'blood_bank', 'is_active' => true]);
+        return Facility::create(['code' => $code, 'name' => "Red Cross {$code}", 'type' => 'blood_bank', 'is_active' => true, 'is_main_chapter' => ! Facility::where('is_main_chapter', true)->exists()]);
     }
 }

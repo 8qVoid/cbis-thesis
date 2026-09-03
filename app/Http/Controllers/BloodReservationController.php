@@ -8,10 +8,12 @@ use App\Models\Facility;
 use App\Models\User;
 use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
+use App\Support\MainChapter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BloodReservationController extends Controller
@@ -23,7 +25,8 @@ class BloodReservationController extends Controller
             $reservations = $user->bloodReservations()->with('facility')->latest()->paginate(15);
         } else {
             abort_unless($user->can('process reservations') || $user->can('monitor reservations'), 403);
-            $query = BloodReservation::with(['patient', 'facility']);
+            abort_unless($user->isQao() || MainChapter::contains($user->facility_id), 403);
+            $query = BloodReservation::with(['patient', 'facility'])->whereIn('facility_id', MainChapter::ids());
             if (! $user->isQao()) {
                 $query->where('facility_id', $user->facility_id);
             }
@@ -36,7 +39,7 @@ class BloodReservationController extends Controller
     public function create(): View
     {
         abort_unless(auth()->user()->hasRole('Patient'), 403);
-        $facilities = Facility::where('is_active', true)->orderBy('name')->get();
+        $facilities = Facility::whereIn('id', MainChapter::ids())->get();
 
         return view('blood-reservations.create', compact('facilities'));
     }
@@ -45,20 +48,18 @@ class BloodReservationController extends Controller
     {
         abort_unless(auth()->user()->hasRole('Patient'), 403);
         $data = $request->validate([
-            'facility_id' => ['required', 'exists:facilities,id'], 'blood_type' => ['required', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
+            'facility_id' => ['required', Rule::exists('facilities', 'id')->where('is_main_chapter', true)->where('is_active', true)->whereNull('deleted_at')], 'blood_type' => ['required', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
             'component' => ['required', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))], 'units_requested' => ['required', 'integer', 'min:1', 'max:20'],
             'needed_on' => ['required', 'date', 'after_or_equal:today'], 'clinical_purpose' => ['nullable', 'string', 'max:1000'],
             'blood_request' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'identification' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'referral_letter' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'prescription' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
         $reservation = DB::transaction(function () use ($request, $data): BloodReservation {
             $reservation = BloodReservation::create([
-                ...collect($data)->except(['blood_request', 'identification', 'referral_letter', 'prescription'])->all(),
+                ...collect($data)->except(['blood_request', 'identification'])->all(),
                 'reference' => 'BR-'.now()->format('Ymd').'-'.strtoupper(str()->random(6)), 'patient_user_id' => auth()->id(),
             ]);
-            foreach (['blood_request', 'identification', 'referral_letter', 'prescription'] as $type) {
+            foreach (['blood_request', 'identification'] as $type) {
                 if (! $request->hasFile($type)) {
                     continue;
                 }
@@ -86,7 +87,7 @@ class BloodReservationController extends Controller
     {
         $user = auth()->user();
         $isOwner = $user->hasRole('Patient') && $reservation->patient_user_id === $user->id;
-        $isFacilityBbs = $user->can('process reservations') && $user->facility_id === $reservation->facility_id;
+        $isFacilityBbs = $user->can('process reservations') && $user->facility_id === $reservation->facility_id && MainChapter::contains($user->facility_id);
         abort_unless($isOwner || $isFacilityBbs, 403);
         $record = $reservation->documents()->findOrFail($document);
 
@@ -96,6 +97,7 @@ class BloodReservationController extends Controller
     public function review(Request $request, BloodReservation $reservation): RedirectResponse
     {
         abort_unless(auth()->user()->can('process reservations'), 403);
+        abort_unless(MainChapter::contains($reservation->facility_id), 403);
         abort_unless(auth()->user()->facility_id === $reservation->facility_id, 403);
         $transitions = [
             'submitted' => ['under_review', 'rejected'],
@@ -146,6 +148,7 @@ class BloodReservationController extends Controller
             return;
         }
         abort_unless($user->can('process reservations') || $user->can('monitor reservations'), 403);
+        abort_unless(MainChapter::contains($reservation->facility_id), 403);
         if (! $user->isQao()) {
             abort_unless($reservation->facility_id === $user->facility_id, 403);
         }
