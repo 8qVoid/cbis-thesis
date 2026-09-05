@@ -35,7 +35,8 @@ COPY --from=vendor /app/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 COPY docker/start.sh /usr/local/bin/cbis-start
 
-RUN chmod +x /usr/local/bin/cbis-start \
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chmod +x /usr/local/bin/cbis-start \
     && chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
