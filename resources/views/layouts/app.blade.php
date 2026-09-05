@@ -61,7 +61,10 @@
                 @if($webAuthenticated)
                     <li class="nav-item"><a class="nav-link" href="{{ $webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard') }}">Home</a></li>
                     @if($webUser?->hasPatientAccess())<li class="nav-item"><a class="nav-link" href="{{ route('reservations.index') }}">Blood Requests</a></li>@endif
-                    @if($webUser?->hasDonorAccess())<li class="nav-item"><a class="nav-link" href="{{ route('donor.events.index') }}">Donation Events</a></li>@endif
+                    @if($webUser?->hasDonorAccess())
+                        <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('donor.events.index') }}">My Registrations</a></li>
+                    @endif
                 @else
                     @if(! $donorAuthenticated)
                         <li class="nav-item"><a class="nav-link" href="{{ route('public.index') }}">Public Portal</a></li>
@@ -164,7 +167,10 @@
 @endif
 <main id="main-content" class="container cbis-main py-4">
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status" data-dismiss-after="5000">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss message"></button>
+        </div>
     @endif
     @if($errors->any())
         <div class="alert alert-danger">
@@ -206,6 +212,16 @@ const cbisConfirmModal = cbisConfirmModalElement ? new bootstrap.Modal(cbisConfi
 const cbisConfirmTitle = document.getElementById('cbisConfirmTitle');
 const cbisConfirmMessage = document.getElementById('cbisConfirmMessage');
 const cbisConfirmButton = document.getElementById('cbisConfirmButton');
+
+document.querySelectorAll('.js-flash-message').forEach((message) => {
+    const dismissAfter = Number(message.dataset.dismissAfter || 5000);
+
+    window.setTimeout(() => {
+        if (message.isConnected) {
+            bootstrap.Alert.getOrCreateInstance(message).close();
+        }
+    }, dismissAfter);
+});
 
 document.querySelectorAll('.js-confirm-action').forEach((form) => {
     form.addEventListener('submit', (event) => {

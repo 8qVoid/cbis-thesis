@@ -54,6 +54,44 @@ class DocumenterWorkflowTest extends TestCase
         $this->assertDatabaseCount('donors', 1);
     }
 
+    public function test_donor_can_reach_the_event_map_and_flash_messages_are_dismissible(): void
+    {
+        $donorUser = User::factory()->create();
+        $donorUser->assignRole('Donor');
+
+        $this->actingAs($donorUser)
+            ->withSession(['success' => 'Account registration successful.'])
+            ->get(route('account.dashboard'))
+            ->assertOk()
+            ->assertSee('Find Events on Map')
+            ->assertSee('My Registrations')
+            ->assertSee('js-flash-message', false)
+            ->assertSee('data-dismiss-after="5000"', false)
+            ->assertSee('aria-label="Dismiss message"', false);
+
+        $this->actingAs($donorUser)
+            ->get(route('public.map'))
+            ->assertOk()
+            ->assertSee('Events, Facilities and Map')
+            ->assertSee('id="map"', false);
+    }
+
+    public function test_public_account_login_ignores_a_stale_staff_destination(): void
+    {
+        $donorUser = User::factory()->create([
+            'email' => 'donor-login@example.test',
+            'password' => bcrypt('password123'),
+        ]);
+        $donorUser->assignRole('Donor');
+
+        $this->withSession(['url.intended' => route('dashboard')])
+            ->post(route('login.store'), [
+                'login' => 'donor-login@example.test',
+                'password' => 'password123',
+            ])
+            ->assertRedirect(route('account.dashboard'));
+    }
+
     public function test_patient_account_can_submit_private_requirements_and_bbs_processes_in_order(): void
     {
         Storage::fake('local');

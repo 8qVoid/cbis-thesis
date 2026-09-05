@@ -3,7 +3,10 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">My Event Registrations</h4>
-    <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-secondary btn-sm">Back to Profile</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('public.map') }}" class="btn btn-danger btn-sm">Find Events on Map</a>
+        <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-secondary btn-sm">Back to Profile</a>
+    </div>
 </div>
 
 <div class="card">

@@ -45,7 +45,9 @@ class LoginController extends Controller
         if (Auth::guard('web')->attempt($webCredentials, $remember)) {
             $request->session()->regenerate();
             $user = Auth::guard('web')->user();
-            return redirect()->intended($user->hasAnyRole(['Donor', 'Patient']) ? route('account.dashboard') : route('dashboard'));
+            $request->session()->forget('url.intended');
+
+            return redirect()->route($user->hasAnyRole(['Donor', 'Patient']) ? 'account.dashboard' : 'dashboard');
         }
 
         // Fallback to donor account.
@@ -57,8 +59,9 @@ class LoginController extends Controller
 
         if (Auth::guard('donor')->attempt($donorCredentials, $remember)) {
             $request->session()->regenerate();
+            $request->session()->forget('url.intended');
 
-            return redirect()->intended(route('donor.portal.profile'));
+            return redirect()->route('donor.portal.profile');
         }
 
         return back()->withErrors(['login' => 'Invalid credentials.'])->onlyInput('login');
