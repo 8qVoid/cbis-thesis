@@ -12,6 +12,32 @@ use Illuminate\View\View;
 
 class AccountProfileController extends Controller
 {
+    public function details(): View
+    {
+        $user = auth()->user();
+        abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
+
+        return view('account.details', compact('user'));
+    }
+
+    public function saveDetails(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+        abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:80'],
+            'middle_name' => ['nullable', 'string', 'max:80'],
+            'last_name' => ['required', 'string', 'max:80'],
+            'address' => ['required', 'string', 'max:500'],
+        ]);
+        DB::transaction(function () use ($user, $data): void {
+            $user->update([...$data, 'name' => trim(implode(' ', array_filter([$data['first_name'], $data['middle_name'] ?? null, $data['last_name']])))]);
+            $user->donorProfile()->update($data);
+        });
+
+        return redirect()->route('account.details.edit')->with('success', 'Profile updated.');
+    }
+
     public function edit(): View
     {
         $user = auth()->user();
@@ -26,6 +52,7 @@ class AccountProfileController extends Controller
         abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
 
         $data = $request->validate([
+            'continue_to' => ['nullable', 'in:donor,patient'],
             'services' => ['required', 'array', 'min:1'],
             'services.*' => ['required', 'in:donor,patient'],
             'blood_type' => [Rule::requiredIf(fn () => in_array('donor', $request->input('services', []), true)), 'nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
@@ -57,6 +84,12 @@ class AccountProfileController extends Controller
             $user->syncRoles($roles);
         });
 
-        return redirect()->route('account.dashboard')->with('success', 'Account services updated. Your existing history was preserved.');
+        $destination = match ($data['continue_to'] ?? null) {
+            'donor' => in_array('donor', $data['services'], true) ? 'public.map' : 'account.dashboard',
+            'patient' => in_array('patient', $data['services'], true) ? 'reservations.create' : 'account.dashboard',
+            default => 'account.dashboard',
+        };
+
+        return redirect()->route($destination)->with('success', 'Account services updated. Your existing history was preserved.');
     }
 }

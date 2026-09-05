@@ -155,7 +155,7 @@
                         </button>
                         <div class="dropdown-menu dropdown-menu-end cbis-account-menu">
                             <div class="px-3 py-2 border-bottom mb-2"><strong class="d-block text-break">{{ $webUser->name }}</strong><small class="text-muted">{{ $roleLabel }}</small></div>
-                            @if($webUser->hasAnyRole(['Donor','Patient']))<a class="dropdown-item" href="{{ route('account.profile.edit') }}">Manage Profile</a>@endif
+                            @if($webUser->hasAnyRole(['Donor','Patient']))<a class="dropdown-item" href="{{ route('account.details.edit') }}">My Profile</a>@endif
                             <a class="dropdown-item" href="{{ route('password.change') }}">Change Password</a>
                             <div class="dropdown-divider"></div>
                             <form method="POST" action="{{ route('logout') }}" class="js-logout-form">@csrf<button class="dropdown-item text-danger" type="submit">Logout</button></form>

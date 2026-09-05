@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BloodReservation;
 use App\Models\DonationSchedule;
+use App\Models\Donor;
 use App\Models\Facility;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -62,5 +63,45 @@ class DashboardPresentationTest extends TestCase
         $qao->assignRole('Quality Assurance Officer');
         $this->actingAs($qao)->get(route('dashboard'))->assertOk()->assertViewHas('submittedRequestCount', 8)
             ->assertViewHas('reservationQueue', fn ($queue) => $queue->isEmpty());
+    }
+
+    public function test_profile_edit_updates_shared_identity_without_changing_services(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('Donor');
+        $donor = Donor::create([
+            'user_id' => $user->id, 'first_name' => 'Demo', 'last_name' => 'User',
+            'birth_date' => '1995-01-01', 'sex' => 'female', 'blood_type' => 'A+',
+            'contact_number' => '+639171234567', 'address' => 'Bacolod', 'is_eligible' => false,
+        ]);
+        $this->actingAs($user)->put(route('account.details.update'), [
+            'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'New address',
+            'services' => ['patient'], 'is_eligible' => true,
+        ])->assertRedirect(route('account.details.edit'));
+        $this->assertSame('Updated User', $user->fresh()->name);
+        $this->assertSame('Updated', $donor->fresh()->first_name);
+        $this->assertFalse($donor->fresh()->is_eligible);
+        $this->assertTrue($user->fresh()->hasRole('Donor'));
+        $this->assertFalse($user->fresh()->hasRole('Patient'));
+    }
+
+    public function test_enabling_patient_service_keeps_donor_identity_and_continues_to_request(): void
+    {
+        $user = User::factory()->create(['first_name' => 'Demo', 'last_name' => 'Donor', 'birth_date' => '1995-01-01', 'sex' => 'female', 'phone' => '+639171234567', 'address' => 'Bacolod']);
+        $accountCount = User::count();
+        $user->assignRole('Donor');
+        $this->actingAs($user)->get(route('account.profile.edit', ['service' => 'patient']))->assertOk()->assertSee('Enable Patient Services');
+        $this->assertFalse($user->fresh()->hasRole('Patient'));
+        $this->actingAs($user)->put(route('account.profile.update'), [
+            'services' => ['donor', 'patient'], 'blood_type' => 'A+', 'continue_to' => 'patient',
+        ])->assertRedirect(route('reservations.create'));
+        $this->assertTrue($user->fresh()->hasAllRoles(['Donor', 'Patient']));
+        $this->assertDatabaseCount('users', $accountCount);
+        $this->assertDatabaseCount('donors', 1);
+        $this->actingAs($user)->put(route('account.profile.update'), [
+            'services' => ['donor', 'patient'], 'blood_type' => 'A+', 'continue_to' => 'patient',
+        ])->assertRedirect(route('reservations.create'));
+        $this->assertDatabaseCount('donors', 1);
+        $this->assertDatabaseCount('patient_profiles', 1);
     }
 }

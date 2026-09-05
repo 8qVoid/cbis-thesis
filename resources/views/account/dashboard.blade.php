@@ -7,7 +7,7 @@ $latestReservation = $reservations->first();
 @endphp
 <div class="cbis-dashboard-heading cbis-member-heading">
     <div><div class="cbis-eyebrow">Personal portal</div><h1 class="cbis-page-title">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }}, {{ $firstName }}</h1><p class="cbis-page-subtitle">Your donation activities and blood-service updates in one place.</p></div>
-    <div class="cbis-heading-actions"><a href="{{ route('account.profile.edit') }}" class="btn btn-outline-secondary">Manage Profile</a>@if($user->hasPatientAccess())<a href="{{ route('reservations.create') }}" class="btn btn-danger">Request Blood</a>@endif</div>
+    <div class="cbis-heading-actions"><a href="{{ route('account.details.edit') }}" class="btn btn-outline-secondary">My Profile</a><a href="{{ $user->hasDonorAccess() ? route('public.map') : route('account.profile.edit', ['service' => 'donor']) }}" class="btn btn-outline-danger">Donate Blood</a><a href="{{ $user->hasPatientAccess() ? route('reservations.create') : route('account.profile.edit', ['service' => 'patient']) }}" class="btn btn-danger">Request Blood</a></div>
 </div>
 
 @if($user->hasDonorAccess())
