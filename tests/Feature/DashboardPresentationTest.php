@@ -25,6 +25,8 @@ class DashboardPresentationTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole(['Donor', 'Patient']);
+        $this->actingAs($user)->get(route('account.dashboard', ['view' => 'both']))->assertOk()
+            ->assertSee('Open Donor View')->assertSee('Open Patient View')->assertDontSee('dashboard-event-map')->assertDontSee('Recent Donation History');
         $this->actingAs($user)->get(route('account.dashboard', ['view' => 'patient']))->assertOk()
             ->assertSee('My Blood Requests')->assertDontSee('My Donation Status')->assertDontSee('Recent Donation History');
         $this->actingAs($user)->get(route('account.dashboard', ['view' => 'donor']))->assertOk()

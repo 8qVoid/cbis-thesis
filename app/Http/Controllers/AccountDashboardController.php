@@ -27,7 +27,7 @@ class AccountDashboardController extends Controller
         $donor = $user->donorProfile()->with('facility')->first();
         $donationHistory = $donor ? DonationRecord::with('bloodlettingRecord')->where('donor_id', $donor->id)->latest('donated_at')->get() : collect();
         $eventRegistrations = $donor ? EventRegistration::with(['event.facility'])->where('donor_id', $donor->id)->latest('registered_at')->limit(10)->get() : collect();
-        $reservations = $user->bloodReservations()->with('facility')->latest()->get();
+        $reservations = $user->bloodReservations()->with(['facility', 'documents'])->latest()->get();
         $upcomingEvents = DonationSchedule::query()->with('facility')
             ->where('is_public', true)->where('approval_status', 'approved')
             ->whereDate('event_date', '>=', today())->whereIn('status', ['planned', 'ongoing'])

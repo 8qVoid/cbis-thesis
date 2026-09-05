@@ -18,13 +18,14 @@
 <div class="d-flex flex-wrap gap-2 mt-2"><button class="btn btn-danger" type="submit">{{ $requestedService === 'donor' ? 'Enable & Find Events' : 'Enable & Continue to Request' }}</button><a class="btn btn-outline-secondary" href="{{ route('account.dashboard') }}">Cancel</a></div>
 </form>
 @else
-<h1 class="cbis-page-title">Account Services</h1>
-<p class="text-muted">Use one login for donating blood, requesting blood, or both.</p>
-<form method="POST" action="{{ route('account.profile.update') }}" class="card card-body" style="max-width:720px">
+<div class="cbis-dashboard-heading"><div><div class="cbis-eyebrow">Your account</div><h1 class="cbis-page-title">Patient/Donor Services</h1><p class="cbis-page-subtitle">Choose the services you need. Select both to use Patient/Donor services with one account.</p></div><a class="btn btn-outline-secondary" href="{{ route('account.details.edit') }}">Back to My Profile</a></div>
+<form method="POST" action="{{ route('account.profile.update') }}" class="card card-body cbis-services-form">
     @csrf @method('PUT')
-    <div class="form-check mb-2"><input class="form-check-input js-service" type="checkbox" name="services[]" value="donor" id="serviceDonor" @checked(old('services') ? in_array('donor', old('services', []), true) : $user->hasDonorAccess())><label class="form-check-label" for="serviceDonor"><strong>Donor</strong> — join donation activities and view donation history.</label></div>
-    <div class="form-check mb-3"><input class="form-check-input js-service" type="checkbox" name="services[]" value="patient" id="servicePatient" @checked(old('services') ? in_array('patient', old('services', []), true) : $user->hasPatientAccess())><label class="form-check-label" for="servicePatient"><strong>Patient</strong> — submit and track blood requests.</label></div>
-    <div id="bloodTypeGroup" class="mb-3"><label class="form-label">Blood Type</label><select name="blood_type" class="form-select"><option value="">Select blood type</option>@foreach(\App\Models\BloodInventory::BLOOD_TYPES as $type)<option value="{{ $type }}" @selected(old('blood_type', $user->donorProfile?->blood_type) === $type)>{{ $type }}</option>@endforeach</select><small class="text-muted">This does not confirm medical eligibility. Staff confirms eligibility separately.</small></div>
+    <fieldset><legend class="h6 mb-3">Select your services</legend><div class="cbis-service-options">
+    <label class="cbis-service-option" for="servicePatient"><input class="form-check-input js-service" type="checkbox" name="services[]" value="patient" id="servicePatient" @checked(in_array('patient', old('services', $user->hasPatientAccess() ? ['patient'] : []), true))><span><x-ui.icon name="report" /><strong>Patient</strong><small>Request blood and track your reservations.</small></span></label>
+    <label class="cbis-service-option" for="serviceDonor"><input class="form-check-input js-service" type="checkbox" name="services[]" value="donor" id="serviceDonor" @checked(in_array('donor', old('services', $user->hasDonorAccess() ? ['donor'] : []), true))><span><x-ui.icon name="drop" /><strong>Donor</strong><small>Join donation events and view your history.</small></span></label>
+    </div></fieldset>
+    <div id="bloodTypeGroup" class="my-4"><label for="servicesBloodType" class="form-label">Blood Type</label><select id="servicesBloodType" name="blood_type" class="form-select"><option value="">Select blood type</option>@foreach(\App\Models\BloodInventory::BLOOD_TYPES as $type)<option value="{{ $type }}" @selected(old('blood_type', $user->donorProfile?->blood_type) === $type)>{{ $type }}</option>@endforeach</select><small class="text-muted">Blood Bank Staff confirms donation eligibility.</small></div>
     <div><button class="btn btn-danger">Save Services</button> <a href="{{ route('account.dashboard') }}" class="btn btn-outline-secondary">Cancel</a></div>
 </form>
 @endif

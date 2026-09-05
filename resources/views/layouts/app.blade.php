@@ -83,7 +83,7 @@
                     </form>
                 @elseif($webAuthenticated)
                     @php
-                        $roleLabel = $webUser?->getRoleNames()->join(' & ') ?: 'Staff User';
+                        $roleLabel = $webUser->hasAllRoles(['Patient', 'Donor']) ? 'Patient/Donor' : ($webUser?->getRoleNames()->join(' & ') ?: 'Staff User');
                     @endphp
                     @if($showNotificationCenter)
                         <div class="dropdown me-2">
