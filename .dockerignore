@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.git
+.idea
+.vscode
+node_modules
+vendor
+storage/logs
+storage/framework
+public/build
+public/hot
+artifacts
