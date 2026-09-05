@@ -21,6 +21,21 @@ class DashboardPresentationTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
     }
 
+    public function test_profile_view_switch_filters_sections_without_changing_roles(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(['Donor', 'Patient']);
+        $this->actingAs($user)->get(route('account.dashboard', ['view' => 'patient']))->assertOk()
+            ->assertSee('My Blood Requests')->assertDontSee('My Donation Status')->assertDontSee('Recent Donation History');
+        $this->actingAs($user)->get(route('account.dashboard', ['view' => 'donor']))->assertOk()
+            ->assertSee('My Donation Status')->assertDontSee('My Blood Requests');
+        $this->assertTrue($user->fresh()->hasAllRoles(['Donor', 'Patient']));
+        $user->removeRole('Patient');
+        $this->actingAs($user)->get(route('account.dashboard', ['view' => 'patient']))->assertOk()
+            ->assertViewHas('selectedView', 'donor')->assertDontSee('My Blood Requests')->assertSee('Enable Patient Services');
+        $this->assertFalse($user->fresh()->hasRole('Patient'));
+    }
+
     public function test_member_map_only_receives_public_approved_upcoming_events(): void
     {
         $facility = Facility::create(['code' => 'UI-MAIN', 'name' => 'Test Main', 'type' => 'blood_bank', 'is_active' => true, 'is_main_chapter' => true]);

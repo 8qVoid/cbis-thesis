@@ -178,6 +178,17 @@
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss message"></button>
         </div>
+        <script>
+        (() => {
+            const message = document.currentScript.previousElementSibling;
+            const dismiss = () => {
+                message.classList.remove('show');
+                window.setTimeout(() => message.remove(), 200);
+            };
+            message.querySelector('.btn-close')?.addEventListener('click', dismiss);
+            window.setTimeout(dismiss, Number(message.dataset.dismissAfter || 5000));
+        })();
+        </script>
     @endif
     @if($errors->any())
         <div class="alert alert-danger">
@@ -222,16 +233,6 @@ const cbisConfirmModal = cbisConfirmModalElement ? new bootstrap.Modal(cbisConfi
 const cbisConfirmTitle = document.getElementById('cbisConfirmTitle');
 const cbisConfirmMessage = document.getElementById('cbisConfirmMessage');
 const cbisConfirmButton = document.getElementById('cbisConfirmButton');
-
-document.querySelectorAll('.js-flash-message').forEach((message) => {
-    const dismissAfter = Number(message.dataset.dismissAfter || 5000);
-
-    window.setTimeout(() => {
-        if (message.isConnected) {
-            bootstrap.Alert.getOrCreateInstance(message).close();
-        }
-    }, dismissAfter);
-});
 
 document.querySelectorAll('.js-confirm-action').forEach((form) => {
     form.addEventListener('submit', (event) => {
