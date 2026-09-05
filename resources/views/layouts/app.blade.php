@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/cbis-ui.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/cbis-polish.css') }}?v={{ filemtime(public_path('css/cbis-polish.css')) }}" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @livewireStyles
 </head>
@@ -52,10 +53,10 @@
         $recentNotifications = $recentQuery->latest()->limit(5)->get();
     }
 @endphp
-<nav class="navbar navbar-expand-lg navbar-dark cbis-navbar">
+<nav class="navbar navbar-expand-lg navbar-light cbis-navbar" aria-label="Main navigation">
     <div class="container">
         <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}">CBIS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"><span class="navbar-toggler-icon"></span></button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 @if($webAuthenticated)
@@ -84,10 +85,6 @@
                     @php
                         $roleLabel = $webUser?->getRoleNames()->join(' & ') ?: 'Staff User';
                     @endphp
-                    <div class="cbis-user-meta me-3" title="{{ $webUser?->name }} ({{ $roleLabel }})">
-                        <div class="cbis-user-name">{{ $webUser?->name }}</div>
-                        <div class="cbis-user-role">{{ $roleLabel }}</div>
-                    </div>
                     @if($showNotificationCenter)
                         <div class="dropdown me-2">
                             <button class="btn btn-outline-light btn-sm position-relative cbis-bell-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
@@ -150,11 +147,20 @@
                             </div>
                         </div>
                     @endif
-                    <a href="{{ route('password.change') }}" class="btn btn-outline-light btn-sm me-2">Change Password</a>
-                    <form method="POST" action="{{ route('logout') }}" class="js-logout-form">
-                        @csrf
-                        <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
-                    </form>
+                    <div class="dropdown cbis-profile">
+                        <button class="cbis-profile-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open account menu">
+                            <span class="cbis-avatar" aria-hidden="true">{{ str($webUser->name)->substr(0, 1)->upper() }}</span>
+                            <span class="cbis-profile-label"><strong>{{ $webUser->name }}</strong><small>{{ $roleLabel }}</small></span>
+                            <span aria-hidden="true">⌄</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end cbis-account-menu">
+                            <div class="px-3 py-2 border-bottom mb-2"><strong class="d-block text-break">{{ $webUser->name }}</strong><small class="text-muted">{{ $roleLabel }}</small></div>
+                            @if($webUser->hasAnyRole(['Donor','Patient']))<a class="dropdown-item" href="{{ route('account.profile.edit') }}">Manage Profile</a>@endif
+                            <a class="dropdown-item" href="{{ route('password.change') }}">Change Password</a>
+                            <div class="dropdown-divider"></div>
+                            <form method="POST" action="{{ route('logout') }}" class="js-logout-form">@csrf<button class="dropdown-item text-danger" type="submit">Logout</button></form>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Login</a>
                 @endif

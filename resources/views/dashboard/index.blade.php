@@ -15,11 +15,11 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
 </div>
 
 <div class="cbis-metric-grid mb-4">
-    <x-ui.kpi-card label="{{ $isQao ? 'Total Blood Units' : 'Pending Requests' }}" :value="$isQao ? $totalUnits : $reservationQueue->count()" suffix="{{ $isQao ? 'Across four components' : 'Submitted or under review' }}" />
+    <x-ui.kpi-card label="{{ $isQao ? 'Total Blood Units' : 'Pending Requests' }}" :value="$isQao ? $totalUnits : $pendingRequestCount" suffix="{{ $isQao ? 'Across four components' : 'Submitted or under review' }}" />
     <x-ui.kpi-card label="Low-stock Items" :value="$lowStockCount" statusClass="{{ $lowStockCount ? 'text-warning' : 'text-success' }}" suffix="Requires attention" />
     @if($isQao)
         <x-ui.kpi-card label="Activity Approvals" :value="$pendingActivityCount" suffix="Waiting for QAO review" />
-        <x-ui.kpi-card label="Reservation Notices" :value="$reservationNotices->where('status', 'submitted')->count()" suffix="Monitoring only" />
+        <x-ui.kpi-card label="Reservation Notices" :value="$submittedRequestCount" suffix="Monitoring only" />
     @else
         <x-ui.kpi-card label="Registered Donors" :value="$donors" suffix="Detailed records available" />
         <x-ui.kpi-card label="Blood Releases" :value="$releases" suffix="Recorded transactions" />
@@ -36,9 +36,17 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
                     @php($componentRow = $inventoryByComponent->get($key))
                     @php($units = (int) ($componentRow?->units ?? 0))
                     <a href="{{ route('blood-inventory.index', ['component' => $key]) }}" class="cbis-component-card">
-                        <span class="cbis-blood-symbol">●</span><span><small>{{ $label }}</small><strong>{{ $units }} <em>units</em></strong><span class="cbis-inline-status {{ $componentRow ? $statusClass($units) : 'cbis-tone-info' }}">{{ ! $componentRow ? 'No stock recorded' : ($units <= 5 ? 'Low stock' : 'Adequate') }}</span></span>
+                        <span class="cbis-blood-symbol"><x-ui.icon name="drop" /></span><span><small>{{ $label }}</small><strong>{{ $units }} <em>units</em></strong><span class="cbis-inline-status {{ $componentRow ? $statusClass($units) : 'cbis-tone-info' }}">{{ ! $componentRow ? 'No stock recorded' : ($units <= 5 ? 'Low stock' : 'Adequate') }}</span></span>
                     </a>
                 @endforeach
+                </div>
+                <div class="mt-4 pt-3 border-top"><h2 class="h6 mb-3">Recorded Units by Blood Type</h2>
+                    @php($maximumUnits = max(1, (int) $inventoryByType->max('units')))
+                    @foreach(\App\Models\BloodInventory::BLOOD_TYPES as $type)
+                        @php($typeUnits = (int) ($inventoryByType->firstWhere('blood_type', $type)?->units ?? 0))
+                        <div class="cbis-bar-row"><strong>{{ $type }}</strong><div class="cbis-bar-track" aria-hidden="true"><span style="width:{{ round($typeUnits / $maximumUnits * 100) }}%"></span></div><span>{{ $typeUnits }} units</span></div>
+                    @endforeach
+                    <p class="small text-muted mb-0 mt-3">Recorded stock totals. Check individual units and expiry dates before release.</p>
                 </div></div>
             @else
                 <div class="table-responsive"><table class="table cbis-table-clean"><thead><tr><th>Reference</th><th>Blood</th><th>Needed</th><th>Requirements</th><th></th></tr></thead><tbody>
@@ -52,9 +60,9 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
             <div class="card-header cbis-card-title"><span>{{ $isQao ? 'Reservation Notices' : 'Inventory by Component' }}</span><a href="{{ $isQao ? route('reservations.index') : route('blood-inventory.index') }}">View all</a></div>
             <div class="card-body">
             @if($isQao)
-                <div class="cbis-list-stack">@forelse($reservationNotices as $reservation)<a class="cbis-list-row" href="{{ route('reservations.show', $reservation) }}"><span class="cbis-list-icon">▤</span><span><strong>{{ $reservation->reference }}</strong><small>{{ $reservation->blood_type }} · {{ $components[$reservation->component] ?? $reservation->component }} · {{ $reservation->units_requested }} unit(s)</small></span><span class="cbis-view-only">View only</span></a>@empty<div class="cbis-empty-state"><strong>No reservation notices</strong><span>New requests will appear here for monitoring.</span></div>@endforelse</div>
+                <div class="cbis-list-stack">@forelse($reservationNotices as $reservation)<a class="cbis-list-row" href="{{ route('reservations.show', $reservation) }}"><span class="cbis-list-icon"><x-ui.icon name="report" /></span><span><strong>{{ $reservation->reference }}</strong><small>{{ $reservation->blood_type }} · {{ $components[$reservation->component] ?? $reservation->component }} · {{ $reservation->units_requested }} unit(s)</small></span><span class="cbis-view-only">View only</span></a>@empty<div class="cbis-empty-state"><strong>No reservation notices</strong><span>New requests will appear here for monitoring.</span></div>@endforelse</div>
             @else
-                <div class="cbis-component-grid cbis-component-grid-compact">@foreach($components as $key => $label)@php($componentRow = $inventoryByComponent->get($key))@php($units = (int) ($componentRow?->units ?? 0))<a href="{{ route('blood-inventory.index', ['component' => $key]) }}" class="cbis-component-card"><span class="cbis-blood-symbol">●</span><span><small>{{ $label }}</small><strong>{{ $units }} <em>units</em></strong><span class="cbis-inline-status {{ $componentRow ? $statusClass($units) : 'cbis-tone-info' }}">{{ ! $componentRow ? 'No stock recorded' : ($units <= 5 ? 'Low stock' : 'Adequate') }}</span></span></a>@endforeach</div>
+                <div class="cbis-component-grid cbis-component-grid-compact">@foreach($components as $key => $label)@php($componentRow = $inventoryByComponent->get($key))@php($units = (int) ($componentRow?->units ?? 0))<a href="{{ route('blood-inventory.index', ['component' => $key]) }}" class="cbis-component-card"><span class="cbis-blood-symbol"><x-ui.icon name="drop" /></span><span><small>{{ $label }}</small><strong>{{ $units }} <em>units</em></strong><span class="cbis-inline-status {{ $componentRow ? $statusClass($units) : 'cbis-tone-info' }}">{{ ! $componentRow ? 'No stock recorded' : ($units <= 5 ? 'Low stock' : 'Adequate') }}</span></span></a>@endforeach</div>
             @endif
             </div>
         </section>
@@ -65,14 +73,14 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
     <div class="col-xl-7">
         <section class="card h-100"><div class="card-header cbis-card-title"><span>{{ $isQao ? 'Activity Approvals' : 'Expiring Soon' }}</span><a href="{{ $isQao ? route('donation-schedules.index') : route('blood-inventory.index') }}">View all</a></div>
         <div class="card-body p-0"><div class="cbis-list-stack cbis-list-flush">
-        @if($isQao) @forelse($pendingActivities as $event)<a class="cbis-list-row" href="{{ route('donation-schedules.show', $event) }}"><span class="cbis-list-icon">□</span><span><strong>{{ $event->title }}</strong><small>{{ $event->facility?->name }} · {{ $event->event_date?->format('M d, Y') }}</small></span><span class="btn btn-sm btn-outline-danger">Review</span></a>@empty<div class="cbis-empty-state"><strong>No activities waiting</strong><span>Facilitator submissions will appear here.</span></div>@endforelse
-        @else @forelse($expiringInventory as $item)<a class="cbis-list-row" href="{{ route('blood-inventory.show', $item) }}"><span class="cbis-list-icon">●</span><span><strong>{{ $item->blood_type }} · {{ $item->component_label }}</strong><small>{{ $item->units_available }} unit(s) · expires {{ $item->expiration_date?->format('M d, Y') }}</small></span><span class="cbis-inline-status cbis-tone-warning">{{ today()->diffInDays($item->expiration_date) }} days</span></a>@empty<div class="cbis-empty-state"><strong>No near-expiry stock</strong><span>Items expiring within 14 days will appear here.</span></div>@endforelse @endif
+        @if($isQao) @forelse($pendingActivities as $event)<a class="cbis-list-row" href="{{ route('donation-schedules.show', $event) }}"><span class="cbis-list-icon"><x-ui.icon name="calendar" /></span><span><strong>{{ $event->title }}</strong><small>{{ $event->facility?->name }} · {{ $event->event_date?->format('M d, Y') }}</small></span><span class="btn btn-sm btn-outline-danger">Review</span></a>@empty<div class="cbis-empty-state"><strong>No activities waiting</strong><span>Facilitator submissions will appear here.</span></div>@endforelse
+        @else @forelse($expiringInventory as $item)<a class="cbis-list-row" href="{{ route('blood-inventory.show', $item) }}"><span class="cbis-list-icon"><x-ui.icon name="drop" /></span><span><strong>{{ $item->blood_type }} · {{ $item->component_label }}</strong><small>{{ $item->units_available }} unit(s) · expires {{ $item->expiration_date?->format('M d, Y') }}</small></span><span class="cbis-inline-status cbis-tone-warning">{{ today()->diffInDays($item->expiration_date) }} days</span></a>@empty<div class="cbis-empty-state"><strong>No near-expiry stock</strong><span>Items expiring within 14 days will appear here.</span></div>@endforelse @endif
         </div></div></section>
     </div>
     <div class="col-xl-5">
         <section class="card h-100"><div class="card-header cbis-card-title"><span>Quick Actions</span></div><div class="card-body cbis-quick-grid">
-        @if($isQao)<a href="{{ route('donation-schedules.create') }}" class="cbis-quick-action"><span>＋</span><strong>Create Activity</strong><small>Published automatically with a location</small></a><a href="{{ route('reports.index') }}" class="cbis-quick-action"><span>▥</span><strong>Export Reports</strong><small>Choose records, details, and file type</small></a><a href="{{ route('staff-users.index') }}" class="cbis-quick-action"><span>♧</span><strong>Staff Management</strong><small>Manage QAO, BBS, and Facilitators</small></a>
-        @else<a href="{{ route('donation-records.create') }}" class="cbis-quick-action"><span>✚</span><strong>Record Donation</strong><small>Add a completed collection</small></a><a href="{{ route('blood-inventory.create') }}" class="cbis-quick-action"><span>▣</span><strong>Add Inventory</strong><small>Record blood stock by component</small></a><a href="{{ route('blood-releases.create') }}" class="cbis-quick-action"><span>◇</span><strong>Release Blood</strong><small>Fulfill an approved request</small></a>@endif
+        @if($isQao)<a href="{{ route('donation-schedules.create') }}" class="cbis-quick-action"><span><x-ui.icon name="calendar" /></span><strong>Create Activity</strong><small>Published automatically with a location</small></a><a href="{{ route('reports.index') }}" class="cbis-quick-action"><span><x-ui.icon name="report" /></span><strong>Export Reports</strong><small>Choose records, details, and file type</small></a><a href="{{ route('staff-users.index') }}" class="cbis-quick-action"><span><x-ui.icon name="users" /></span><strong>Staff Management</strong><small>Manage QAO, BBS, and Facilitators</small></a>
+        @else<a href="{{ route('donation-records.create') }}" class="cbis-quick-action"><span><x-ui.icon name="drop" /></span><strong>Record Donation</strong><small>Add a completed collection</small></a><a href="{{ route('blood-inventory.create') }}" class="cbis-quick-action"><span><x-ui.icon name="grid" /></span><strong>Add Inventory</strong><small>Record blood stock by component</small></a><a href="{{ route('blood-releases.create') }}" class="cbis-quick-action"><span><x-ui.icon name="arrow" /></span><strong>Release Blood</strong><small>Fulfill an approved request</small></a>@endif
         </div></section>
     </div>
 </div>

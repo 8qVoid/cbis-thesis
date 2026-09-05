@@ -1,0 +1,104 @@
+/* Shared visual treatment for the role dashboards and their working pages. */
+:root { --cbis-border:#e7e9ee; --cbis-text:#253047; --cbis-muted:#748093; }
+body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
+.cbis-navbar { background:#fff; box-shadow:none; border-bottom:1px solid var(--cbis-border); padding:14px 0; }
+.cbis-navbar>.container { max-width:1560px; gap:24px; padding-inline:28px; }
+.cbis-navbar .navbar-brand { color:#bd2543; font-size:1.5rem; font-weight:800; letter-spacing:-.06em; }
+.cbis-navbar .navbar-brand:hover { color:#991b35; }
+.cbis-navbar .nav-link { color:#687387; font-size:.85rem; font-weight:600; }
+.cbis-navbar .nav-link:hover { color:#bd2543; }
+.cbis-navbar .btn-outline-light { color:#5d687a; border-color:#e1e5eb; white-space:nowrap; }
+.cbis-nav-actions { gap:12px; flex-shrink:0; }
+.cbis-profile-toggle { display:flex; align-items:center; gap:10px; border:0; background:transparent; color:#253047; padding:3px; text-align:left; }
+.cbis-avatar { display:grid; place-items:center; width:38px; height:38px; flex-shrink:0; border-radius:50%; background:#fbe9ee; color:#b42341; font-weight:800; }
+.cbis-profile-label { display:grid; min-width:0; max-width:210px; }
+.cbis-profile-label strong,.cbis-profile-label small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cbis-profile-label strong { font-size:.8rem; }
+.cbis-profile-label small { font-size:.66rem; color:#778193; }
+.cbis-account-menu { width:280px; max-width:calc(100vw - 32px); padding:8px 0; }
+.dropdown-menu { border:1px solid #e7e9ee; border-radius:12px; box-shadow:0 12px 36px #24304714; }
+.dropdown-item { padding:.65rem 1rem; font-size:.84rem; }
+.cbis-bell-btn { width:38px; height:38px; border-radius:10px; }
+.cbis-staff-shell { grid-template-columns:230px minmax(0,1fr); }
+.cbis-staff-sidebar { background:#fff; padding:28px 14px; }
+.cbis-sidebar-role { padding:0 12px 22px; margin-bottom:24px; }
+.cbis-sidebar-role strong { font-size:.88rem; }
+.cbis-nav-group { margin-bottom:25px; }
+.cbis-staff-sidebar .nav-link { min-height:43px; font-size:.8rem; border-radius:8px; }
+.cbis-staff-sidebar .nav-link.active { background:#fcebef; color:#b32040; }
+.cbis-icon { width:20px; height:20px; stroke:currentColor; stroke-width:1.7; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.cbis-staff-content { padding:30px !important; }
+.cbis-page-title { font-size:1.65rem; letter-spacing:-.04em; font-weight:800; }
+.cbis-page-subtitle { font-size:.82rem; color:#748093; margin-top:8px; }
+.cbis-eyebrow { font-size:.65rem; letter-spacing:.1em; color:#8790a0; margin-bottom:7px; }
+.card { border:1px solid #e7e9ee; border-radius:13px; box-shadow:0 3px 12px #26364b04; overflow:hidden; }
+.card-header { border-bottom:1px solid #eff0f4; padding:16px 20px; background:#fff; }
+.card-body { padding:20px; }
+.cbis-card-title>span { font-size:.86rem; }
+.cbis-kpi .card-body { padding:20px; }
+.cbis-kpi .label { font-size:.74rem; color:#748093; }
+.cbis-kpi .value { font-size:2rem; letter-spacing:-.04em; margin:7px 0; }
+.btn { border-radius:8px; font-size:.8rem; font-weight:700; padding:.6rem .95rem; box-shadow:none; }
+.btn:hover { transform:none; }
+.btn-danger { background:#bd2543; border-color:#bd2543; }
+.btn-outline-secondary { background:#fff; border-color:#dfe3e9; color:#576478; }
+.cbis-component-card { background:#fcfcfe; padding:17px; }
+.cbis-empty-state { padding:32px 20px; min-height:150px; }
+.cbis-empty-state strong { font-size:.87rem; }
+.cbis-empty-state span { font-size:.77rem; max-width:42ch; margin-inline:auto; }
+.cbis-dashboard-map { height:290px; z-index:0; background:#eef2f5; }
+.cbis-member-map .cbis-dashboard-map { flex:1; min-height:350px; }
+.cbis-map-caption { padding:12px 18px; color:#748093; font-size:.75rem; border-top:1px solid #edf0f3; }
+.cbis-member-heading { padding-top:12px; }
+.cbis-main { max-width:1280px; }
+.cbis-login-page { padding-top:clamp(20px,5vh,65px); padding-bottom:30px; }
+.cbis-login-page .card-body { padding:28px; }
+.cbis-empty-state { gap:8px; align-content:center; }
+.cbis-empty-state strong { margin:0; }
+.cbis-primary-action-card { background:linear-gradient(120deg,#fff6f8,#fff); }
+.cbis-primary-action-card .card-body { padding:24px; }
+.cbis-primary-action-card h2 { font-size:1.05rem; }
+.cbis-number-card>strong { font-size:2.4rem; }
+.cbis-notification-menu { max-width:calc(100vw - 32px); }
+.cbis-section-toggle { width:100%; display:flex; align-items:center; gap:10px; border-radius:0; padding:14px 20px; text-align:left; background:#fff; border-bottom:1px solid var(--cbis-border); }
+.cbis-section-toggle>span { margin-left:auto; }
+.cbis-kpi { position:relative; border:1px solid var(--cbis-border); box-shadow:0 3px 12px #26364b04; }
+.cbis-kpi-icon { position:absolute; right:16px; top:18px; color:#bc2543; background:#fff0f3; padding:7px; border-radius:9px; display:grid; }
+.cbis-kpi .label { padding-right:32px; }
+.cbis-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
+.cbis-calendar>span,.cbis-calendar>a { text-align:center; padding:8px 2px; border-radius:7px; font-size:.76rem; text-decoration:none; color:#657187; }
+.cbis-calendar .has-event { background:#ffedf1; color:#b32040; font-weight:800; }
+.cbis-calendar .is-today { outline:1px solid #b32040; }
+.cbis-calendar .weekday { font-size:.65rem; font-weight:800; }
+.cbis-bar-row { display:grid; grid-template-columns:30px minmax(0,1fr) 55px; align-items:center; gap:12px; margin:11px 0; font-size:.75rem; }
+.cbis-bar-track { background:#f5eaf0; height:9px; border-radius:6px; overflow:hidden; }
+.cbis-bar-track>span { background:#bf3150; height:100%; display:block; border-radius:6px; }
+@media(max-width:1199px) { .cbis-staff-shell { grid-template-columns:205px minmax(0,1fr); } .cbis-staff-content { padding:22px !important; } }
+@media(max-width:991px) {
+ .cbis-navbar>.container { padding-inline:20px; gap:12px; }
+ .cbis-nav-actions { justify-content:flex-start; flex-wrap:nowrap; width:100%; padding-top:10px; border-top:1px solid #edf0f3; }
+ .cbis-nav-actions .btn,.cbis-nav-actions form { width:auto; }
+ .cbis-nav-actions .dropdown { width:auto; }
+ .cbis-profile-toggle { width:auto; }
+ .cbis-profile .dropdown-menu { position:absolute; left:0; right:auto; }
+ .cbis-navbar .navbar-collapse { padding-top:12px; }
+}
+@media(max-width:767px) {
+ .cbis-staff-shell { display:block; }
+ .cbis-staff-sidebar:not(.show):not(.collapsing) { display:none; }
+ .cbis-staff-sidebar.show { display:block; }
+ .cbis-staff-sidebar { padding:16px; overflow:visible; }
+ .cbis-nav-group { display:block; margin:0 0 14px; }
+ .cbis-nav-group-label { display:block; }
+ .cbis-staff-sidebar .nav { display:flex; flex-direction:column !important; }
+ .cbis-staff-content { padding:20px 16px !important; }
+ .cbis-page-title { font-size:1.45rem; }
+ .cbis-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+ .cbis-kpi .card-body { padding:14px; }
+ .cbis-kpi-icon { display:none; }
+ .cbis-kpi .label { padding-right:0; }
+ .cbis-dashboard-heading { gap:16px; }
+ .cbis-dashboard-map { height:250px; }
+ .cbis-card-title { gap:10px; flex-wrap:wrap; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; } }

@@ -28,8 +28,9 @@ class DashboardController extends Controller
             $approvedThisMonth = (clone $eventsQuery)->where('approval_status', 'approved')->whereBetween('reviewed_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
             $nextEvent = (clone $eventsQuery)->withCount(['eventRegistrations as registrations_count' => fn ($query) => $query->where('status', 'registered')])
                 ->whereDate('event_date', '>=', today())->whereIn('status', ['planned', 'ongoing'])->orderBy('event_date')->orderBy('start_time')->first();
+            $calendarEvents = (clone $eventsQuery)->whereBetween('event_date', [today()->startOfMonth(), today()->endOfMonth()])->orderBy('event_date')->get();
 
-            return view('dashboard.facilitator', compact('events', 'upcomingEvents', 'pendingEvents', 'approvedThisMonth', 'nextEvent'));
+            return view('dashboard.facilitator', compact('events', 'upcomingEvents', 'pendingEvents', 'approvedThisMonth', 'nextEvent', 'calendarEvents'));
         }
 
         $donors = DonorScope::apply(Donor::query(), $user)->count();
@@ -48,9 +49,11 @@ class DashboardController extends Controller
         $totalUnits = (int) $inventoryByComponent->sum('units');
         $lowStockCount = FacilityScope::apply(BloodInventory::query(), $user)
             ->where(fn ($query) => $query->where('status', 'low_stock')->orWhere('units_available', '<=', 5))->count();
-        $reservationQueue = FacilityScope::apply(BloodReservation::query(), $user)
+        $pendingRequestCount = FacilityScope::apply(BloodReservation::query(), $user)->whereIn('status', ['submitted', 'under_review'])->count();
+        $submittedRequestCount = FacilityScope::apply(BloodReservation::query(), $user)->where('status', 'submitted')->count();
+        $reservationQueue = $user->isBloodBankStaff() ? FacilityScope::apply(BloodReservation::query(), $user)
             ->with(['patient', 'documents'])->whereIn('status', ['submitted', 'under_review'])
-            ->orderBy('needed_on')->limit(6)->get();
+            ->orderBy('needed_on')->limit(6)->get() : collect();
         $reservationNotices = FacilityScope::apply(BloodReservation::query(), $user)
             ->with('facility')->latest()->limit(5)->get();
         $pendingActivityCount = DonationSchedule::query()->where('approval_status', 'pending')->count();
@@ -61,7 +64,7 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'donors', 'donations', 'releases', 'inventoryByType', 'inventoryByComponent', 'totalUnits',
-            'lowStockCount', 'reservationQueue', 'reservationNotices', 'pendingActivityCount', 'pendingActivities', 'expiringInventory'
+            'lowStockCount', 'reservationQueue', 'reservationNotices', 'pendingActivityCount', 'pendingActivities', 'expiringInventory', 'pendingRequestCount', 'submittedRequestCount'
         ));
     }
 }
