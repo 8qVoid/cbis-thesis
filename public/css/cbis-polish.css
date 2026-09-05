@@ -60,12 +60,7 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-map-caption { padding:12px 18px; color:#748093; font-size:.75rem; border-top:1px solid #edf0f3; }
 .cbis-member-heading { padding-top:12px; }
 .cbis-main { max-width:1280px; }
-body:has(.cbis-reference) .cbis-main { max-width:820px; padding-top:0 !important; }
-body:has(.cbis-reference) .cbis-navbar>.container { max-width:820px; padding-inline:24px; }
-body:has(.cbis-reference) .navbar-nav { display:none; }
-body:has(.cbis-reference) .navbar-collapse { justify-content:flex-end; }
-.cbis-reference { padding:0 12px 24px; }
-body:has(.cbis-reference) { background:#fff !important; }
+.cbis-reference { padding:0 0 24px; }
 .cbis-combined-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
 .cbis-combined-card { padding:18px; display:flex; flex-direction:column; }
 .cbis-combined-facts { margin:20px 0; flex:1; font-size:.78rem; }
@@ -186,13 +181,5 @@ body:has(.cbis-reference) { background:#fff !important; }
  .cbis-dashboard-heading { gap:16px; }
  .cbis-dashboard-map { height:250px; }
  .cbis-card-title { gap:10px; flex-wrap:wrap; }
-}
-@media(max-width:991px) {
- body:has(.cbis-reference) .navbar-toggler { display:none; }
- body:has(.cbis-reference) .cbis-navbar>.container { flex-wrap:nowrap; gap:10px; padding-inline:24px; }
- body:has(.cbis-reference) .navbar-collapse { display:flex !important; flex-basis:auto; padding:0; }
- body:has(.cbis-reference) .cbis-nav-actions { border:0; padding:0; justify-content:flex-end; }
- body:has(.cbis-reference) .cbis-profile-label { max-width:130px; }
- body:has(.cbis-reference) .cbis-profile .dropdown-menu { left:auto; right:0; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; } }
