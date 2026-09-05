@@ -1,6 +1,12 @@
-FROM composer:2 AS vendor
+FROM php:8.3-cli-bookworm AS vendor
 
 WORKDIR /app
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd zip \
+    && rm -rf /var/lib/apt/lists/*
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
@@ -16,8 +22,9 @@ RUN npm run build
 FROM php:8.3-apache
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libzip-dev unzip \
-    && docker-php-ext-install pdo_mysql pdo_pgsql zip \
+    && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libpq-dev libzip-dev unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo_mysql pdo_pgsql zip \
     && a2enmod rewrite \
     && sed -ri 's!DocumentRoot /var/www/html!DocumentRoot /var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
     && rm -rf /var/lib/apt/lists/*
