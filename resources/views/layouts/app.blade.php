@@ -55,7 +55,7 @@
 @endphp
 <nav class="navbar navbar-expand-lg navbar-light cbis-navbar" aria-label="Main navigation">
     <div class="container">
-        <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}">CBIS</a>
+        <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}"><x-ui.icon name="drop" /> CBIS</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">

@@ -25,7 +25,7 @@ class AccountDashboardController extends Controller
         $showDonor = $user->hasDonorAccess() && in_array($selectedView, ['donor', 'both'], true);
         $showPatient = $user->hasPatientAccess() && in_array($selectedView, ['patient', 'both'], true);
         $donor = $user->donorProfile()->with('facility')->first();
-        $donationHistory = $donor ? DonationRecord::with('bloodlettingRecord')->where('donor_id', $donor->id)->latest('donated_at')->get() : collect();
+        $donationHistory = $donor ? DonationRecord::with(['bloodlettingRecord', 'facility'])->where('donor_id', $donor->id)->latest('donated_at')->get() : collect();
         $eventRegistrations = $donor ? EventRegistration::with(['event.facility'])->where('donor_id', $donor->id)->latest('registered_at')->limit(10)->get() : collect();
         $reservations = $user->bloodReservations()->with(['facility', 'documents'])->latest()->get();
         $upcomingEvents = DonationSchedule::query()->with('facility')
@@ -33,6 +33,6 @@ class AccountDashboardController extends Controller
             ->whereDate('event_date', '>=', today())->whereIn('status', ['planned', 'ongoing'])
             ->orderBy('event_date')->orderBy('start_time')->limit(3)->get();
 
-        return view('account.dashboard', compact('user', 'donor', 'donationHistory', 'eventRegistrations', 'reservations', 'upcomingEvents', 'availableViews', 'selectedView', 'showDonor', 'showPatient'));
+        return view($selectedView === 'both' ? 'account.dashboard' : 'account.service-dashboard', compact('user', 'donor', 'donationHistory', 'eventRegistrations', 'reservations', 'upcomingEvents', 'availableViews', 'selectedView', 'showDonor', 'showPatient'));
     }
 }

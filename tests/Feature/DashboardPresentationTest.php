@@ -30,12 +30,36 @@ class DashboardPresentationTest extends TestCase
         $this->actingAs($user)->get(route('account.dashboard', ['view' => 'patient']))->assertOk()
             ->assertSee('My Blood Requests')->assertDontSee('My Donation Status')->assertDontSee('Recent Donation History');
         $this->actingAs($user)->get(route('account.dashboard', ['view' => 'donor']))->assertOk()
-            ->assertSee('My Donation Status')->assertDontSee('My Blood Requests');
+            ->assertSee('Donation Dashboard')->assertSee('Approved Donation Events')->assertDontSee('My Blood Requests');
         $this->assertTrue($user->fresh()->hasAllRoles(['Donor', 'Patient']));
         $user->removeRole('Patient');
         $this->actingAs($user)->get(route('account.dashboard', ['view' => 'patient']))->assertOk()
             ->assertViewHas('selectedView', 'donor')->assertDontSee('My Blood Requests')->assertSee('Enable Patient Services');
         $this->assertFalse($user->fresh()->hasRole('Patient'));
+    }
+
+    public function test_patient_preview_uses_own_documents_and_recorded_request_state(): void
+    {
+        $facility = Facility::create(['code' => 'UI-MAIN', 'name' => 'Test Main', 'type' => 'blood_bank', 'is_active' => true, 'is_main_chapter' => true]);
+        $patient = User::factory()->create();
+        $patient->assignRole('Patient');
+        $reservation = BloodReservation::create([
+            'reference' => 'UI-OWN-REQUEST', 'patient_user_id' => $patient->id, 'facility_id' => $facility->id,
+            'blood_type' => 'O+', 'component' => 'whole_blood', 'units_requested' => 1,
+            'needed_on' => today()->addDay(), 'status' => 'under_review',
+        ]);
+        foreach (['identification', 'blood_request'] as $type) {
+            $reservation->documents()->create(['type' => $type, 'path' => 'test.pdf', 'original_name' => 'test.pdf', 'mime_type' => 'application/pdf', 'size' => 100]);
+        }
+        $other = $reservation->replicate();
+        $other->reference = 'UI-OTHER-PRIVATE';
+        $other->patient_user_id = User::factory()->create()->id;
+        $other->save();
+        $this->actingAs($patient)->get(route('account.dashboard'))->assertOk()
+            ->assertSee('UI-OWN-REQUEST')->assertDontSee('UI-OTHER-PRIVATE')
+            ->assertSee('ID uploaded')->assertSee('blood request uploaded')->assertSee('In progress');
+        $reservation->update(['status' => 'rejected', 'reviewed_at' => now()]);
+        $this->get(route('account.dashboard'))->assertOk()->assertSee('Rejected')->assertDontSee('In progress');
     }
 
     public function test_member_map_only_receives_public_approved_upcoming_events(): void
