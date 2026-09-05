@@ -163,9 +163,10 @@
     </div>
 </nav>
 @if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
-    @include('partials.section-tabs')
+    <div class="cbis-staff-shell">
+        @include('partials.section-tabs')
 @endif
-<main id="main-content" class="container cbis-main py-4">
+<main id="main-content" class="{{ $webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-staff-content' : 'container cbis-main' }} py-4">
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status" data-dismiss-after="5000">
             {{ session('success') }}
@@ -183,6 +184,9 @@
     @endif
     @yield('content')
 </main>
+@if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
+    </div>
+@endif
 <div class="modal fade" id="cbisConfirmModal" tabindex="-1" aria-labelledby="cbisConfirmTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content cbis-confirm-modal">
