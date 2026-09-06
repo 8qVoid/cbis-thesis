@@ -23,9 +23,11 @@ return new class extends Migration {
         DB::table('donation_schedules')
             ->whereNull('event_date')
             ->update([
-                'event_date' => DB::raw('DATE(start_at)'),
-                'start_time' => DB::raw('TIME(start_at)'),
-                'end_time' => DB::raw('TIME(end_at)'),
+                // CAST works on both MySQL and PostgreSQL. DATE()/TIME() with
+                // bare identifiers is interpreted differently by PostgreSQL.
+                'event_date' => DB::raw('CAST(start_at AS DATE)'),
+                'start_time' => DB::raw('CAST(start_at AS TIME)'),
+                'end_time' => DB::raw('CAST(end_at AS TIME)'),
             ]);
 
         Schema::table('donation_schedules', function (Blueprint $table) {
