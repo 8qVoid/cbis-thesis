@@ -9,7 +9,7 @@ class DonorScope
 {
     public static function apply(Builder $query, User $user): Builder
     {
-        if ($user->isCentralAdmin()) {
+        if ($user->isCentralAdmin() || ($user->isBloodBankStaff() && MainChapter::contains($user->facility_id))) {
             return $query;
         }
 

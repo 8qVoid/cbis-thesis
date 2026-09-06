@@ -44,6 +44,7 @@
                     <option value="all" @selected(($alertType ?? 'all') === 'all')>All updates</option>
                     @if(auth()->user()->hasPatientAccess())<option value="reservation_status" @selected(($alertType ?? 'all') === 'reservation_status')>Blood requests</option>@endif
                     @if(auth()->user()->hasDonorAccess())<option value="event" @selected(($alertType ?? 'all') === 'event')>Donation activities</option>@endif
+                    @if(auth()->user()->hasDonorAccess())<option value="screening" @selected(($alertType ?? 'all') === 'screening')>Donation screening</option>@endif
                 </select>
             </div>
         @endif
@@ -88,6 +89,10 @@
                                 @elseif($notification->type === $reservationStatusType)
                                     <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                @elseif($notification->type === \App\Notifications\DonorScreeningUpdated::class)
+                                    <div>Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
+                                    <div>{{ $data['donor_message'] ?? '' }}</div>
+                                    <a href="{{ route('account.dashboard', ['view' => 'donor']) }}">View screening status</a>
                                 @elseif($notification->type === $eventPostedType)
                                     <div>{{ $data['event_title'] ?? 'Donation activity' }}</div>
                                     <div class="text-muted small">{{ $data['event_date'] ?? 'Date to be announced' }} · {{ $data['facility_name'] ?? 'Facility to be announced' }}</div>

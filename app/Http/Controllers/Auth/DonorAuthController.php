@@ -8,12 +8,12 @@ use App\Models\DonationSchedule;
 use App\Models\Donor;
 use App\Models\EventRegistration;
 use App\Models\Facility;
+use App\Models\PatientProfile;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\PatientProfile;
 use Illuminate\View\View;
 
 class DonorAuthController extends Controller
@@ -45,6 +45,9 @@ class DonorAuthController extends Controller
                 ->whereDate('event_date', '>=', now()->toDateString())
                 ->find($eventId);
 
+            if ($selectedEvent && ! $selectedEvent->isRegistrationOpen()) {
+                $selectedEvent = null;
+            }
             if ($selectedEvent) {
                 $selectedFacilityId = $selectedEvent->facility_id;
             }
@@ -90,10 +93,13 @@ class DonorAuthController extends Controller
                 PatientProfile::create(['user_id' => $user->id]);
             }
             $user->syncRoles($roles);
+
             return [$user, $donor];
         });
 
         Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+        $registeredForEvent = false;
 
         if ($eventId && $donor) {
             $event = DonationSchedule::query()
@@ -101,7 +107,7 @@ class DonorAuthController extends Controller
                 ->whereDate('event_date', '>=', now()->toDateString())
                 ->find($eventId);
 
-            if ($event) {
+            if ($event?->isRegistrationOpen()) {
                 EventRegistration::query()->updateOrCreate(
                     [
                         'donation_schedule_id' => $event->id,
@@ -113,12 +119,16 @@ class DonorAuthController extends Controller
                         'registered_at' => now(),
                     ]
                 );
+                $registeredForEvent = true;
             }
         }
 
-        $message = $eventId && $donor
+        $message = $registeredForEvent
             ? 'Donor registration successful. You are now registered for the selected event.'
             : 'Donor registration successful.';
+        if ($eventId && ! $registeredForEvent) {
+            $message .= ' The selected activity is no longer open. Please choose another event from the map.';
+        }
 
         return redirect()->route('account.dashboard')->with('success', str_replace('Donor registration', 'Account registration', $message));
     }

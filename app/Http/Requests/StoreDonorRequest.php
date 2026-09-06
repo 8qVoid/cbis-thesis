@@ -34,7 +34,6 @@ class StoreDonorRequest extends BaseFormRequest
             'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
             'email' => ['nullable', 'email', 'max:255', 'unique:donors,email'],
             'address' => ['nullable', 'string', 'max:500'],
-            'is_eligible' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -13,7 +13,7 @@ class BloodRelease extends Model
 
     protected $fillable = [
         'facility_id', 'blood_inventory_id', 'released_by', 'patient_name', 'requesting_unit', 'released_at',
-        'units_released', 'purpose',
+        'units_released', 'purpose', 'blood_reservation_id',
     ];
 
     protected function casts(): array
@@ -23,7 +23,23 @@ class BloodRelease extends Model
         ];
     }
 
-    public function facility(): BelongsTo { return $this->belongsTo(Facility::class); }
-    public function inventory(): BelongsTo { return $this->belongsTo(BloodInventory::class, 'blood_inventory_id'); }
-    public function releaser(): BelongsTo { return $this->belongsTo(User::class, 'released_by'); }
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
+    }
+
+    public function inventory(): BelongsTo
+    {
+        return $this->belongsTo(BloodInventory::class, 'blood_inventory_id');
+    }
+
+    public function releaser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'released_by');
+    }
+
+    public function reservation(): BelongsTo
+    {
+        return $this->belongsTo(BloodReservation::class, 'blood_reservation_id');
+    }
 }

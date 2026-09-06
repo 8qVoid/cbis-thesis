@@ -15,7 +15,7 @@ class IncreaseInventoryFromDonation
             return;
         }
 
-        BloodInventory::updateOrCreate(['donation_record_id' => $record->id], [
+        BloodInventory::withTrashed()->firstOrCreate(['donation_record_id' => $record->id], [
             'facility_id' => $record->facility_id,
             'donation_record_id' => $record->id,
             'blood_type' => $record->blood_type,

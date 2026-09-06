@@ -18,10 +18,12 @@ class BloodInventoryController extends Controller
 
     public function index(): View
     {
+        $filters = request()->validate(['component' => ['nullable', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))]]);
         $inventory = FacilityScope::apply(BloodInventory::query()->with(['facility', 'donationRecord']), auth()->user())
+            ->when($filters['component'] ?? null, fn ($query, $component) => $query->where('component', $component))
             ->orderBy('blood_type')
             ->orderBy('expiration_date')
-            ->paginate(20);
+            ->paginate(20)->withQueryString();
 
         return view('blood-inventory.index', compact('inventory'));
     }

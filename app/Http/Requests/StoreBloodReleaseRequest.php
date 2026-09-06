@@ -18,6 +18,7 @@ class StoreBloodReleaseRequest extends BaseFormRequest
         return [
             'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
             'blood_inventory_id' => ['required', 'integer', 'exists:blood_inventory,id'],
+            'blood_reservation_id' => ['nullable', 'integer', 'exists:blood_reservations,id'],
             'patient_name' => ['nullable', 'string', 'max:255'],
             'requesting_unit' => ['nullable', 'string', 'max:255'],
             'released_at' => ['required', 'date'],
@@ -46,7 +47,7 @@ class StoreBloodReleaseRequest extends BaseFormRequest
                 return;
             }
 
-            if ($inventory->status === 'expired' || $inventory->expiration_date?->isPast()) {
+            if ($inventory->status === 'expired' || $inventory->expiration_date?->isBefore(today())) {
                 $validator->errors()->add('blood_inventory_id', 'Expired blood inventory cannot be released.');
             }
 

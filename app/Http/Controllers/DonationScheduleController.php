@@ -14,7 +14,6 @@ use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -209,7 +208,7 @@ class DonationScheduleController extends Controller
 
     private function notifyVerifiedDonors(DonationSchedule $schedule): void
     {
-        if (! $schedule->is_public || $schedule->approval_status !== 'approved' || ! in_array($schedule->status, ['planned', 'ongoing'], true)) {
+        if (! $schedule->isRegistrationOpen()) {
             return;
         }
 
@@ -218,12 +217,14 @@ class DonationScheduleController extends Controller
         User::role('Donor')
             ->where('is_active', true)
             ->whereNotNull('email')
-            ->whereHas('donorProfile', fn ($query) => $query->where('is_eligible', true))
+            ->whereHas('donorProfile')
             ->chunkById(100, function ($donors) use ($schedule): void {
-                try {
-                    Notification::send($donors, new EventPostedNotification($schedule));
-                } catch (\Throwable $e) {
-                    report($e);
+                foreach ($donors as $donor) {
+                    try {
+                        $donor->notify(new EventPostedNotification($schedule));
+                    } catch (\Throwable $e) {
+                        report($e);
+                    }
                 }
             });
     }

@@ -18,6 +18,15 @@ class EnsureFacilityAccess
             abort(401);
         }
 
+        abort_unless($user->is_active, 403, 'This account is inactive.');
+
+        // Personal notifications belong to the account, not to a staff facility.
+        if ($request->routeIs('notifications.*')
+            && $user->hasAnyRole(['Donor', 'Patient'])
+            && ! $user->isQao() && ! $user->isBloodBankStaff() && ! $user->isEventFacilitator()) {
+            return $next($request);
+        }
+
         if ($user->isBloodBankStaff()) {
             abort_unless(MainChapter::contains($user->facility_id), 403, 'Blood operations are restricted to the Bacolod main chapter.');
         }

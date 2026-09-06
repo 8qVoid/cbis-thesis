@@ -321,6 +321,17 @@ class DocumenterWorkflowTest extends TestCase
             'units_released' => 1, 'purpose' => 'Transfusion',
         ])->assertRedirect();
         $this->assertSame(1, $inventory->fresh()->units_available);
+
+        $this->actingAs($bbs)->put(route('donation-records.update', $record), [
+            ...$payload, 'status' => 'verified', 'remarks' => 'Corrected note only',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame(1, $inventory->fresh()->units_available, 'Editing a donation must not replenish released blood.');
+
+        $this->actingAs($bbs)->put(route('donation-records.update', $record), [
+            ...$payload, 'status' => 'rejected',
+        ])->assertSessionHasErrors('status');
+        $this->actingAs($bbs)->delete(route('donation-records.destroy', $record))->assertSessionHasErrors('donation');
+        $this->assertNotNull($record->fresh());
     }
 
     private function facility(string $code = 'FAC-TEST'): Facility

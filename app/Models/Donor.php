@@ -40,7 +40,29 @@ class Donor extends Authenticatable
         return $this->belongsTo(Facility::class);
     }
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function screenings(): HasMany
+    {
+        return $this->hasMany(DonorScreening::class);
+    }
+
+    public function latestScreening()
+    {
+        return $this->hasOne(DonorScreening::class)->latestOfMany();
+    }
+
+    public function getScreeningLabelAttribute(): string
+    {
+        return match ($this->latestScreening?->status) {
+            'eligible' => 'Eligible at last screening',
+            'deferred' => 'Deferred',
+            default => 'Awaiting screening',
+        };
+    }
 
     public function homeFacility(): BelongsTo
     {

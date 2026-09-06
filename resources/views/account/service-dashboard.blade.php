@@ -10,6 +10,7 @@
     </nav>
     @if($showDonor)
         <h1>Donation Dashboard</h1>
+        @include('account.screening-status')
         <a href="{{ route('public.map') }}" class="btn btn-danger cbis-reference-action" aria-label="Find Events on Map"><x-ui.icon name="calendar" /> Find Donation Event</a>
         <div class="cbis-reference-metrics">
             <section class="card"><span class="cbis-reference-icon"><x-ui.icon name="drop" /></span><div><small>Blood type</small><strong>{{ $donor?->blood_type ?? 'Not recorded' }}</strong></div></section>

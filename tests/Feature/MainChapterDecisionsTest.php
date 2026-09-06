@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\BloodInventory;
 use App\Models\BloodReservation;
 use App\Models\DonationSchedule;
+use App\Models\Donor;
 use App\Models\Facility;
 use App\Models\User;
+use App\Notifications\EventPostedNotification;
 use App\Support\ReportData;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,12 +41,16 @@ class MainChapterDecisionsTest extends TestCase
     {
         Storage::fake('public');
         Notification::fake();
+        $onlineDonor = User::factory()->create(['facility_id' => null, 'is_active' => true]);
+        $onlineDonor->assignRole('Donor');
+        Donor::create(['user_id' => $onlineDonor->id, 'first_name' => 'New', 'last_name' => 'Donor', 'birth_date' => '2000-01-01', 'sex' => 'male', 'blood_type' => 'O+', 'is_eligible' => false]);
         $payload = ['facility_id' => $this->branch->id, 'title' => 'QAO Public Drive', 'event_type' => 'blood_donation', 'event_date' => now()->addWeek()->toDateString(), 'start_time' => '09:00', 'end_time' => '12:00', 'venue' => 'Town Hall', 'latitude' => 10.67, 'longitude' => 122.95, 'status' => 'planned', 'photo' => UploadedFile::fake()->image('poster.jpg')];
         $this->actingAs($this->qao)->post(route('donation-schedules.store'), $payload)->assertRedirect(route('donation-schedules.index'));
         $event = DonationSchedule::firstOrFail();
         $this->assertSame('approved', $event->approval_status);
         $this->assertSame($this->qao->id, $event->reviewed_by);
         $this->assertTrue($event->is_public);
+        Notification::assertSentTo($onlineDonor, EventPostedNotification::class);
         $this->get(route('public.map'))->assertSee('QAO Public Drive');
         $facilitator = User::factory()->create(['facility_id' => $this->branch->id]);
         $facilitator->assignRole('Event Facilitator');
@@ -96,6 +102,6 @@ class MainChapterDecisionsTest extends TestCase
         }
         $this->get(route('reports.excel', ['records' => array_keys(ReportData::TYPES)]))->assertOk()->assertDownload();
         $this->get(route('reports.excel', ['export_selection' => 1]))->assertSessionHasErrors('records');
-        $this->get(route('reports.excel',['records' => ['bad']]))->assertSessionHasErrors('records.0');
+        $this->get(route('reports.excel', ['records' => ['bad']]))->assertSessionHasErrors('records.0');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AccountDashboardController;
+use App\Http\Controllers\AccountProfileController;
 use App\Http\Controllers\Auth\DonorAuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -8,21 +10,18 @@ use App\Http\Controllers\BloodBankLocationController;
 use App\Http\Controllers\BloodInventoryController;
 use App\Http\Controllers\BloodlettingRecordController;
 use App\Http\Controllers\BloodReleaseController;
+use App\Http\Controllers\BloodReservationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationRecordController;
 use App\Http\Controllers\DonationScheduleController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\DonorEventRegistrationController;
-use App\Http\Controllers\DonorPortalController;
 use App\Http\Controllers\FacilityApplicationController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffUserController;
-use App\Http\Controllers\AccountDashboardController;
-use App\Http\Controllers\BloodReservationController;
-use App\Http\Controllers\AccountProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/portal');
@@ -132,6 +131,8 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->middleware('central.control')
         ->name('facility-applications.review');
 
+    Route::patch('/donors/{donor}/screening', [DonorController::class, 'screen'])
+        ->middleware(['permission:manage donors', 'facility.operator'])->name('donors.screening');
     Route::resource('donors', DonorController::class)
         ->except(['index', 'show'])
         ->middleware(['permission:manage donors', 'facility.operator']);

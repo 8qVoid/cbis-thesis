@@ -10,12 +10,13 @@ use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\User;
 use App\Support\DonorScope;
-use App\Support\FacilityScope;
+use App\Support\MainChapter;
 use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class CreateDonationRecord extends Component
@@ -32,6 +33,7 @@ class CreateDonationRecord extends Component
 
     public array $facilities = [];
 
+    #[Locked]
     public bool $isCentralAdmin = false;
 
     public ?int $facility_id = null;
@@ -135,6 +137,9 @@ class CreateDonationRecord extends Component
     public function save(): mixed
     {
         $user = $this->currentUser();
+        abort_unless($user->is_active && $user->can('manage donation records') && $user->isBloodBankStaff()
+            && MainChapter::contains($user->facility_id) && $user->facility?->is_active, 403);
+        $this->facility_id = $user->facility_id;
         $data = $this->validate($this->rules());
 
         if (! $this->isCentralAdmin) {
@@ -163,7 +168,7 @@ class CreateDonationRecord extends Component
         event(new DonationRecorded($record));
         $this->logAudit('donation_record.created', $record, $data);
 
-        session()->flash('success', 'Donation recorded and inventory updated.');
+        session()->flash('success', $record->status === 'verified' ? 'Verified donation recorded and inventory added.' : 'Donation recorded. Inventory is added only after verification.');
 
         return redirect()->route('donation-records.index');
     }
@@ -182,7 +187,8 @@ class CreateDonationRecord extends Component
                 'integer',
                 Rule::exists('donation_schedules', 'id')
                     ->where(fn ($query) => $query
-                        ->where('facility_id', $this->facility_id)
+                        ->where('approval_status', 'approved')
+                        ->where('is_public', true)
                         ->whereIn('status', ['planned', 'ongoing'])),
             ],
             'donor_id' => ['required', 'integer', 'exists:donors,id'],
@@ -224,7 +230,6 @@ class CreateDonationRecord extends Component
         EventRegistration::query()
             ->where('donation_schedule_id', $this->selected_event_id)
             ->where('donor_id', $record->donor_id)
-            ->where('facility_id', $record->facility_id)
             ->where('status', 'registered')
             ->update(['status' => 'attended']);
     }
@@ -238,7 +243,6 @@ class CreateDonationRecord extends Component
         return EventRegistration::query()
             ->where('donation_schedule_id', $this->selected_event_id)
             ->where('donor_id', $donorId)
-            ->where('facility_id', $facilityId)
             ->where('status', 'registered')
             ->exists();
     }
@@ -246,13 +250,11 @@ class CreateDonationRecord extends Component
     private function loadEvents(): void
     {
         $user = $this->currentUser();
-        $query = FacilityScope::apply(
-            DonationSchedule::query()
-                ->withCount(['eventRegistrations as registered_count' => fn (Builder $q) => $q->where('status', 'registered')])
-                ->whereIn('status', ['planned', 'ongoing'])
-                ->orderByDesc('event_date'),
-            $user
-        );
+        $query = DonationSchedule::query()
+            ->where('approval_status', 'approved')->where('is_public', true)
+            ->withCount(['eventRegistrations as registered_count' => fn (Builder $q) => $q->where('status', 'registered')])
+            ->whereIn('status', ['planned', 'ongoing'])
+            ->orderByDesc('event_date');
 
         if ($this->isCentralAdmin && $this->facility_id !== null) {
             $query->where('facility_id', $this->facility_id);
@@ -284,9 +286,7 @@ class CreateDonationRecord extends Component
             ->where('status', 'registered')
             ->orderBy('registered_at');
 
-        if (! $user->isCentralAdmin()) {
-            $query->where('facility_id', $user->facility_id);
-        } elseif ($this->facility_id !== null) {
+        if ($user->isCentralAdmin() && $this->facility_id !== null) {
             $query->where('facility_id', $this->facility_id);
         }
 
@@ -346,6 +346,9 @@ class CreateDonationRecord extends Component
         if (! $user instanceof User) {
             abort(403);
         }
+
+        abort_unless($user->is_active && $user->isBloodBankStaff() && $user->can('manage donation records')
+            && MainChapter::contains($user->facility_id) && $user->facility?->is_active, 403);
 
         return $user;
     }

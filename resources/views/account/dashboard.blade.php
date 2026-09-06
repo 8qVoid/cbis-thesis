@@ -13,6 +13,7 @@
     <div class="cbis-combined-grid">
         <section class="card cbis-combined-card">
             <div class="cbis-reference-request-title"><span class="cbis-reference-icon"><x-ui.icon name="drop" /></span><h2>Donation Services</h2></div>
+            @include('account.screening-status')
             <dl class="cbis-combined-facts">
                 <div><dt>Blood type</dt><dd>{{ $donor?->blood_type ?? 'Not recorded' }}</dd></div>
                 <div><dt>Donations</dt><dd>{{ $donationHistory->count() }}</dd></div>

@@ -28,25 +28,25 @@ class FacilitySeeder extends Seeder
 
         // Rename legacy demo addresses on existing local databases rather
         // than creating duplicate staff accounts when the seeder is rerun.
-        $facilitator = User::query()->where('email', 'facilitator@cbis.local')->first()
-            ?? User::query()->where('email', 'facility.admin@cbis.local')->first()
+        $facilitator = User::withTrashed()->where('email', 'facilitator@cbis.local')->first()
+            ?? User::withTrashed()->where('email', 'facility.admin@cbis.local')->first()
             ?? new User(['password' => Hash::make('password')]);
         $facilitator->forceFill([
             'email' => 'facilitator@cbis.local',
             'name' => 'Facility Facilitator',
             'facility_id' => $facility->id,
-            'is_active' => true,
+            'is_active' => $facilitator->exists ? $facilitator->is_active : true,
         ])->save();
         $facilitator->syncRoles(['Event Facilitator']);
 
-        $medicalStaff = User::query()->where('email', 'bbs@cbis.local')->first()
-            ?? User::query()->where('email', 'medical.staff@cbis.local')->first()
+        $medicalStaff = User::withTrashed()->where('email', 'bbs@cbis.local')->first()
+            ?? User::withTrashed()->where('email', 'medical.staff@cbis.local')->first()
             ?? new User(['password' => Hash::make('password')]);
         $medicalStaff->forceFill([
             'email' => 'bbs@cbis.local',
             'name' => 'Blood Bank Staff',
             'facility_id' => $facility->id,
-            'is_active' => true,
+            'is_active' => $medicalStaff->exists ? $medicalStaff->is_active : true,
         ])->save();
         $medicalStaff->syncRoles(['Blood Bank Staff']);
 
@@ -56,12 +56,8 @@ class FacilitySeeder extends Seeder
             $legacyMedTech->forceFill([
                 'name' => 'Medical Staff Nurse',
                 'facility_id' => $facility->id,
-                'is_active' => true,
+                'is_active' => $legacyMedTech->is_active,
             ]);
-
-            if ($legacyMedTech->trashed()) {
-                $legacyMedTech->restore();
-            }
 
             $legacyMedTech->save();
             $legacyMedTech->syncRoles(['Blood Bank Staff']);

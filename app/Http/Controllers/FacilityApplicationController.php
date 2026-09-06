@@ -134,9 +134,9 @@ class FacilityApplicationController extends Controller
 
                 $existingStaff = User::withTrashed()->where('email', $facilityApplication->email)->first();
 
-                if ($existingStaff?->isCentralAdmin()) {
+                if ($existingStaff && ($existingStaff->facility_id !== $facilityId || ! $existingStaff->hasRole('Event Facilitator'))) {
                     throw ValidationException::withMessages([
-                        'status' => 'This application email already belongs to a super administrator account.',
+                        'status' => 'This email belongs to another account. Use a separate email for the branch representative; existing accounts cannot be replaced.',
                     ]);
                 }
 

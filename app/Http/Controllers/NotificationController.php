@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\ActivityReviewStatusChanged;
 use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
+use App\Notifications\DonorScreeningUpdated;
 use App\Notifications\EventPostedNotification;
 use App\Notifications\LowStockAlert;
 use Illuminate\Http\RedirectResponse;
@@ -106,6 +107,7 @@ class NotificationController extends Controller
         }
         if ($user->hasDonorAccess()) {
             $types[] = EventPostedNotification::class;
+            $types[] = DonorScreeningUpdated::class;
         }
 
         return $types;
@@ -137,6 +139,7 @@ class NotificationController extends Controller
             'reservation_status' => BloodReservationStatusChanged::class,
             'activity' => ActivityReviewStatusChanged::class,
             'event' => EventPostedNotification::class,
+            'screening' => DonorScreeningUpdated::class,
             default => null,
         };
     }

@@ -9,11 +9,13 @@ use App\Models\User;
 use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
 use App\Support\MainChapter;
+use App\Support\ReservedStock;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BloodReservationController extends Controller
@@ -99,42 +101,45 @@ class BloodReservationController extends Controller
         abort_unless(auth()->user()->can('process reservations'), 403);
         abort_unless(MainChapter::contains($reservation->facility_id), 403);
         abort_unless(auth()->user()->facility_id === $reservation->facility_id, 403);
-        $transitions = [
-            'submitted' => ['under_review', 'rejected'],
-            'under_review' => ['approved', 'rejected'],
-            'approved' => ['fulfilled', 'rejected'],
-            'rejected' => [],
-            'fulfilled' => [],
-            'cancelled' => [],
-        ];
-        $allowedStatuses = $transitions[$reservation->status] ?? [];
-        $data = $request->validate([
-            'status' => ['required', 'in:'.implode(',', $allowedStatuses ?: ['__none__'])],
-            'review_notes' => ['nullable', 'string', 'max:1000'],
-        ], ['status.in' => 'That status change is not allowed from the reservation’s current status.']);
+        DB::transaction(function () use ($request, &$reservation): void {
+            Facility::whereKey($reservation->facility_id)->lockForUpdate()->firstOrFail();
+            $reservation = BloodReservation::whereKey($reservation->id)->lockForUpdate()->firstOrFail();
+            $transitions = [
+                'submitted' => ['under_review', 'rejected'],
+                'under_review' => ['approved', 'rejected'],
+                'approved' => ['rejected'],
+                'rejected' => [],
+                'fulfilled' => [],
+                'cancelled' => [],
+            ];
+            $allowedStatuses = $transitions[$reservation->status] ?? [];
+            $data = $request->validate([
+                'status' => ['required', 'in:'.implode(',', $allowedStatuses ?: ['__none__'])],
+                'review_notes' => ['required_if:status,rejected', 'nullable', 'string', 'max:1000'],
+            ], ['status.in' => 'That status change is not allowed from the reservation’s current status.']);
 
-        if ($data['status'] === 'approved') {
-            $available = BloodInventory::query()
-                ->where('facility_id', $reservation->facility_id)
-                ->where('blood_type', $reservation->blood_type)
-                ->where('component', $reservation->component)
-                ->whereIn('status', ['active', 'low_stock'])
-                ->whereDate('expiration_date', '>=', today())
-                ->sum('units_available');
-            $alreadyReserved = BloodReservation::query()
-                ->whereKeyNot($reservation->id)
-                ->where('facility_id', $reservation->facility_id)
-                ->where('blood_type', $reservation->blood_type)
-                ->where('component', $reservation->component)
-                ->where('status', 'approved')
-                ->sum('units_requested');
+            if ($data['status'] === 'approved') {
+                $available = BloodInventory::query()
+                    ->where('facility_id', $reservation->facility_id)
+                    ->where('blood_type', $reservation->blood_type)
+                    ->where('component', $reservation->component)
+                    ->whereIn('status', ['active', 'low_stock'])
+                    ->whereDate('expiration_date', '>=', today())
+                    ->sum('units_available');
+                $alreadyReserved = ReservedStock::outstanding($reservation->facility_id, $reservation->blood_type, $reservation->component, $reservation->id);
 
-            if (($available - $alreadyReserved) < $reservation->units_requested) {
-                return back()->withErrors(['status' => 'This facility does not have enough unreserved, non-expired stock to approve the request.']);
+                if (($available - $alreadyReserved) < $reservation->units_requested) {
+                    throw ValidationException::withMessages(['status' => 'This facility does not have enough unreserved, non-expired stock to approve the request.']);
+                }
             }
+            $reservation->update([...$data, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
+        });
+        // A mail outage must not turn a saved decision into an apparent failure.
+        try {
+            $reservation->patient->notify(new BloodReservationStatusChanged($reservation));
+        } catch (\Throwable $exception) {
+            report($exception);
         }
-        $reservation->update([...$data, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
-        $reservation->patient->notify(new BloodReservationStatusChanged($reservation));
 
         return back()->with('success', 'Reservation status updated.');
     }

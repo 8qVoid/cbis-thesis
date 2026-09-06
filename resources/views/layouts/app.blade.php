@@ -42,6 +42,7 @@
         }
         if ($webUser->hasDonorAccess()) {
             $notificationTypes[] = $eventPostedType;
+            $notificationTypes[] = \App\Notifications\DonorScreeningUpdated::class;
         }
         $notificationTitle = 'Account Updates';
     }
@@ -144,6 +145,8 @@
                                             @elseif($notification->type === $reservationStatusType)
                                                 <div>Reservation: {{ $data['reference'] ?? 'N/A' }}</div>
                                                 <div>Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                            @elseif($notification->type === \App\Notifications\DonorScreeningUpdated::class)
+                                                <div>Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
                                             @elseif($notification->type === $eventPostedType)
                                                 <div>{{ $data['event_title'] ?? 'Donation activity' }}</div>
                                                 <div>{{ $data['event_date'] ?? 'Date to be announced' }} · {{ $data['facility_name'] ?? 'Facility to be announced' }}</div>

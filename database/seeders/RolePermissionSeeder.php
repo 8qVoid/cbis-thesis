@@ -113,14 +113,14 @@ class RolePermissionSeeder extends Seeder
         // Keep the presentation account named after the role. If an older
         // seeded database exists, rename its legacy address instead of adding
         // a second QAO account.
-        $admin = User::query()->where('email', 'qao@cbis.local')->first()
-            ?? User::query()->where('email', 'admin@cbis.local')->first()
+        $admin = User::withTrashed()->where('email', 'qao@cbis.local')->first()
+            ?? User::withTrashed()->where('email', 'admin@cbis.local')->first()
             ?? new User(['password' => Hash::make('password')]);
 
         $admin->forceFill([
             'email' => 'qao@cbis.local',
             'name' => 'Philippine Red Cross Super Administrator',
-            'is_active' => true,
+            'is_active' => $admin->exists ? $admin->is_active : true,
         ])->save();
         $admin->syncRoles([$qao]);
     }
