@@ -3,12 +3,14 @@
 @section('content')
 @php
     $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
+    $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
+    $eventPostedType = \App\Notifications\EventPostedNotification::class;
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Notifications</h1>
-        <p class="cbis-page-subtitle">Role-specific reservation, inventory, and activity alerts.</p>
+        <p class="cbis-page-subtitle">Your reservation, inventory, activity, and event updates.</p>
     </div>
     <form method="POST" action="{{ route('notifications.read-all') }}">
         @csrf
@@ -32,6 +34,16 @@
                     <option value="all" @selected(($alertType ?? 'all') === 'all')>All alerts</option>
                     <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
                     <option value="reservation" @selected(($alertType ?? 'all') === 'reservation')>Blood reservations</option>
+                </select>
+            </div>
+        @endif
+        @if(auth()->user()->hasAnyRole(['Donor', 'Patient']))
+            <div class="col-md-3">
+                <label class="form-label">Update Type</label>
+                <select name="type" class="form-select">
+                    <option value="all" @selected(($alertType ?? 'all') === 'all')>All updates</option>
+                    @if(auth()->user()->hasPatientAccess())<option value="reservation_status" @selected(($alertType ?? 'all') === 'reservation_status')>Blood requests</option>@endif
+                    @if(auth()->user()->hasDonorAccess())<option value="event" @selected(($alertType ?? 'all') === 'event')>Donation activities</option>@endif
                 </select>
             </div>
         @endif
@@ -73,6 +85,12 @@
                                 @elseif($notification->type === $activityReviewType)
                                     <div>{{ $data['activity_title'] ?? 'Activity' }}</div>
                                     <div class="text-muted small">Status: {{ str($data['approval_status'] ?? 'updated')->title() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                @elseif($notification->type === $reservationStatusType)
+                                    <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
+                                    <div class="text-muted small">Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                @elseif($notification->type === $eventPostedType)
+                                    <div>{{ $data['event_title'] ?? 'Donation activity' }}</div>
+                                    <div class="text-muted small">{{ $data['event_date'] ?? 'Date to be announced' }} · {{ $data['facility_name'] ?? 'Facility to be announced' }}</div>
                                 @else
                                     <div>{{ $data['facility_name'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">

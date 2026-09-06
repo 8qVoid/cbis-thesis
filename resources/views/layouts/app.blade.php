@@ -21,7 +21,9 @@
     $webUser = $webAuthenticated ? auth('web')->user() : null;
     $lowStockType = \App\Notifications\LowStockAlert::class;
     $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
+    $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
+    $eventPostedType = \App\Notifications\EventPostedNotification::class;
     $notificationTypes = [];
     $notificationTitle = 'Notifications';
 
@@ -34,6 +36,14 @@
     } elseif ($webAuthenticated && $webUser?->isEventFacilitator()) {
         $notificationTypes = [$activityReviewType];
         $notificationTitle = 'Activity Alerts';
+    } elseif ($webAuthenticated && $webUser?->hasAnyRole(['Donor', 'Patient'])) {
+        if ($webUser->hasPatientAccess()) {
+            $notificationTypes[] = $reservationStatusType;
+        }
+        if ($webUser->hasDonorAccess()) {
+            $notificationTypes[] = $eventPostedType;
+        }
+        $notificationTitle = 'Account Updates';
     }
 
     $showNotificationCenter = $webAuthenticated && $notificationTypes !== [];
@@ -44,7 +54,7 @@
         $unreadQuery = $webUser->unreadNotifications()->whereIn('type', $notificationTypes);
         $recentQuery = $webUser->notifications()->whereIn('type', $notificationTypes);
 
-        if (! $webUser->isCentralAdmin()) {
+        if (! $webUser->isCentralAdmin() && ! $webUser->hasAnyRole(['Donor', 'Patient'])) {
             // The notifications table stores JSON in a text column. PostgreSQL
             // needs an explicit jsonb cast, unlike MySQL's JSON selector.
             if (\Illuminate\Support\Facades\DB::getDriverName() === 'pgsql') {
@@ -131,6 +141,12 @@
                                                 <div>{{ $data['blood_type'] ?? 'N/A' }} · {{ \App\Models\BloodInventory::COMPONENTS[$data['component'] ?? ''] ?? ($data['component'] ?? 'N/A') }}</div>
                                             @elseif($notification->type === $activityReviewType)
                                                 <div>{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
+                                            @elseif($notification->type === $reservationStatusType)
+                                                <div>Reservation: {{ $data['reference'] ?? 'N/A' }}</div>
+                                                <div>Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                            @elseif($notification->type === $eventPostedType)
+                                                <div>{{ $data['event_title'] ?? 'Donation activity' }}</div>
+                                                <div>{{ $data['event_date'] ?? 'Date to be announced' }} · {{ $data['facility_name'] ?? 'Facility to be announced' }}</div>
                                             @else
                                                 <div>Facility: {{ $data['facility_name'] ?? 'N/A' }}</div>
                                                 <div>Blood Type: {{ $data['blood_type'] ?? 'N/A' }} | Units: {{ $data['units_available'] ?? 'N/A' }}</div>

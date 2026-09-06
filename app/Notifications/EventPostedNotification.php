@@ -4,11 +4,10 @@ namespace App\Notifications;
 
 use App\Models\DonationSchedule;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class EventPostedNotification extends Notification implements ShouldQueue
+class EventPostedNotification extends Notification
 {
     use Queueable;
 
@@ -18,7 +17,20 @@ class EventPostedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
+    }
+
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'title' => 'New donation activity',
+            'event_id' => $this->event->id,
+            'event_title' => $this->event->title,
+            'event_type' => $this->event->event_type,
+            'event_date' => $this->event->event_date?->toDateString(),
+            'facility_id' => $this->event->facility_id,
+            'facility_name' => $this->event->facility?->name,
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

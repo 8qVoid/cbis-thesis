@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FilterNotificationsRequest;
 use App\Models\User;
 use App\Notifications\ActivityReviewStatusChanged;
+use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
+use App\Notifications\EventPostedNotification;
 use App\Notifications\LowStockAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -98,12 +100,20 @@ class NotificationController extends Controller
             return [ActivityReviewStatusChanged::class];
         }
 
-        return [];
+        $types = [];
+        if ($user->hasPatientAccess()) {
+            $types[] = BloodReservationStatusChanged::class;
+        }
+        if ($user->hasDonorAccess()) {
+            $types[] = EventPostedNotification::class;
+        }
+
+        return $types;
     }
 
     private function limitToUserFacility($query, User $user): void
     {
-        if ($user->isCentralAdmin()) {
+        if ($user->isCentralAdmin() || $user->hasAnyRole(['Donor', 'Patient'])) {
             return;
         }
 
@@ -124,7 +134,9 @@ class NotificationController extends Controller
         return match ($type) {
             'low_stock' => LowStockAlert::class,
             'reservation' => BloodReservationSubmitted::class,
+            'reservation_status' => BloodReservationStatusChanged::class,
             'activity' => ActivityReviewStatusChanged::class,
+            'event' => EventPostedNotification::class,
             default => null,
         };
     }

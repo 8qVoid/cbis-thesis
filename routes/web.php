@@ -195,12 +195,12 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->name('reports.excel');
 
     Route::get('/notifications', [NotificationController::class, 'index'])
-        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
         ->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])
-        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
         ->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])
-        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff')
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
         ->name('notifications.read-all');
 });
