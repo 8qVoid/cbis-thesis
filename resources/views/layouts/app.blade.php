@@ -45,8 +45,15 @@
         $recentQuery = $webUser->notifications()->whereIn('type', $notificationTypes);
 
         if (! $webUser->isCentralAdmin()) {
-            $unreadQuery->where('data->facility_id', $webUser->facility_id);
-            $recentQuery->where('data->facility_id', $webUser->facility_id);
+            // The notifications table stores JSON in a text column. PostgreSQL
+            // needs an explicit jsonb cast, unlike MySQL's JSON selector.
+            if (\Illuminate\Support\Facades\DB::getDriverName() === 'pgsql') {
+                $unreadQuery->whereRaw("(data::jsonb ->> 'facility_id') = ?", [(string) $webUser->facility_id]);
+                $recentQuery->whereRaw("(data::jsonb ->> 'facility_id') = ?", [(string) $webUser->facility_id]);
+            } else {
+                $unreadQuery->where('data->facility_id', $webUser->facility_id);
+                $recentQuery->where('data->facility_id', $webUser->facility_id);
+            }
         }
 
         $unreadCount = $unreadQuery->count();

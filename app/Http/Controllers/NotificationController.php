@@ -10,6 +10,7 @@ use App\Notifications\LowStockAlert;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -30,9 +31,7 @@ class NotificationController extends Controller
 
         $query = $user->notifications()->whereIn('type', $notificationTypes);
 
-        if (! $user->isCentralAdmin()) {
-            $query->where('data->facility_id', $user->facility_id);
-        }
+        $this->limitToUserFacility($query, $user);
 
         if ($status === 'unread') {
             $query->whereNull('read_at');
@@ -54,14 +53,12 @@ class NotificationController extends Controller
     public function markRead(Request $request, string $id): RedirectResponse
     {
         /** @var DatabaseNotification|null $notification */
-        $notification = $request->user()
+        $query = $request->user()
             ->notifications()
-            ->whereIn('type', $this->notificationTypesFor($request->user()))
-            ->when(! $request->user()->isCentralAdmin(), function ($query) use ($request): void {
-                $query->where('data->facility_id', $request->user()->facility_id);
-            })
-            ->whereKey($id)
-            ->first();
+            ->whereIn('type', $this->notificationTypesFor($request->user()));
+
+        $this->limitToUserFacility($query, $request->user());
+        $notification = $query->whereKey($id)->first();
 
         if (! $notification) {
             abort(404);
@@ -76,13 +73,12 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): RedirectResponse
     {
-        $request->user()
+        $query = $request->user()
             ->unreadNotifications()
-            ->whereIn('type', $this->notificationTypesFor($request->user()))
-            ->when(! $request->user()->isCentralAdmin(), function ($query) use ($request): void {
-                $query->where('data->facility_id', $request->user()->facility_id);
-            })
-            ->update(['read_at' => now()]);
+            ->whereIn('type', $this->notificationTypesFor($request->user()));
+
+        $this->limitToUserFacility($query, $request->user());
+        $query->update(['read_at' => now()]);
 
         return back()->with('success', 'All notifications marked as read.');
     }
@@ -103,6 +99,21 @@ class NotificationController extends Controller
         }
 
         return [];
+    }
+
+    private function limitToUserFacility($query, User $user): void
+    {
+        if ($user->isCentralAdmin()) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'pgsql') {
+            $query->whereRaw("(data::jsonb ->> 'facility_id') = ?", [(string) $user->facility_id]);
+
+            return;
+        }
+
+        $query->where('data->facility_id', $user->facility_id);
     }
 
     /**
