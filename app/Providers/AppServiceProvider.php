@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +17,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Render terminates HTTPS before forwarding the request to Apache.
+        // Generate secure links for stylesheets, scripts, routes, and uploads.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Event listeners are auto-discovered in Laravel 13.
         RateLimiter::for('login', function (Request $request): Limit {
             $identifier = (string) $request->input('login', 'unknown');
