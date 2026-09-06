@@ -154,6 +154,35 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-bar-row { display:grid; grid-template-columns:30px minmax(0,1fr) 55px; align-items:center; gap:12px; margin:11px 0; font-size:.75rem; }
 .cbis-bar-track { background:#f5eaf0; height:9px; border-radius:6px; overflow:hidden; }
 .cbis-bar-track>span { background:#bf3150; height:100%; display:block; border-radius:6px; }
+.cbis-landing-hero { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr); align-items:center; gap:44px; padding:clamp(34px,6vw,78px) clamp(24px,6vw,84px); margin:0 calc(50% - 50vw); background:linear-gradient(112deg,#fff 52%,#fff2f4 52%); border-bottom:1px solid #eceef2; }
+.cbis-landing-copy { max-width:610px; justify-self:end; width:100%; }
+.cbis-landing-eyebrow { color:#b32040; font-size:.7rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; margin:0 0 10px; }
+.cbis-landing-copy h1 { max-width:620px; font-size:clamp(2.15rem,4vw,3.7rem); line-height:1.08; letter-spacing:-.065em; font-weight:800; margin:0 0 18px; }
+.cbis-landing-lead { max-width:560px; font-size:1rem; line-height:1.7; color:#58667d; margin:0 0 26px; }
+.cbis-landing-map-card { background:#fff; border:1px solid #e1e5eb; border-radius:14px; box-shadow:0 12px 35px #2a364418; overflow:hidden; min-width:0; }
+.cbis-landing-map-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 17px; border-bottom:1px solid #eef0f4; font-size:.78rem; font-weight:800; }
+.cbis-landing-map-heading a { color:#b32040; font-weight:700; text-decoration:none; }
+.cbis-landing-map-card .cbis-dashboard-map { height:270px; }
+.cbis-landing-map-card .cbis-map-caption { padding:10px 17px; }
+.cbis-landing-services,.cbis-landing-events { padding:clamp(42px,6vw,72px) 0; }
+.cbis-landing-services { border-bottom:1px solid #e9ecf1; }
+.cbis-landing-section-heading { max-width:570px; margin-bottom:26px; }
+.cbis-landing-section-heading h2,.cbis-landing-events h2 { font-size:1.65rem; letter-spacing:-.045em; font-weight:800; margin:0 0 8px; }
+.cbis-landing-section-heading>p:not(.cbis-landing-eyebrow) { color:#69758a; margin:0; }
+.cbis-landing-service-card,.cbis-landing-event-card { padding:23px; background:#fff; border:1px solid #e1e5eb; border-radius:12px; box-shadow:0 3px 10px #26364b08; }
+.cbis-landing-icon { display:grid; place-items:center; width:46px; height:46px; margin-bottom:17px; background:#fdebef; color:#b32040; border-radius:50%; }
+.cbis-landing-icon .cbis-icon { width:24px; height:24px; }
+.cbis-landing-step { display:grid; place-items:center; width:36px; height:36px; margin-bottom:17px; border-radius:50%; background:#bf1236; color:#fff; font-size:.82rem; font-weight:800; }
+.cbis-landing-service-card h3,.cbis-landing-event-card h3 { font-size:1rem; font-weight:800; margin:0 0 9px; }
+.cbis-landing-service-card p { color:#657187; font-size:.82rem; line-height:1.6; margin:0 0 17px; }
+.cbis-landing-service-card a { color:#b32040; font-size:.8rem; font-weight:800; text-decoration:none; }
+.cbis-event-type { display:inline-block; margin-bottom:14px; padding:5px 8px; border-radius:5px; color:#a40f2e; background:#fff0f3; font-size:.67rem; font-weight:800; }
+.cbis-landing-event-card dl { margin:17px 0; }
+.cbis-landing-event-card dl>div { display:grid; grid-template-columns:66px minmax(0,1fr); gap:8px; padding:8px 0; border-top:1px solid #edf0f3; font-size:.75rem; }
+.cbis-landing-event-card dt { color:#768195; font-weight:600; }.cbis-landing-event-card dd { margin:0; color:#344057; font-weight:700; overflow-wrap:anywhere; }
+.cbis-landing-empty { padding:30px; background:#fff; border:1px dashed #d8dee7; border-radius:12px; color:#68758a; text-align:center; }
+.cbis-landing-notice { display:flex; align-items:center; gap:14px; margin:0 0 38px; padding:17px 20px; border:1px solid #f0daa4; border-radius:10px; background:#fff8ea; color:#735823; }
+.cbis-landing-notice>.cbis-icon { flex-shrink:0; color:#ae7805; }.cbis-landing-notice strong,.cbis-landing-notice span { display:block; }.cbis-landing-notice strong { font-size:.82rem; margin-bottom:3px; }.cbis-landing-notice span { font-size:.76rem; }.cbis-landing-notice .btn { margin-left:auto; flex-shrink:0; }
 @media(max-width:1199px) { .cbis-staff-shell { grid-template-columns:205px minmax(0,1fr); } .cbis-staff-content { padding:22px !important; } }
 @media(max-width:991px) {
  .cbis-navbar>.container { padding-inline:20px; gap:12px; }
@@ -180,6 +209,9 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
  .cbis-kpi .label { padding-right:0; }
  .cbis-dashboard-heading { gap:16px; }
  .cbis-dashboard-map { height:250px; }
+ .cbis-landing-hero { grid-template-columns:1fr; gap:28px; margin-inline:calc(50% - 50vw); padding:38px 24px; }
+ .cbis-landing-copy { justify-self:start; }.cbis-landing-copy h1 { font-size:2.35rem; }.cbis-landing-map-card .cbis-dashboard-map { height:230px; }
+ .cbis-landing-services,.cbis-landing-events { padding:42px 0; }.cbis-landing-notice { align-items:flex-start; flex-wrap:wrap; }.cbis-landing-notice .btn { margin-left:0; }
  .cbis-card-title { gap:10px; flex-wrap:wrap; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; } }

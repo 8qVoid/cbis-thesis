@@ -4,6 +4,25 @@ namespace App\Support;
 
 class PhilippinePhone
 {
+    /**
+     * Normalize a value typed into a phone form. Public forms accept digits
+     * only; symbols and letters must be rejected rather than silently removed.
+     */
+    public static function normalizeMobileInput(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        if ($value === '' || preg_match('/^\d+$/', $value) !== 1) {
+            return null;
+        }
+
+        return self::normalizeMobile($value);
+    }
+
     public static function normalizeMobile(?string $value): ?string
     {
         if ($value === null) {
@@ -60,13 +79,15 @@ class PhilippinePhone
         }
 
         foreach ($numbers as $number) {
+            if (preg_match('/^\d+$/', $number) !== 1) {
+                return false;
+            }
+
             if (self::normalizeMobile($number) !== null) {
                 continue;
             }
 
-            $digits = preg_replace('/\D+/', '', $number) ?? '';
-
-            if (preg_match('/^(?:0\d{8,10}|63\d{8,10})$/', $digits) === 1) {
+            if (preg_match('/^(?:0\d{8,10}|63\d{8,10})$/', $number) === 1) {
                 continue;
             }
 

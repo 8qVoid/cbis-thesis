@@ -295,7 +295,13 @@ document.querySelectorAll('.js-person-name').forEach((input) => {
 
 document.querySelectorAll('.js-contact-numbers').forEach((input) => {
     input.addEventListener('input', () => {
-        input.value = input.value.replace(/[^0-9()+,\-\s]/g, '').slice(0, Number(input.maxLength) || 60);
+        input.value = input.value.replace(/[^0-9,]/g, '').replace(/,{2,}/g, ',').slice(0, Number(input.maxLength) || 60);
+    });
+});
+
+document.querySelectorAll('.js-contact-number').forEach((input) => {
+    input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '').slice(0, Number(input.maxLength) || 30);
     });
 });
 

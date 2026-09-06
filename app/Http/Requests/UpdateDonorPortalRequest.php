@@ -17,7 +17,7 @@ class UpdateDonorPortalRequest extends BaseFormRequest
         parent::prepareForValidation();
 
         if ($this->filled('contact_number')) {
-            $normalized = PhilippinePhone::normalizeMobile((string) $this->input('contact_number'));
+            $normalized = PhilippinePhone::normalizeMobileInput((string) $this->input('contact_number'));
             $this->merge(['contact_number' => $normalized ?? trim((string) $this->input('contact_number'))]);
         }
     }

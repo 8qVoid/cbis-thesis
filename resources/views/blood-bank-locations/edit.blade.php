@@ -5,7 +5,7 @@
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ $bloodBankLocation->facility?->name ?? auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly><input type="hidden" name="facility_id" value="{{ $bloodBankLocation->facility_id }}"></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address',$bloodBankLocation->address) }}" required></div>
-<div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control" value="{{ old('contact_number',$bloodBankLocation->contact_number) }}" maxlength="30" placeholder="09171234567 or (034) 433 0313"><small class="text-muted">Mobile or landline accepted.</small></div>
+<div class="col-md-6"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control js-contact-number" value="{{ old('contact_number', preg_replace('/\D+/', '', (string) $bloodBankLocation->contact_number)) }}" inputmode="numeric" pattern="\d*" maxlength="30" placeholder="09171234567"><small class="text-muted">Numbers only. Mobile or landline accepted.</small></div>
 <div class="col-md-6">
 <label class="form-label">Location Photo</label>
 @if($bloodBankLocation->photo_path)

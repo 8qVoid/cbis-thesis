@@ -56,7 +56,7 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Contact Number (PH)</label>
-            <input name="contact_number" class="form-control" value="{{ old('contact_number', $donationSchedule->contact_number) }}" maxlength="30" placeholder="09171234567 or (034) 433 0313">
+            <input name="contact_number" class="form-control js-contact-number" value="{{ old('contact_number', preg_replace('/\D+/', '', (string) $donationSchedule->contact_number)) }}" inputmode="numeric" pattern="\d*" maxlength="30" placeholder="09171234567">
             <small class="text-muted">Mobile or landline accepted.</small>
         </div>
         <div class="col-12">

@@ -26,32 +26,25 @@ class FacilitySeeder extends Seeder
 
         $facility->update(['is_main_chapter' => true]);
 
-        $facilitator = User::firstOrCreate(
-            ['email' => 'facility.admin@cbis.local'],
-            [
-                'name' => 'Facility Facilitator',
-                'password' => Hash::make('password'),
-                'facility_id' => $facility->id,
-                'is_active' => true,
-            ]
-        );
+        // Rename legacy demo addresses on existing local databases rather
+        // than creating duplicate staff accounts when the seeder is rerun.
+        $facilitator = User::query()->where('email', 'facilitator@cbis.local')->first()
+            ?? User::query()->where('email', 'facility.admin@cbis.local')->first()
+            ?? new User(['password' => Hash::make('password')]);
         $facilitator->forceFill([
+            'email' => 'facilitator@cbis.local',
             'name' => 'Facility Facilitator',
             'facility_id' => $facility->id,
             'is_active' => true,
         ])->save();
         $facilitator->syncRoles(['Event Facilitator']);
 
-        $medicalStaff = User::firstOrCreate(
-            ['email' => 'medical.staff@cbis.local'],
-            [
-                'name' => 'Medical Staff Nurse',
-                'password' => Hash::make('password'),
-                'facility_id' => $facility->id,
-                'is_active' => true,
-            ]
-        );
+        $medicalStaff = User::query()->where('email', 'bbs@cbis.local')->first()
+            ?? User::query()->where('email', 'medical.staff@cbis.local')->first()
+            ?? new User(['password' => Hash::make('password')]);
         $medicalStaff->forceFill([
+            'email' => 'bbs@cbis.local',
+            'name' => 'Blood Bank Staff',
             'facility_id' => $facility->id,
             'is_active' => true,
         ])->save();

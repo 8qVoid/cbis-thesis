@@ -110,16 +110,15 @@ class RolePermissionSeeder extends Seeder
             Role::query()->where('name', 'Medical Technologist')->delete();
         }
 
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@cbis.local'],
-            [
-                'name' => 'Philippine Red Cross Super Administrator',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-            ]
-        );
+        // Keep the presentation account named after the role. If an older
+        // seeded database exists, rename its legacy address instead of adding
+        // a second QAO account.
+        $admin = User::query()->where('email', 'qao@cbis.local')->first()
+            ?? User::query()->where('email', 'admin@cbis.local')->first()
+            ?? new User(['password' => Hash::make('password')]);
 
         $admin->forceFill([
+            'email' => 'qao@cbis.local',
             'name' => 'Philippine Red Cross Super Administrator',
             'is_active' => true,
         ])->save();

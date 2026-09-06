@@ -12,16 +12,6 @@ class StoreBloodBankLocationRequest extends BaseFormRequest
         return $this->user()?->can('manage locations') ?? false;
     }
 
-    protected function prepareForValidation(): void
-    {
-        parent::prepareForValidation();
-
-        if ($this->filled('contact_number')) {
-            $normalized = PhilippinePhone::normalizeMobile((string) $this->input('contact_number'));
-            $this->merge(['contact_number' => $normalized ?? trim((string) $this->input('contact_number'))]);
-        }
-    }
-
     public function rules(): array
     {
         return [

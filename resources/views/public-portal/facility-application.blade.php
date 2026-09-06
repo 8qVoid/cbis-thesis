@@ -23,7 +23,7 @@
         </div>
         <div class="col-md-4">
             <label class="form-label">Contact Number</label>
-            <input name="contact_number" class="form-control js-contact-numbers" value="{{ old('contact_number') }}" maxlength="60" placeholder="09171234567, (034) 433 0313" required>
+            <input name="contact_number" class="form-control js-contact-numbers" value="{{ old('contact_number') }}" inputmode="numeric" pattern="\d+(,\d+)?" maxlength="60" placeholder="09171234567,0344330313" required>
             <div class="form-text">Use Philippine mobile or landline numbers. Separate multiple numbers with commas.</div>
         </div>
         <div class="col-md-4">

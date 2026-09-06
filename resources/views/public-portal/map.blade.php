@@ -271,14 +271,26 @@ const map = L.map('map', {
     maxBounds: NEGROS_BOUNDS,
     maxBoundsViscosity: 1.0
 }).setView(NEGROS_CENTER, 9);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+});
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri',
+});
+
+streetLayer.addTo(map);
+L.control.layers({
+    Street: streetLayer,
+    Satellite: satelliteLayer,
+}, {}, { position: 'topright' }).addTo(map);
 const data = @json($mapLocations);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
 const markerItems = [];
 let userLatLng = null;
 let userMarker = null;
-let routeLine = null;
 
 const markerIcons = {
     event: L.divIcon({
@@ -336,7 +348,7 @@ const googleDirectionsUrl = (item) => {
 
 const directionsButton = (item) => `
     <a href="${googleDirectionsUrl(item)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">
-        Open Directions
+        Open in Google Maps
     </a>
 `;
 
@@ -347,7 +359,7 @@ const routeDistanceNote = (item) => {
 
     const distanceKm = userLatLng.distanceTo(L.latLng(item.lat, item.lng)) / 1000;
 
-    return `<div class="cbis-map-route-note">Approx. ${distanceKm.toFixed(1)} km from your location</div>`;
+    return `<div class="cbis-map-route-note">Straight-line distance: ${distanceKm.toFixed(1)} km</div>`;
 };
 
 const eventPopup = (item) => {
@@ -396,24 +408,12 @@ const facilityPopup = (item) => `
 
 const buildPopup = (item) => item.type === 'facility' ? facilityPopup(item) : eventPopup(item);
 
-const drawRouteTo = (item) => {
+const focusDirections = (item) => {
     if (!userLatLng) {
         return;
     }
 
     const destination = L.latLng(item.lat, item.lng);
-
-    if (routeLine) {
-        routeLine.remove();
-    }
-
-    routeLine = L.polyline([userLatLng, destination], {
-        color: '#198754',
-        weight: 3,
-        opacity: .9,
-        dashArray: '6, 8',
-    }).addTo(map);
-
     map.fitBounds(L.latLngBounds([userLatLng, destination]).pad(0.25));
 };
 
@@ -440,10 +440,10 @@ const focusNearestPin = () => {
     }
 
     const nearest = candidates[0];
-    drawRouteTo(nearest.item);
+    focusDirections(nearest.item);
     nearest.marker.setPopupContent(buildPopup(nearest.item));
     nearest.marker.openPopup();
-    setLocationStatus(`Nearest ${nearest.item.type === 'facility' ? 'facility' : 'event'} found. Approx. ${(nearest.distance / 1000).toFixed(1)} km away.`);
+    setLocationStatus(`Nearest ${nearest.item.type === 'facility' ? 'facility' : 'event'} found. Select “Open in Google Maps” for road directions.`);
 };
 
 data.forEach((item) => {
@@ -465,7 +465,7 @@ data.forEach((item) => {
         autoPanPaddingBottomRight: L.point(24, 24),
     });
     marker.on('click', () => {
-        drawRouteTo(item);
+        focusDirections(item);
         marker.setPopupContent(buildPopup(item));
     });
 });

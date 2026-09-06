@@ -23,7 +23,7 @@ class LoginController extends Controller
 
         $login = trim($data['login']);
         $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
-        $normalizedMobile = PhilippinePhone::normalizeMobile($login);
+        $normalizedMobile = PhilippinePhone::normalizeMobileInput($login);
         $isPhilippineMobile = $normalizedMobile !== null;
 
         if (! $isEmail && ! $isPhilippineMobile) {

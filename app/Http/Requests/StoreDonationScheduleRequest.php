@@ -11,16 +11,6 @@ class StoreDonationScheduleRequest extends BaseFormRequest
         return $this->facilityOperatorCan('manage schedules');
     }
 
-    protected function prepareForValidation(): void
-    {
-        parent::prepareForValidation();
-
-        if ($this->filled('contact_number')) {
-            $normalized = PhilippinePhone::normalizeMobile((string) $this->input('contact_number'));
-            $this->merge(['contact_number' => $normalized ?? trim((string) $this->input('contact_number'))]);
-        }
-    }
-
     public function rules(): array
     {
         return [

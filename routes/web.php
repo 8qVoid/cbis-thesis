@@ -25,7 +25,7 @@ use App\Http\Controllers\BloodReservationController;
 use App\Http\Controllers\AccountProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/portal/map');
+Route::redirect('/', '/portal');
 Route::get('/portal', [PublicPortalController::class, 'index'])->name('public.index');
 Route::redirect('/portal/events', '/portal/map')->name('public.events');
 Route::get('/portal/map', [PublicPortalController::class, 'map'])->name('public.map');

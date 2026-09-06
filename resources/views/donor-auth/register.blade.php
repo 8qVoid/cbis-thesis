@@ -15,8 +15,8 @@
                         <div class="col-12">
                             <label class="form-label fw-semibold">What would you like to do?</label>
                             <div class="d-flex flex-wrap gap-3">
-                                <label class="form-check"><input class="form-check-input js-service" type="checkbox" name="services[]" value="donor" @checked(in_array('donor', old('services', ['donor']), true))> <span class="form-check-label">Donor — I want to donate blood</span></label>
-                                <label class="form-check"><input class="form-check-input js-service" type="checkbox" name="services[]" value="patient" @checked(in_array('patient', old('services', []), true))> <span class="form-check-label">Patient — I want to request blood</span></label>
+                                <label class="form-check"><input class="form-check-input js-service" type="checkbox" name="services[]" value="donor" @checked(in_array('donor', old('services', [$selectedService]), true))> <span class="form-check-label">Donor — I want to donate blood</span></label>
+                                <label class="form-check"><input class="form-check-input js-service" type="checkbox" name="services[]" value="patient" @checked(in_array('patient', old('services', [$selectedService]), true))> <span class="form-check-label">Patient — I want to request blood</span></label>
                             </div>
                             <small class="text-muted">Choose one or both. You will use one login for all selected services.</small>
                         </div>

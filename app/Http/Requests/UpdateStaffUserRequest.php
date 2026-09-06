@@ -31,7 +31,7 @@ class UpdateStaffUserRequest extends BaseFormRequest
         parent::prepareForValidation();
 
         if ($this->filled('phone')) {
-            $normalized = PhilippinePhone::normalizeMobile((string) $this->input('phone'));
+            $normalized = PhilippinePhone::normalizeMobileInput((string) $this->input('phone'));
             $this->merge(['phone' => $normalized ?? trim((string) $this->input('phone'))]);
         }
     }

@@ -31,6 +31,8 @@ class DonorAuthController extends Controller
     public function showRegister(): View
     {
         $facilities = Facility::query()->where('is_active', true)->orderBy('name')->get();
+        $selectedService = request()->string('service')->value();
+        $selectedService = in_array($selectedService, ['donor', 'patient'], true) ? $selectedService : 'donor';
         $requestedFacilityId = request()->integer('facility_id');
         $selectedFacilityId = $facilities->contains('id', $requestedFacilityId) ? $requestedFacilityId : null;
         $selectedEvent = null;
@@ -48,7 +50,7 @@ class DonorAuthController extends Controller
             }
         }
 
-        return view('donor-auth.register', compact('facilities', 'selectedFacilityId', 'selectedEvent'));
+        return view('donor-auth.register', compact('facilities', 'selectedFacilityId', 'selectedEvent', 'selectedService'));
     }
 
     public function register(DonorSelfRegisterRequest $request): RedirectResponse
