@@ -16,6 +16,8 @@ class FilterDonationScheduleRequest extends BaseFormRequest
             'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
             'event_date' => ['nullable', 'date'],
             'status' => ['nullable', 'in:planned,ongoing,completed,cancelled'],
+            'approval_status' => ['nullable', 'in:pending,approved,rejected'],
+            'q' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
     }

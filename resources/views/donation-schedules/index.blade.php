@@ -4,7 +4,7 @@
     $currentUser = auth('web')->user();
     $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Event Schedules</h1>
         <p class="cbis-page-subtitle">Plan and publish blood donation and bloodletting activities.</p>
@@ -14,8 +14,9 @@
     @endif
 </div>
 
-<form method="GET" class="card card-body mb-3 cbis-filter-card" data-auto-filter="true">
+<form method="GET" class="card card-body mb-3 cbis-filter-card">
     <div class="row g-2">
+        <div class="col-md-4"><label for="event-search" class="form-label">Search events</label><input id="event-search" class="form-control" name="q" maxlength="100" value="{{ request('q') }}" placeholder="Title or venue"></div>
         <div class="col-md-3">
             <label class="form-label">Event Type</label>
             <select name="event_type" class="form-select">
@@ -48,46 +49,46 @@
                 @endforeach
             </select>
         </div>
+        <div class="col-md-3"><label for="event-approval" class="form-label">QAO approval</label><select id="event-approval" name="approval_status" class="form-select"><option value="">All decisions</option>@foreach(['pending','approved','rejected'] as $approval)<option value="{{ $approval }}" @selected(request('approval_status') === $approval)>{{ ucfirst($approval) }}</option>@endforeach</select></div>
+        <div class="col-12 d-flex gap-2 mt-3"><button class="btn btn-danger">Apply filters</button><a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Reset</a></div>
     </div>
 </form>
 
-<div class="table-responsive">
-    <table class="table table-striped bg-white">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Facility</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Venue</th>
-                <th>Status</th>
-                <th>QAO Approval</th>
-                <th>Registration Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($schedules as $schedule)
-                <tr>
-                    <td>{{ $schedule->title }}</td>
-                    <td>{{ $schedule->event_type_label }}</td>
-                    <td>{{ $schedule->facility?->name ?? '-' }}</td>
-                    <td>{{ $schedule->event_date?->toDateString() }}</td>
-                    <td>{{ $schedule->time_range_label }}</td>
-                    <td>{{ $schedule->venue }}</td>
-                    <td><span class="badge {{ in_array($schedule->status, ['planned', 'ongoing']) ? 'cbis-status-active' : 'cbis-status-expired' }}">{{ ucfirst($schedule->status) }}</span></td>
-                    <td><span class="badge text-bg-{{ $schedule->approval_status === 'approved' ? 'success' : ($schedule->approval_status === 'rejected' ? 'danger' : 'warning') }}">{{ ucfirst($schedule->approval_status) }}</span></td>
-                    <td>
-                        <div class="small">
-                            <span class="badge cbis-status-active">Registered {{ $schedule->registrations_count ?? 0 }}</span>
-                            <span class="badge text-bg-success">Attended {{ $schedule->attended_count ?? 0 }}</span>
-                            <span class="badge text-bg-warning">No-show {{ $schedule->no_show_count ?? 0 }}</span>
-                            <span class="badge text-bg-secondary">Cancelled {{ $schedule->cancelled_count ?? 0 }}</span>
-                        </div>
-                    </td>
-                    <td class="text-nowrap">
-                        <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View</a>
+<p class="small text-muted">{{ $schedules->total() }} matching {{ str('event')->plural($schedules->total()) }}</p>
+<div class="cbis-event-list">
+@forelse($schedules as $schedule)
+    <article class="card cbis-event-card mb-3">
+        <div class="card-body cbis-event-overview">
+            <div>
+                <div class="small text-muted mb-2">{{ $schedule->event_type_label }}</div>
+                <h2 class="h5 cbis-event-name"><a href="{{ route('donation-schedules.show', $schedule) }}">{{ $schedule->title }}</a></h2>
+                <p class="mb-1 fw-semibold">{{ $schedule->venue ?: 'Venue to be announced' }}</p>
+                <p class="small text-muted mb-0">{{ $schedule->facility?->name ?? 'No facility assigned' }}</p>
+            </div>
+            <div>
+                <div class="cbis-event-label">Schedule</div>
+                <div class="fw-semibold">{{ $schedule->event_date?->format('M j, Y') }}</div>
+                <div class="small text-muted mt-1">{{ $schedule->time_range_label }}</div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <span class="badge {{ in_array($schedule->status, ['planned', 'ongoing']) ? 'cbis-status-active' : 'cbis-status-expired' }}">{{ ucfirst($schedule->status) }}</span>
+                    <span class="badge text-bg-{{ $schedule->approval_status === 'approved' ? 'success' : ($schedule->approval_status === 'rejected' ? 'danger' : 'warning') }}">QAO: {{ ucfirst($schedule->approval_status) }}</span>
+                </div>
+            </div>
+            <div>
+                <div class="cbis-event-label">Registration status</div>
+                <dl class="cbis-attendance-grid mb-0">
+                    @foreach(['Registered'=>'registrations_count','Attended'=>'attended_count','No-show'=>'no_show_count','Cancelled'=>'cancelled_count'] as $label=>$count)
+                    <div><dt>{{ $label }}</dt><dd>{{ $schedule->{$count} ?? 0 }}</dd></div>
+                    @endforeach
+                </dl>
+            </div>
+        </div>
+        <div class="card-footer bg-white cbis-event-footer">
+            <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
+            @if($canManageSchedules || $currentUser?->can('review activities'))
+            <details class="cbis-event-actions">
+                <summary>More actions</summary>
+                <div class="cbis-event-action-buttons">
                         @can('review activities')
                             <form method="POST" action="{{ route('donation-schedules.review',$schedule) }}" class="d-inline">@csrf @method('PATCH')<input type="hidden" name="approval_status" value="approved"><button class="btn btn-sm btn-outline-success">Approve</button></form>
                             <form method="POST" action="{{ route('donation-schedules.review',$schedule) }}" class="d-inline">@csrf @method('PATCH')<input type="hidden" name="approval_status" value="rejected"><button class="btn btn-sm btn-outline-danger">Reject</button></form>
@@ -123,15 +124,15 @@
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="10" class="text-center">No events found.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+
+                </div>
+            </details>
+            @endif
+        </div>
+    </article>
+@empty
+    <div class="card card-body text-center py-5 text-muted">No events match these filters. Try another search or reset the filters.</div>
+@endforelse
 </div>
 
 {{ $schedules->links() }}

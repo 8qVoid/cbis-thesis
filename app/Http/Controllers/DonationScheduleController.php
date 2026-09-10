@@ -52,10 +52,15 @@ class DonationScheduleController extends Controller
             $query->where('status', $filters['status']);
         }
 
+        if (! empty($filters['approval_status'])) $query->where('approval_status', $filters['approval_status']);
+        if ($search = trim($filters['q'] ?? '')) {
+            $query->where(fn ($q) => $q->whereRaw('LOWER(title) LIKE ?', ['%'.mb_strtolower($search).'%'])
+                ->orWhereRaw('LOWER(venue) LIKE ?', ['%'.mb_strtolower($search).'%']));
+        }
         $schedules = $query
             ->latest('event_date')
             ->latest('start_time')
-            ->paginate(15);
+            ->paginate(15)->withQueryString();
 
         $facilities = auth()->user()->isCentralAdmin()
             ? Facility::query()->orderBy('name')->get()

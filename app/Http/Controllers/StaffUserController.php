@@ -13,18 +13,52 @@ use Spatie\Permission\Models\Role;
 
 class StaffUserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'category' => ['nullable', 'in:all,staff,public'],
+            'role' => ['nullable', 'in:Quality Assurance Officer,Event Facilitator,Blood Bank Staff,donor,patient,both'],
+            'status' => ['nullable', 'in:active,inactive'],
+            'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
         $user = auth()->user();
-        $query = User::query()->with('facility');
+        $query = User::query()->with(['facility', 'roles']);
 
         if (! $user->isCentralAdmin()) {
             $query->where('facility_id', $user->facility_id);
         }
 
-        $users = $query->latest()->paginate(20);
+        $staffRoles = ['Quality Assurance Officer', 'Event Facilitator', 'Blood Bank Staff'];
+        $category = $filters['category'] ?? 'all';
+        if ($category === 'staff') {
+            $query->whereHas('roles', fn ($roles) => $roles->whereIn('name', $staffRoles));
+        } elseif ($category === 'public') {
+            $query->whereHas('roles', fn ($roles) => $roles->whereIn('name', ['Donor', 'Patient']))
+                ->whereDoesntHave('roles', fn ($roles) => $roles->whereIn('name', $staffRoles));
+        }
+        if ($search = trim($filters['q'] ?? '')) {
+            $query->where(fn ($q) => $q->whereRaw('LOWER(name) LIKE ?', ['%'.mb_strtolower($search).'%'])
+                ->orWhereRaw('LOWER(email) LIKE ?', ['%'.mb_strtolower($search).'%'])
+                ->orWhere('phone', 'like', '%'.$search.'%'));
+        }
+        if ($role = $filters['role'] ?? null) {
+            if (in_array($role, ['donor', 'patient', 'both'], true)) {
+                if ($role !== 'patient') $query->whereHas('roles', fn ($q) => $q->where('name', 'Donor'));
+                if ($role !== 'donor') $query->whereHas('roles', fn ($q) => $q->where('name', 'Patient'));
+                if ($role === 'donor') $query->whereDoesntHave('roles', fn ($q) => $q->where('name', 'Patient'));
+                if ($role === 'patient') $query->whereDoesntHave('roles', fn ($q) => $q->where('name', 'Donor'));
+            } else {
+                $query->whereHas('roles', fn ($q) => $q->where('name', $role));
+            }
+        }
+        if (! empty($filters['status'])) $query->where('is_active', $filters['status'] === 'active');
+        if (! empty($filters['facility_id'])) $query->where('facility_id', $filters['facility_id']);
+        $users = $query->latest()->paginate(20)->withQueryString();
+        $facilities = Facility::query()->when(! $user->isCentralAdmin(), fn ($q) => $q->whereKey($user->facility_id))->orderBy('name')->get();
 
-        return view('staff-users.index', compact('users'));
+        return view('staff-users.index', compact('users', 'facilities', 'category'));
     }
 
     public function create(): View
@@ -85,7 +119,7 @@ class StaffUserController extends Controller
             'phone' => $data['phone'] ?? null,
         ]);
 
-        return redirect()->route('staff-users.index')->with('success', 'Staff contact details updated.');
+        return redirect()->route('staff-users.index')->with('success', 'Account contact details updated.');
     }
 
     public function updateStatus(Request $request, User $staffUser): RedirectResponse
@@ -93,7 +127,7 @@ class StaffUserController extends Controller
         $this->authorizeStaffAccess($request->user(), $staffUser);
 
         if ($staffUser->is($request->user())) {
-            return back()->withErrors(['staff' => 'You cannot deactivate your own staff account.']);
+            return back()->withErrors(['staff' => 'You cannot deactivate your own account.']);
         }
 
         $data = $request->validate([
@@ -105,8 +139,8 @@ class StaffUserController extends Controller
         ])->save();
 
         $message = $staffUser->is_active
-            ? 'Staff account reactivated.'
-            : 'Staff account deactivated. The user can no longer log in.';
+            ? 'Account reactivated.'
+            : 'Account deactivated. The user can no longer log in.';
 
         return redirect()->route('staff-users.index')->with('success', $message);
     }

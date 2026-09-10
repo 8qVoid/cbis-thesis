@@ -3,19 +3,19 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
-        <h1 class="cbis-page-title mb-0">Edit Staff Contact</h1>
-        <p class="cbis-page-subtitle">Update staff display name and mobile contact number.</p>
+        <h1 class="cbis-page-title mb-0">Edit Account Contact</h1>
+        <p class="cbis-page-subtitle">Update account display name and mobile contact number.</p>
     </div>
-    <a href="{{ route('staff-users.index') }}" class="btn btn-outline-secondary">Back to Staff</a>
+    <a href="{{ route('staff-users.index') }}" class="btn btn-outline-secondary">Back to Users</a>
 </div>
 
 <form
     method="POST"
     action="{{ route('staff-users.update', $staffUser) }}"
     class="card card-body js-confirm-action"
-    data-confirm-title="Update staff contact?"
-    data-confirm-message="Are you sure you want to update this staff account's contact details?"
-    data-confirm-button="Update Staff"
+    data-confirm-title="Update account contact?"
+    data-confirm-message="Are you sure you want to update this account's contact details?"
+    data-confirm-button="Update Account"
     data-confirm-variant="danger"
 >
     @csrf
@@ -44,7 +44,7 @@
                     placeholder="123456789"
                 >
             </div>
-            <small class="text-muted">Leave blank if the staff account has no mobile number.</small>
+            <small class="text-muted">Leave blank if the account has no mobile number.</small>
         </div>
         <div class="col-md-6">
             <label class="form-label">Facility</label>
@@ -53,10 +53,10 @@
         <div class="col-md-6">
             <label class="form-label">Role</label>
             <input class="form-control" value="{{ $staffUser->getRoleNames()->implode(', ') }}" disabled>
-            <small class="text-muted">Create a separate staff account if a different role is needed.</small>
+            <small class="text-muted">Roles and services are shown for reference and cannot be changed here.</small>
         </div>
         <div class="col-12">
-            <button class="btn btn-danger">Update Staff</button>
+            <button class="btn btn-danger">Update Account</button>
         </div>
     </div>
 </form>

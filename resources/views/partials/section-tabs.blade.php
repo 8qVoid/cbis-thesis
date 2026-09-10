@@ -23,7 +23,7 @@
         ],
         'Administration' => [
             ['label' => 'Facilities', 'route' => 'facilities.index', 'icon' => 'grid', 'show' => $isCentral],
-            ['label' => 'Staff Management', 'route' => 'staff-users.index', 'icon' => 'users', 'show' => $user?->can('manage users')],
+            ['label' => 'User Management', 'route' => 'staff-users.index', 'icon' => 'users', 'show' => $user?->can('manage users')],
         ],
     ];
 @endphp
