@@ -278,6 +278,24 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="posterViewer" tabindex="-1" aria-labelledby="posterViewerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5 text-break" id="posterViewerTitle">Event poster</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close poster"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <p class="js-poster-status small text-muted" role="status"></p>
+                <img class="cbis-poster-full" alt="" hidden>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-outline-secondary js-poster-original" target="_blank" rel="noopener">Open original image</a>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -337,7 +355,7 @@ const popupImage = (item) => {
         return '';
     }
 
-    return `<img src="${escapeHtml(item.photo_url)}" alt="${escapeHtml(item.title)}">`;
+    return `<button type="button" class="cbis-poster-preview" data-bs-toggle="modal" data-bs-target="#posterViewer" data-photo-url="${escapeHtml(item.photo_url)}" data-photo-title="${escapeHtml(item.title)}" aria-label="Enlarge poster: ${escapeHtml(item.title)}"><img src="${escapeHtml(item.photo_url)}" alt="${escapeHtml(item.title)}"><span>View full image ↗</span></button>`;
 };
 
 const googleDirectionsUrl = (item) => {
@@ -448,7 +466,7 @@ const selectLocation = (item, marker) => {
             const fallback = document.createElement('div');
             fallback.className = 'cbis-map-photo-missing';
             fallback.textContent = 'Photo currently unavailable';
-            image.replaceWith(fallback);
+            (image.closest('.cbis-poster-preview') ?? image).replaceWith(fallback);
         }, { once: true });
     });
 };
@@ -582,5 +600,25 @@ nearMeButton?.addEventListener('click', () => {
     });
 });
 if (window.ResizeObserver) new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('map'));
+const posterViewer = document.getElementById('posterViewer');
+const posterImage = posterViewer.querySelector('img');
+const posterStatus = posterViewer.querySelector('.js-poster-status');
+posterViewer.addEventListener('show.bs.modal', event => {
+    const trigger = event.relatedTarget;
+    if (!trigger?.dataset.photoUrl) return;
+    posterImage.hidden = true;
+    posterStatus.textContent = 'Loading full image…';
+    posterViewer.querySelector('#posterViewerTitle').textContent = trigger.dataset.photoTitle || 'Event poster';
+    posterViewer.querySelector('.js-poster-original').href = trigger.dataset.photoUrl;
+    posterImage.onload = () => { posterImage.hidden = false; posterStatus.textContent = ''; };
+    posterImage.onerror = () => { posterImage.hidden = true; posterStatus.textContent = 'This photo is currently unavailable.'; };
+    posterImage.alt = trigger.dataset.photoTitle || 'Event poster';
+    posterImage.src = trigger.dataset.photoUrl;
+});
+posterViewer.addEventListener('hidden.bs.modal', () => {
+    posterImage.onload = posterImage.onerror = null;
+    posterImage.removeAttribute('src');
+    posterImage.hidden = true;
+});
 </script>
 @endpush

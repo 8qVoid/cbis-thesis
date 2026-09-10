@@ -26,7 +26,12 @@
 .cbis-map-details .cbis-map-popup { width: auto; max-height: none; overflow: visible; padding: 0; scrollbar-gutter: auto; }
 .cbis-map-details .cbis-map-popup-title { font-size: 21px; line-height: 1.4; overflow-wrap: anywhere; margin-bottom: 12px; }
 .cbis-map-details .cbis-map-popup-row { margin: 10px 0; overflow-wrap: anywhere; }
-.cbis-map-details .cbis-map-popup img { height: 140px; }
+.cbis-map-details .cbis-map-popup img { width: 100%; height: 220px; object-fit: contain; margin: 0; background: #f3f6fa; }
+.cbis-poster-preview { display: block; width: 100%; padding: 0; margin-bottom: 14px; overflow: hidden; border: 1px solid #e4e8ef; border-radius: 10px; background: #f3f6fa; cursor: zoom-in; }
+.cbis-poster-preview span { display: block; padding: 8px; color: #a31335; background: #fff; font-size: 12px; font-weight: 600; }
+.cbis-poster-preview:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.cbis-poster-full { display: block; max-width: 100%; height: auto; margin: auto; }
+.cbis-poster-full[hidden] { display: none; }
 .cbis-map-details .cbis-map-popup-actions { margin-top: 18px; }
 .cbis-map-details .cbis-map-popup-actions a { flex: 1 1 auto; }
 .cbis-map-route-summary { border-top: 1px solid #e4e8ef; margin-top: 20px; padding-top: 16px; }
@@ -44,7 +49,7 @@
     .cbis-map-workspace { grid-template-columns: 1fr; }
     .cbis-map-canvas #map { height: 440px; }
     .cbis-map-empty { padding: 0; }
-    .cbis-map-details .cbis-map-popup img { max-width: 360px; }
+    .cbis-map-details .cbis-map-popup img { max-width: 100%; }
 }
 @media (max-width: 575px) {
     .cbis-map-canvas #map { height: 360px; }
