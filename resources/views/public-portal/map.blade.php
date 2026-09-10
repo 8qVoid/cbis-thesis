@@ -48,12 +48,11 @@
         <input class="form-check-input js-map-toggle" type="checkbox" id="toggleFacilities" value="facility" checked>
         <label class="form-check-label small" for="toggleFacilities">Show facilities</label>
     </div>
-    <select class="form-select form-select-sm js-near-me-type" style="width:auto">
+    <select class="form-select form-select-sm js-near-me-type" style="width:auto" aria-label="Find nearest event or facility">
         <option value="event">Near events only</option>
         <option value="facility">Near facilities only</option>
     </select>
     <button type="button" class="btn btn-sm btn-outline-danger js-near-me">Near Me</button>
-    <span class="small text-muted js-location-status" aria-live="polite"></span>
 </div>
 
 <style>
@@ -218,7 +217,25 @@
     }
 </style>
 
-<div id="map" style="height:520px" class="rounded border mb-3 cbis-card"></div>
+<div class="cbis-map-workspace">
+    <div class="cbis-map-canvas">
+        <div id="map" role="region" aria-label="Events and facilities map"></div>
+        <div class="js-route-tools" role="group" aria-label="Map directions controls"></div>
+        <div class="cbis-map-status js-location-status" role="status" aria-live="polite">Select an event or facility pin to view its details and directions.</div>
+    </div>
+    <aside class="cbis-map-details" aria-label="Selected location details">
+        <div class="cbis-map-details-label">Selected location</div>
+        <div class="js-selected-location">
+            <div class="cbis-map-empty">
+                <span class="cbis-map-empty-icon" aria-hidden="true">⌖</span>
+                <h2>Plan your visit</h2>
+                <p>Select a pin to see its address, activity details, and directions here.</p>
+                <p>Use <strong>Near Me</strong> to find the closest event or facility. Switch to <strong>Satellite</strong> for an aerial view.</p>
+            </div>
+        </div>
+        <div class="cbis-map-route-summary js-route-summary" hidden></div>
+    </aside>
+</div>
 
 <div class="card">
     <div class="card-header">Upcoming Events</div>
@@ -277,6 +294,11 @@ const markersByType = { event: [], facility: [] };
 const markerItems = [];
 let userLatLng = null;
 let userMarker = null;
+let selectedMarker = null;
+let selectedItem = null;
+const selectedLocation = document.querySelector('.js-selected-location');
+const emptyLocation = selectedLocation.innerHTML;
+const routeSummary = document.querySelector('.js-route-summary');
 
 const markerIcons = {
     event: L.divIcon({
@@ -394,11 +416,43 @@ const facilityPopup = (item) => `
 
 const buildPopup = (item) => item.type === 'facility' ? facilityPopup(item) : eventPopup(item);
 
-const routing = CbisMaps.directions(map, (message, error) => setLocationStatus(message, error));
-const focusDirections = (item) => routing.show(item, userLatLng);
+let refreshTools = () => {};
+const routing = CbisMaps.directions(map, (message, error, state = {}) => {
+    setLocationStatus(message, error, state);
+    refreshTools();
+    routeSummary.replaceChildren();
+    routeSummary.hidden = Boolean(state.cleared);
+    if (state.route) {
+        const metrics = document.createElement('div'); metrics.className = 'cbis-map-route-metrics';
+        [[`${(state.route.distance / 1000).toFixed(1)} km`, 'Road distance'], [`${Math.max(1, Math.round(state.route.duration / 60))} min`, 'Estimated drive']].forEach(([value, label]) => {
+            const group = document.createElement('div');
+            const number = document.createElement('strong'); number.textContent = value;
+            const caption = document.createElement('span'); caption.textContent = label;
+            group.append(number, caption); metrics.append(group);
+        });
+        const note = document.createElement('small'); note.textContent = 'To the nearest mapped road. Live traffic is not included.';
+        routeSummary.append(metrics, note);
+    } else {
+        CbisMaps.statusView(routeSummary)(message, error, state);
+    }
+});
+const selectLocation = (item, marker) => {
+    selectedMarker?.getElement()?.classList.remove('cbis-map-pin-selected');
+    selectedMarker?.setZIndexOffset(0);
+    selectedMarker = marker; selectedItem = item;
+    marker.getElement()?.classList.add('cbis-map-pin-selected');
+    marker.setZIndexOffset(1000);
+    selectedLocation.innerHTML = buildPopup(item);
+};
+const focusDirections = (item) => {
+    const entry = markerItems.find(entry => entry.item === item);
+    if (entry) selectLocation(item, entry.marker);
+    routing.show(item, userLatLng);
+};
 
 const focusNearestPin = () => {
     if (!userLatLng || markerItems.length === 0) {
+        setLocationStatus('No pins are available for the current filters.', true);
         return;
     }
 
@@ -421,8 +475,6 @@ const focusNearestPin = () => {
 
     const nearest = candidates[0];
     focusDirections(nearest.item);
-    nearest.marker.setPopupContent(buildPopup(nearest.item));
-    nearest.marker.openPopup();
 };
 
 data.forEach((item) => {
@@ -431,21 +483,15 @@ data.forEach((item) => {
     }
     const marker = L.marker([item.lat, item.lng], {
         icon: markerIcons[item.type] ?? markerIcons.event,
+        title: item.title,
+        alt: item.title,
     }).addTo(map);
     inBoundsMarkers.push(marker);
     markersByType[item.type]?.push(marker);
     markerItems.push({ marker, item });
-    marker.bindPopup(buildPopup(item), {
-        maxWidth: 320,
-        minWidth: 260,
-        autoPan: true,
-        keepInView: true,
-        autoPanPaddingTopLeft: L.point(24, 120),
-        autoPanPaddingBottomRight: L.point(24, 24),
-    });
+    marker.bindTooltip(escapeHtml(item.title), { direction: 'top', offset: [0, -20] });
     marker.on('click', () => {
         focusDirections(item);
-        marker.setPopupContent(buildPopup(item));
     });
 });
 
@@ -464,6 +510,12 @@ document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
         const type = toggle.value;
         routing.clear();
         setLocationStatus('');
+        if (!toggle.checked && selectedItem?.type === type) {
+            selectedMarker?.getElement()?.classList.remove('cbis-map-pin-selected');
+            selectedMarker?.setZIndexOffset(0);
+            selectedMarker = null; selectedItem = null;
+            selectedLocation.innerHTML = emptyLocation;
+        }
 
         markersByType[type].forEach((marker) => {
             if (toggle.checked) {
@@ -480,15 +532,8 @@ document.querySelector('.js-near-me-type')?.addEventListener('change', () => { i
 const nearMeButton = document.querySelector('.js-near-me');
 const locationStatus = document.querySelector('.js-location-status');
 
-const setLocationStatus = (message, isError = false) => {
-    if (!locationStatus) {
-        return;
-    }
-
-    locationStatus.textContent = message;
-    locationStatus.classList.toggle('text-danger', isError);
-    locationStatus.classList.toggle('text-muted', !isError);
-};
+const setLocationStatus = CbisMaps.statusView(locationStatus);
+refreshTools = CbisMaps.toolbar(map, routing, document.querySelector('.js-route-tools'), setLocationStatus);
 
 nearMeButton?.addEventListener('click', () => {
     if (!navigator.geolocation) {
@@ -497,7 +542,7 @@ nearMeButton?.addEventListener('click', () => {
     }
 
     nearMeButton.disabled = true;
-    setLocationStatus('Getting your location...');
+    setLocationStatus('Getting your location…', false, { loading: true });
 
     navigator.geolocation.getCurrentPosition((position) => {
         userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
@@ -528,5 +573,6 @@ nearMeButton?.addEventListener('click', () => {
         maximumAge: 60000,
     });
 });
+if (window.ResizeObserver) new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('map'));
 </script>
 @endpush

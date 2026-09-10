@@ -14,7 +14,7 @@
     <div class="cbis-landing-map-card">
         <div class="cbis-landing-map-heading">
             <span>Approved donation activities</span>
-            <a href="{{ route('public.map') }}">Open map <span aria-hidden="true">→</span></a>
+            <a href="{{ route('public.map') }}">Explore full map <span aria-hidden="true">→</span></a>
         </div>
         <x-ui.event-map :events="$schedules" id="landing-event-map" />
     </div>
