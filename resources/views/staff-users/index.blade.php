@@ -53,12 +53,17 @@
             </td>
             <td class="cbis-account-actions">
                 @if($canEditStaff)
-                    <a href="{{ route('staff-users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle js-account-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $user->name }}">Actions</button>
+                        <ul class="dropdown-menu dropdown-menu-end cbis-account-menu">
+                            <li><a href="{{ route('staff-users.edit', $user) }}" class="dropdown-item">Edit account</a></li>
                     @if(! $user->is($currentUser))
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
                         <form
                             method="POST"
                             action="{{ route('staff-users.status', $user) }}"
-                            class="d-inline js-confirm-action"
+                            class="js-confirm-action"
                             data-confirm-title="{{ $user->is_active ? 'Deactivate account?' : 'Reactivate account?' }}"
                             data-confirm-message="{{ $user->is_active ? 'This will prevent '.$user->name.' from logging in, but their old records will stay in the system.' : 'This will allow '.$user->name.' to log in again using their existing account.' }}"
                             data-confirm-button="{{ $user->is_active ? 'Deactivate Account' : 'Reactivate Account' }}"
@@ -67,11 +72,14 @@
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="is_active" value="{{ $user->is_active ? 0 : 1 }}">
-                            <button class="btn btn-sm {{ $user->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}">
+                            <button class="dropdown-item {{ $user->is_active ? 'text-danger' : 'text-success' }}">
                                 {{ $user->is_active ? 'Deactivate' : 'Reactivate' }}
                             </button>
                         </form>
+                        </li>
                     @endif
+                        </ul>
+                    </div>
                 @else
                     <span class="text-muted small">View only</span>
                 @endif
@@ -85,3 +93,11 @@
 </div>
 {{ $users->links() }}
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('.js-account-menu').forEach(button => {
+    new bootstrap.Dropdown(button, { popperConfig: { strategy: 'fixed' } });
+});
+</script>
+@endpush

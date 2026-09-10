@@ -245,3 +245,7 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 
 .cbis-schedule-card { min-width: 0; width: 100%; }
 .cbis-event-overview > div { min-width: 0; overflow-wrap: break-word; }
+
+.cbis-account-menu { min-width: 180px; padding: 6px; border-radius: 10px; box-shadow: 0 8px 24px #1728401a; }
+.cbis-account-menu .dropdown-item { padding: 9px 12px; border-radius: 5px; font-size: 13px; }
+.cbis-users-table .cbis-account-actions .btn { margin: 0; white-space: nowrap; }
