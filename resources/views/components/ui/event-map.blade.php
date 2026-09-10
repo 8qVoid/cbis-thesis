@@ -13,7 +13,7 @@ $points = collect($events)->filter(fn ($event) => $event->latitude !== null && $
  const element = document.getElementById(@js($id));
  if (!window.L) { element.textContent = 'Map could not load. Please check your connection and reload.'; return; }
  element.replaceChildren();
- const map = L.map(element, {scrollWheelZoom:false}).setView([10.45,123.05], 9);
+ const map = L.map(element, {scrollWheelZoom:true}).setView([10.45,123.05], 9);
  CbisMaps.addLayers(map);
  const status = document.createElement('div');
  status.className = 'cbis-map-caption'; status.setAttribute('aria-live', 'polite');

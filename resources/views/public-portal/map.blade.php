@@ -268,7 +268,7 @@
 const NEGROS_CENTER = [10.6765, 122.9511];
 const NEGROS_BOUNDS = L.latLngBounds([9.0, 122.0], [11.5, 123.8]);
 const map = L.map('map', {
-    scrollWheelZoom: false
+    scrollWheelZoom: true
 }).setView(NEGROS_CENTER, 9);
 CbisMaps.addLayers(map);
 const data = @json($mapLocations);
