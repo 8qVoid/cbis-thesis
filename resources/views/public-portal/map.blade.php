@@ -290,7 +290,6 @@
                 <img class="cbis-poster-full" alt="" hidden>
             </div>
             <div class="modal-footer">
-                <a class="btn btn-outline-secondary js-poster-original" target="_blank" rel="noopener">Open original image</a>
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -609,7 +608,6 @@ posterViewer.addEventListener('show.bs.modal', event => {
     posterImage.hidden = true;
     posterStatus.textContent = 'Loading full image…';
     posterViewer.querySelector('#posterViewerTitle').textContent = trigger.dataset.photoTitle || 'Event poster';
-    posterViewer.querySelector('.js-poster-original').href = trigger.dataset.photoUrl;
     posterImage.onload = () => { posterImage.hidden = false; posterStatus.textContent = ''; };
     posterImage.onerror = () => { posterImage.hidden = true; posterStatus.textContent = 'This photo is currently unavailable.'; };
     posterImage.alt = trigger.dataset.photoTitle || 'Event poster';
