@@ -329,7 +329,8 @@ document.querySelectorAll('.js-contact-number').forEach((input) => {
 document.querySelectorAll('form[data-auto-filter="true"]').forEach((form) => {
     let submitTimer = null;
 
-    const scheduleSubmit = () => {
+    form.querySelectorAll('.js-auto-filter-submit').forEach(button => { button.hidden = true; });
+    const scheduleSubmit = (delay = 450) => {
         window.clearTimeout(submitTimer);
         submitTimer = window.setTimeout(() => {
             if (form.dataset.autoSubmitting === 'true') {
@@ -342,7 +343,7 @@ document.querySelectorAll('form[data-auto-filter="true"]').forEach((form) => {
 
             form.dataset.autoSubmitting = 'true';
             form.requestSubmit ? form.requestSubmit() : form.submit();
-        }, 450);
+        }, delay);
     };
 
     form.querySelectorAll('select, input').forEach((field) => {
@@ -350,7 +351,11 @@ document.querySelectorAll('form[data-auto-filter="true"]').forEach((form) => {
             return;
         }
 
-        field.addEventListener('change', scheduleSubmit);
+        field.addEventListener('change', () => scheduleSubmit(form.dataset.autoSearch === 'true' && field.tagName === 'SELECT' ? 0 : 450));
+        if (form.dataset.autoSearch === 'true' && field.matches('input[name="q"]')) {
+            field.addEventListener('input', event => { if (!event.isComposing) scheduleSubmit(600); });
+            field.addEventListener('compositionend', () => scheduleSubmit(600));
+        }
 
         if (field.matches('[type="date"], [type="month"]')) {
             field.addEventListener('input', () => {

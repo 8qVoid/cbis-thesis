@@ -21,7 +21,7 @@
            href="{{ route('staff-users.index', [...request()->except(['page', 'category', 'role']), 'category' => $value]) }}">{{ $label }}</a>
     @endforeach
 </nav>
-<form method="GET" class="card card-body mb-3">
+<form method="GET" class="card card-body mb-3" data-auto-filter="true" data-auto-search="true">
     <input type="hidden" name="category" value="{{ $category }}">
     <div class="row g-3 align-items-end">
         <div class="col-lg-4 col-md-6"><label for="user-search" class="form-label">Search users</label><input id="user-search" name="q" value="{{ request('q') }}" maxlength="100" class="form-control" placeholder="Name, email or phone"></div>
@@ -32,7 +32,7 @@
         </select></div>
         <div class="col-lg-3 col-md-6"><label for="user-facility" class="form-label">Facility</label><select id="user-facility" name="facility_id" class="form-select"><option value="">All facilities</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string)request('facility_id') === (string)$facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
         <div class="col-lg-2 col-md-6"><label for="user-status" class="form-label">Status</label><select id="user-status" name="status" class="form-select"><option value="">All statuses</option><option value="active" @selected(request('status') === 'active')>Active</option><option value="inactive" @selected(request('status') === 'inactive')>Inactive</option></select></div>
-        <div class="col-12 d-flex gap-2"><button class="btn btn-danger">Apply filters</button><a class="btn btn-outline-secondary" href="{{ route('staff-users.index', ['category'=>$category]) }}">Reset</a></div>
+        <div class="col-12 d-flex gap-2"><button class="btn btn-danger js-auto-filter-submit">Apply filters</button><span class="small text-muted align-self-center">Filters update automatically.</span><a class="btn btn-outline-secondary" href="{{ route('staff-users.index', ['category'=>$category]) }}">Reset</a></div>
     </div>
 </form>
 <p class="small text-muted">{{ $users->total() }} matching {{ str('account')->plural($users->total()) }} · Showing {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}</p>
