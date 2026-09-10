@@ -114,10 +114,7 @@ const map = L.map('event-map', {
     maxBoundsViscosity: 1.0
 }).setView(initialPoint, initialZoom);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+CbisMaps.addLayers(map);
 
 let marker = null;
 if (typedPoint && NEGROS_BOUNDS.contains(typedPoint)) {

@@ -268,23 +268,9 @@
 const NEGROS_CENTER = [10.6765, 122.9511];
 const NEGROS_BOUNDS = L.latLngBounds([9.0, 122.0], [11.5, 123.8]);
 const map = L.map('map', {
-    maxBounds: NEGROS_BOUNDS,
-    maxBoundsViscosity: 1.0
+    scrollWheelZoom: false
 }).setView(NEGROS_CENTER, 9);
-const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-});
-const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19,
-    attribution: 'Tiles &copy; Esri',
-});
-
-streetLayer.addTo(map);
-L.control.layers({
-    Street: streetLayer,
-    Satellite: satelliteLayer,
-}, {}, { position: 'topright' }).addTo(map);
+CbisMaps.addLayers(map);
 const data = @json($mapLocations);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
@@ -359,7 +345,7 @@ const routeDistanceNote = (item) => {
 
     const distanceKm = userLatLng.distanceTo(L.latLng(item.lat, item.lng)) / 1000;
 
-    return `<div class="cbis-map-route-note">Straight-line distance: ${distanceKm.toFixed(1)} km</div>`;
+    return `<div class="cbis-map-route-note">Approximate proximity: ${distanceKm.toFixed(1)} km</div>`;
 };
 
 const eventPopup = (item) => {
@@ -408,14 +394,8 @@ const facilityPopup = (item) => `
 
 const buildPopup = (item) => item.type === 'facility' ? facilityPopup(item) : eventPopup(item);
 
-const focusDirections = (item) => {
-    if (!userLatLng) {
-        return;
-    }
-
-    const destination = L.latLng(item.lat, item.lng);
-    map.fitBounds(L.latLngBounds([userLatLng, destination]).pad(0.25));
-};
+const routing = CbisMaps.directions(map, (message, error) => setLocationStatus(message, error));
+const focusDirections = (item) => routing.show(item, userLatLng);
 
 const focusNearestPin = () => {
     if (!userLatLng || markerItems.length === 0) {
@@ -443,7 +423,6 @@ const focusNearestPin = () => {
     focusDirections(nearest.item);
     nearest.marker.setPopupContent(buildPopup(nearest.item));
     nearest.marker.openPopup();
-    setLocationStatus(`Nearest ${nearest.item.type === 'facility' ? 'facility' : 'event'} found. Select “Open in Google Maps” for road directions.`);
 };
 
 data.forEach((item) => {
@@ -483,6 +462,8 @@ if (inBoundsMarkers.length === 0) {
 document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
     toggle.addEventListener('change', () => {
         const type = toggle.value;
+        routing.clear();
+        setLocationStatus('');
 
         markersByType[type].forEach((marker) => {
             if (toggle.checked) {
@@ -493,6 +474,8 @@ document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
         });
     });
 });
+
+document.querySelector('.js-near-me-type')?.addEventListener('change', () => { if (userLatLng) focusNearestPin(); });
 
 const nearMeButton = document.querySelector('.js-near-me');
 const locationStatus = document.querySelector('.js-location-status');
