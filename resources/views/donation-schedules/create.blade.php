@@ -51,13 +51,13 @@
             <input name="end_time" type="time" class="form-control" value="{{ old('end_time') }}" required>
         </div>
         <div class="col-md-6">
-            <label class="form-label">Contact Person</label>
+            <label class="form-label">Contact Person (optional)</label>
             <input name="contact_person" class="form-control js-person-name" value="{{ old('contact_person') }}" maxlength="80" pattern="[\p{L}\s.'-]+">
         </div>
         <div class="col-md-6">
-            <label class="form-label">Contact Number (PH)</label>
+            <label class="form-label">Contact Number (PH, optional)</label>
             <input name="contact_number" class="form-control js-contact-number" value="{{ old('contact_number') }}" inputmode="numeric" pattern="\d*" maxlength="30" placeholder="09171234567">
-            <small class="text-muted">Mobile or landline accepted.</small>
+            <small class="text-muted">Mobile or landline accepted. Leave blank to show no event phone number.</small>
         </div>
         <div class="col-12">
             <label class="form-label">Description</label>

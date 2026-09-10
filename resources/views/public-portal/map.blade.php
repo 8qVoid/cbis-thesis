@@ -404,7 +404,7 @@ const eventPopup = (item) => {
             <div class="cbis-map-popup-row"><strong>Facility</strong><span>${escapeHtml(item.facility)}</span></div>
             <div class="cbis-map-popup-row"><strong>Venue</strong><span>${escapeHtml(item.venue)}</span></div>
             ${item.description ? `<div class="cbis-map-popup-description">${escapeHtml(item.description)}</div>` : ''}
-            <div class="cbis-map-popup-row"><strong>Contact</strong><span>${escapeHtml(item.contact_person)} / ${escapeHtml(item.contact_number)}</span></div>
+            ${item.contact_person || item.contact_number ? `<div class="cbis-map-popup-row"><strong>Contact</strong><span>${[item.contact_person, item.contact_number].filter(Boolean).map(escapeHtml).join(' / ')}</span></div>` : ''}
             ${routeDistanceNote(item)}
             <div class="cbis-map-popup-actions">
                 ${directionsButton(item)}

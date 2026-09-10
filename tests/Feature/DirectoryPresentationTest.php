@@ -65,4 +65,20 @@ class DirectoryPresentationTest extends TestCase
         $this->actingAs($facilitator)->get(route('donation-schedules.index', ['q' => 'Approved Drive', 'facility_id' => $main->id]))->assertOk()
             ->assertViewHas('schedules', fn ($items) => $items->total() === 0);
     }
+
+    public function test_event_map_does_not_replace_blank_contacts_with_facility_contacts(): void
+    {
+        $facility = Facility::create(['code' => 'CONTACT', 'name' => 'Contact Branch', 'type' => 'blood_bank', 'is_active' => true, 'contact_person' => 'Facility Contact', 'contact_number' => '09170000000']);
+        $event = DonationSchedule::create([
+            'title' => 'Optional contact event', 'facility_id' => $facility->id,
+            'event_type' => 'blood_donation', 'event_date' => now()->addWeek(),
+            'start_at' => now()->addWeek()->setTime(9, 0), 'end_at' => now()->addWeek()->setTime(12, 0),
+            'start_time' => '09:00', 'end_time' => '12:00', 'venue' => 'Town Hall',
+            'status' => 'planned', 'approval_status' => 'approved', 'is_public' => true,
+            'latitude' => 10.67, 'longitude' => 122.95, 'contact_person' => null, 'contact_number' => null,
+        ]);
+        $this->get(route('public.map'))->assertOk()->assertViewHas('eventMapLocations', fn ($items) => $items->count() === 1 && $items->first()['contact_number'] === null && $items->first()['contact_person'] === null);
+        $event->update(['contact_person' => 'Event Organizer', 'contact_number' => '09181234567']);
+        $this->get(route('public.map'))->assertOk()->assertViewHas('eventMapLocations', fn ($items) => $items->first()['contact_number'] === '09181234567');
+    }
 }

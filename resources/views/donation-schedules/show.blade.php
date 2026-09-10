@@ -32,7 +32,9 @@
     <p><strong>Date:</strong> {{ $donationSchedule->event_date?->toDateString() }}</p>
     <p><strong>Time:</strong> {{ $donationSchedule->time_range_label }}</p>
     <p><strong>Venue / Address:</strong> {{ $donationSchedule->venue }}</p>
-    <p><strong>Contact:</strong> {{ $donationSchedule->contact_person ?? '-' }} / {{ $donationSchedule->contact_number ?? '-' }}</p>
+    @if($donationSchedule->contact_person || $donationSchedule->contact_number)
+    <p><strong>Contact:</strong> {{ collect([$donationSchedule->contact_person, $donationSchedule->contact_number])->filter()->implode(' / ') }}</p>
+    @endif
     <p><strong>Status:</strong> {{ ucfirst($donationSchedule->status) }}</p>
     <p><strong>Public:</strong> {{ $donationSchedule->is_public ? 'Yes' : 'No' }}</p>
     <p><strong>Description:</strong> {{ $donationSchedule->description ?: '-' }}</p>
