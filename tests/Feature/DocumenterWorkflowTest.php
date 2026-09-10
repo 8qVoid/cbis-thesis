@@ -128,7 +128,14 @@ class DocumenterWorkflowTest extends TestCase
 
         $document = $reservation->documents->first();
         $this->actingAs($qao)->get(route('reservations.documents.show', [$reservation, $document]))->assertForbidden();
-        $this->actingAs($patient)->get(route('reservations.documents.show', [$reservation, $document]))->assertOk();
+        $preview = $this->actingAs($patient)->get(route('reservations.documents.show', [$reservation, $document]));
+        $preview->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringStartsWith('inline;', $preview->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('no-store', $preview->headers->get('Cache-Control'));
+        $download = $this->actingAs($bbs)->get(route('reservations.documents.show', [$reservation, $document]).'?download=1');
+        $download->assertOk();
+        $this->assertStringStartsWith('attachment;', $download->headers->get('Content-Disposition'));
+        $this->actingAs($bbs)->get(route('reservations.show', $reservation))->assertOk()->assertSee('View document')->assertSee('documentViewer', false);
         $this->actingAs($bbs)->patch(route('reservations.review', $reservation), ['status' => 'approved'])->assertSessionHasErrors('status');
         $this->actingAs($bbs)->patch(route('reservations.review', $reservation), ['status' => 'under_review'])->assertRedirect();
         $this->actingAs($bbs)->patch(route('reservations.review', $reservation->fresh()), ['status' => 'approved'])->assertSessionHasErrors('status');
@@ -163,6 +170,34 @@ class DocumenterWorkflowTest extends TestCase
         $this->assertDatabaseCount('blood_reservations', 0);
         $this->assertDatabaseCount('blood_reservation_documents', 0);
         Notification::assertNothingSent();
+    }
+
+    public function test_document_previews_allow_images_but_reject_other_users_missing_files_and_unsafe_types(): void
+    {
+        Storage::fake('local');
+        $facility = $this->facility();
+        $patient = User::factory()->create(); $patient->assignRole('Patient');
+        $other = User::factory()->create(); $other->assignRole('Patient');
+        $bbs = User::factory()->create(['facility_id' => $facility->id]); $bbs->assignRole('Blood Bank Staff');
+        $outside = User::factory()->create(['facility_id' => $this->facility('OTHER')->id]); $outside->assignRole('Blood Bank Staff');
+        $reservation = BloodReservation::create([
+            'reference' => 'BR-PREVIEW', 'patient_user_id' => $patient->id, 'facility_id' => $facility->id,
+            'blood_type' => 'O+', 'component' => 'whole_blood', 'units_requested' => 1, 'needed_on' => now()->addDay(),
+        ]);
+        foreach (['image/jpeg' => 'jpg', 'image/png' => 'png'] as $mime => $extension) {
+            $file = UploadedFile::fake()->image('id.'.$extension);
+            $path = $file->store('reservations/test', 'local');
+            $document = $reservation->documents()->create(['type' => 'identification', 'path' => $path, 'original_name' => 'id.'.$extension, 'mime_type' => $mime, 'size' => $file->getSize()]);
+            $url = route('reservations.documents.show', [$reservation, $document]);
+            $this->actingAs($other)->get($url)->assertForbidden();
+            $this->actingAs($outside)->get($url)->assertForbidden();
+            $this->actingAs($patient)->get($url)->assertOk()->assertHeader('Content-Type', $mime);
+            $this->actingAs($bbs)->get($url)->assertOk()->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+            $document->update(['mime_type' => 'text/html']);
+            $this->actingAs($patient)->get($url)->assertStatus(415);
+            Storage::disk('local')->delete($path);
+            $this->actingAs($patient)->get($url)->assertNotFound();
+        }
     }
 
     public function test_qao_monitors_reservations_while_only_bbs_can_process_them(): void

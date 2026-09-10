@@ -85,7 +85,7 @@ class BloodReservationController extends Controller
         return view('blood-reservations.show', compact('reservation'));
     }
 
-    public function document(BloodReservation $reservation, int $document)
+    public function document(Request $request, BloodReservation $reservation, int $document)
     {
         $user = auth()->user();
         $isOwner = $user->hasRole('Patient') && $reservation->patient_user_id === $user->id;
@@ -93,7 +93,15 @@ class BloodReservationController extends Controller
         abort_unless($isOwner || $isFacilityBbs, 403);
         $record = $reservation->documents()->findOrFail($document);
 
-        return Storage::disk('local')->download($record->path, $record->original_name, ['Content-Type' => $record->mime_type]);
+        abort_unless(Storage::disk('local')->exists($record->path), 404, 'This document is no longer available. Please ask the patient to provide another copy.');
+        abort_unless(in_array($record->mime_type, ['application/pdf', 'image/jpeg', 'image/png'], true), 415, 'This document type cannot be previewed.');
+
+        return Storage::disk('local')->response($record->path, $record->original_name, [
+            'Content-Type' => $record->mime_type,
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN',
+        ], $request->boolean('download') ? 'attachment' : 'inline');
     }
 
     public function review(Request $request, BloodReservation $reservation): RedirectResponse

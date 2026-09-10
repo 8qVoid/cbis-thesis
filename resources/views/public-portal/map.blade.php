@@ -443,6 +443,14 @@ const selectLocation = (item, marker) => {
     marker.getElement()?.classList.add('cbis-map-pin-selected');
     marker.setZIndexOffset(1000);
     selectedLocation.innerHTML = buildPopup(item);
+    selectedLocation.querySelectorAll('img').forEach(image => {
+        image.addEventListener('error', () => {
+            const fallback = document.createElement('div');
+            fallback.className = 'cbis-map-photo-missing';
+            fallback.textContent = 'Photo currently unavailable';
+            image.replaceWith(fallback);
+        }, { once: true });
+    });
 };
 const focusDirections = (item) => {
     const entry = markerItems.find(entry => entry.item === item);
