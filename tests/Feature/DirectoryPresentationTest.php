@@ -59,7 +59,7 @@ class DirectoryPresentationTest extends TestCase
         $approved = DonationSchedule::create([...$payload, 'title' => 'Approved Drive', 'facility_id' => $main->id, 'approval_status' => 'approved']);
         DonationSchedule::create([...$payload, 'title' => 'Pending Drive', 'facility_id' => $branch->id, 'approval_status' => 'pending']);
         $this->actingAs($qao)->get(route('donation-schedules.index', ['q' => 'DRIVE', 'approval_status' => 'approved']))->assertOk()
-            ->assertSee('More actions')->assertSee('View event')->assertSee('cbis-event-card', false)
+            ->assertSee('More actions')->assertSee('View event')->assertSee('cbis-schedule-card', false)->assertDontSee('card cbis-event-card', false)
             ->assertViewHas('schedules', fn ($items) => $items->pluck('id')->all() === [$approved->id]);
         $facilitator = User::factory()->create(['facility_id' => $branch->id]); $facilitator->assignRole('Event Facilitator');
         $this->actingAs($facilitator)->get(route('donation-schedules.index', ['q' => 'Approved Drive', 'facility_id' => $main->id]))->assertOk()

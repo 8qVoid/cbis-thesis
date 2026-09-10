@@ -57,7 +57,7 @@
 <p class="small text-muted">{{ $schedules->total() }} matching {{ str('event')->plural($schedules->total()) }}</p>
 <div class="cbis-event-list">
 @forelse($schedules as $schedule)
-    <article class="card cbis-event-card mb-3">
+    <article class="card cbis-schedule-card mb-3">
         <div class="card-body cbis-event-overview">
             <div>
                 <div class="small text-muted mb-2">{{ $schedule->event_type_label }}</div>
