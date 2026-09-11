@@ -201,7 +201,7 @@
 @endif
 <main id="main-content" class="{{ $webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-staff-content' : 'container cbis-main' }} py-4">
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status" data-dismiss-after="5000">
+        <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss message"></button>
         </div>
@@ -213,12 +213,12 @@
                 window.setTimeout(() => message.remove(), 200);
             };
             message.querySelector('.btn-close')?.addEventListener('click', dismiss);
-            window.setTimeout(dismiss, Number(message.dataset.dismissAfter || 5000));
         })();
         </script>
     @endif
     @if($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger" role="alert">
+            <strong class="d-block mb-2">Please check the following before continuing:</strong>
             <ul class="mb-0">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>

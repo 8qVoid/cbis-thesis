@@ -44,9 +44,11 @@ class DonorController extends Controller
 
     public function index(): View
     {
+        $filters = request()->validate(['eligibility' => ['nullable', 'in:awaiting']]);
         $donors = DonorScope::apply(Donor::query()->with('facility'), auth()->user())
+            ->when($filters['eligibility'] ?? null, fn ($query) => $query->where(fn ($donors) => $donors->whereDoesntHave('latestScreening')->orWhereHas('latestScreening', fn ($screening) => $screening->whereNotIn('status', ['eligible', 'deferred']))))
             ->latest()
-            ->paginate(15);
+            ->paginate(15)->withQueryString();
 
         return view('donors.index', compact('donors'));
     }

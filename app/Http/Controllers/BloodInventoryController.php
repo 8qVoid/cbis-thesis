@@ -18,9 +18,15 @@ class BloodInventoryController extends Controller
 
     public function index(): View
     {
-        $filters = request()->validate(['component' => ['nullable', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))]]);
+        $filters = request()->validate([
+            'component' => ['nullable', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))],
+            'status' => ['nullable', 'in:low_stock'],
+            'expiring' => ['nullable', 'in:soon'],
+        ]);
         $inventory = FacilityScope::apply(BloodInventory::query()->with(['facility', 'donationRecord']), auth()->user())
             ->when($filters['component'] ?? null, fn ($query, $component) => $query->where('component', $component))
+            ->when($filters['status'] ?? null, fn ($query) => $query->where(fn ($stock) => $stock->where('status', 'low_stock')->orWhere('units_available', '<=', 5)))
+            ->when($filters['expiring'] ?? null, fn ($query) => $query->where('units_available', '>', 0)->whereDate('expiration_date', '>=', today())->whereDate('expiration_date', '<=', today()->addDays(14)))
             ->orderBy('blood_type')
             ->orderBy('expiration_date')
             ->paginate(20)->withQueryString();

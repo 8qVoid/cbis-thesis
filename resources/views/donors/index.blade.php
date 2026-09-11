@@ -7,13 +7,16 @@
 <div class="d-flex justify-content-between align-items-end mb-3">
     <div>
         <h1 class="cbis-page-title mb-0">Donors</h1>
-        <p class="cbis-page-subtitle">Manage donor profiles and facility association.</p>
+        <p class="cbis-page-subtitle">Donor records and facility association. Blood Bank Staff record screening decisions; donors are public users.</p>
     </div>
     @if($canManageDonors)
         <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
     @endif
 </div>
 <div class="table-responsive">
+@if(request('eligibility') === 'awaiting')
+<p class="small text-muted">Showing donors awaiting a screening decision. <a href="{{ route('donors.index') }}">View all donors</a></p>
+@endif
     <table class="table table-striped bg-white">
         <thead>
             <tr>
@@ -25,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($donors as $donor)
+            @forelse($donors as $donor)
                 <tr>
                     <td>#{{ $donor->id }}</td>
                     <td>{{ $donor->full_name }}</td>
@@ -34,6 +37,7 @@
                     <td class="text-nowrap">
                         <a href="{{ route('donors.show', $donor) }}" class="btn btn-sm btn-outline-secondary">View</a>
                         @if($canManageDonors)
+                            <details class="cbis-row-actions"><summary>More actions</summary><div class="cbis-row-action-list">
                             <a href="{{ route('donors.edit', $donor) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                             <form method="POST" action="{{ route('donors.destroy', $donor) }}" class="d-inline donor-delete-form" id="donor-delete-{{ $donor->id }}">
                                 @csrf
@@ -47,10 +51,13 @@
                                     Delete
                                 </button>
                             </form>
+                            </div></details>
                         @endif
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr><td colspan="5"><div class="cbis-empty-state"><strong>No donor records yet</strong><span>Donor profiles appear here after registration or when Blood Bank Staff add a record.</span>@if($canManageDonors)<a href="{{ route('donors.create') }}" class="btn btn-danger mt-2">Add Donor</a>@endif</div></td></tr>
+            @endforelse
         </tbody>
     </table>
 </div>

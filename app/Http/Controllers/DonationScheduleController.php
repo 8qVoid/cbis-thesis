@@ -101,7 +101,9 @@ class DonationScheduleController extends Controller
 
         $this->notifyVerifiedDonors($schedule);
 
-        return redirect()->route('donation-schedules.index')->with('success', 'Schedule added.');
+        return redirect()->route('donation-schedules.index')->with('success', auth()->user()->isQao()
+            ? 'Activity created and approved. Check its location and schedule in the public map.'
+            : 'Activity submitted to QAO. It will stay hidden from the public map until approved.');
     }
 
     public function show(DonationSchedule $donationSchedule): View
@@ -154,7 +156,9 @@ class DonationScheduleController extends Controller
         $donationSchedule->update($data);
         $this->logAudit('donation_schedule.updated', $donationSchedule, $data, $request);
 
-        return redirect()->route('donation-schedules.index')->with('success', 'Schedule updated.');
+        return redirect()->route('donation-schedules.index')->with('success', auth()->user()->isQao()
+            ? 'Activity updated. Check its latest details in the event schedule.'
+            : 'Activity updated and sent back to QAO for review. It stays hidden from the public map until approved.');
     }
 
     public function end(DonationSchedule $donationSchedule): RedirectResponse

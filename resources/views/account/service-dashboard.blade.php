@@ -20,7 +20,7 @@
         <section class="card cbis-reference-history"><div class="d-flex justify-content-between align-items-center"><h2>Donation History</h2><a href="{{ route('donor.events.index') }}" class="small">My Registrations</a></div>
             @forelse($donationHistory->take(5) as $record)
                 <details><summary><x-ui.icon name="calendar" /><span>{{ $record->donated_at?->format('M d, Y') }}</span><span>{{ $record->facility?->name ?? 'Bacolod Main Chapter' }}</span><span aria-hidden="true">›</span></summary><div class="small text-muted p-3">{{ $record->donation_no }} · {{ $record->blood_type }} · {{ str($record->status)->title() }}</div></details>
-            @empty<div class="cbis-reference-empty">No donations recorded yet.</div>@endforelse
+            @empty<div class="cbis-empty-state"><strong>No donations recorded yet</strong><span>Find an approved event to register. Blood Bank Staff record your donation after collection.</span><a href="{{ route('public.map') }}" class="btn btn-sm btn-outline-danger mt-2">Explore events</a></div>@endforelse
         </section>
     @else
         <h1>Blood Requests</h1>
@@ -35,7 +35,7 @@
                     <p><span class="{{ $uploaded ? 'text-success' : 'text-muted' }}" aria-hidden="true">{{ $uploaded ? '✓' : '○' }}</span> {{ $label }} {{ $uploaded ? 'uploaded' : 'not uploaded' }}</p>
                 @endforeach
             </div>
-            @if($latest)<a class="small" href="{{ route('reservations.show', $latest) }}">View request details</a>@endif
+            @if($latest)<x-ui.request-status :status="$latest->status" /><a class="small mt-3" href="{{ route('reservations.show', $latest) }}">View request details and staff notes</a>@else<p class="text-muted mb-0">Start a blood request when ready. Prepare your ID and doctor's blood request; Blood Bank Staff will review both.</p>@endif
         </section>
         <section class="card cbis-reference-timeline"><h2>Request Status</h2>
             @php($decided = $latest && in_array($latest->status, ['approved', 'rejected', 'fulfilled', 'cancelled']))

@@ -22,9 +22,10 @@ class BloodReservationController extends Controller
 {
     public function index(): View
     {
+        $filters = request()->validate(['status' => ['nullable', 'in:pending']]);
         $user = auth()->user();
         if ($user->hasRole('Patient')) {
-            $reservations = $user->bloodReservations()->with('facility')->latest()->paginate(15);
+            $reservations = $user->bloodReservations()->with('facility')->when($filters['status'] ?? null, fn ($query) => $query->whereIn('status', ['submitted', 'under_review']))->latest()->paginate(15)->withQueryString();
         } else {
             abort_unless($user->can('process reservations') || $user->can('monitor reservations'), 403);
             abort_unless($user->isQao() || MainChapter::contains($user->facility_id), 403);
@@ -32,7 +33,7 @@ class BloodReservationController extends Controller
             if (! $user->isQao()) {
                 $query->where('facility_id', $user->facility_id);
             }
-            $reservations = $query->latest()->paginate(15);
+            $reservations = $query->when($filters['status'] ?? null, fn ($query) => $query->whereIn('status', ['submitted', 'under_review']))->latest()->paginate(15)->withQueryString();
         }
 
         return view('blood-reservations.index', compact('reservations'));
@@ -74,7 +75,7 @@ class BloodReservationController extends Controller
         });
         User::role(['Quality Assurance Officer', 'Blood Bank Staff'])->where(fn ($q) => $q->whereNull('facility_id')->orWhere('facility_id', $reservation->facility_id))->each(fn ($user) => $user->notify(new BloodReservationSubmitted($reservation)));
 
-        return redirect()->route('reservations.index')->with('success', 'Reservation submitted. Bring the original documents when requested by Blood Bank Staff.');
+        return redirect()->route('reservations.index')->with('success', 'Blood request submitted. Track its status in My Blood Requests. Bring the original documents when requested by Blood Bank Staff.');
     }
 
     public function show(BloodReservation $reservation): View
@@ -137,7 +138,9 @@ class BloodReservationController extends Controller
                 $alreadyReserved = ReservedStock::outstanding($reservation->facility_id, $reservation->blood_type, $reservation->component, $reservation->id);
 
                 if (($available - $alreadyReserved) < $reservation->units_requested) {
-                    throw ValidationException::withMessages(['status' => 'This facility does not have enough unreserved, non-expired stock to approve the request.']);
+                    $component = BloodInventory::COMPONENTS[$reservation->component] ?? $reservation->component;
+                    $freeUnits = max(0, (int) ($available - $alreadyReserved));
+                    throw ValidationException::withMessages(['status' => "Approval was not saved. This request needs {$reservation->units_requested} unit(s) of {$reservation->blood_type} {$component}; only {$freeUnits} unreserved, non-expired unit(s) are available. Check Inventory for matching stock, then retry when stock is available. The request remains under review."]);
                 }
             }
             $reservation->update([...$data, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
@@ -149,7 +152,12 @@ class BloodReservationController extends Controller
             report($exception);
         }
 
-        return back()->with('success', 'Reservation status updated.');
+        return back()->with('success', 'Reservation status updated. '.match ($reservation->status) {
+            'under_review' => 'Review the submitted documents before saving a decision.',
+            'approved' => 'Stock is reserved. Record the blood release when the units are issued.',
+            'rejected' => 'The patient can see the decision and review notes in their account.',
+            default => 'The latest status is shown in the request details.',
+        });
     }
 
     private function authorizeView(BloodReservation $reservation): void

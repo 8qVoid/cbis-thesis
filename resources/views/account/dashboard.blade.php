@@ -10,6 +10,7 @@
     </nav>
     <h1>Patient/Donor Dashboard</h1>
     <p class="small text-muted">Welcome, {{ $user->first_name ?: str($user->name)->before(' ') }}. Your donation and blood request services, together.</p>
+    <div class="cbis-workflow-guide mb-3"><strong>Your public account</strong><p class="mb-0">Use Donor services to find events and view screening results. Use Patient services to submit and track blood requests. Blood Bank Staff handle screening and request decisions.</p></div>
     <div class="cbis-combined-grid">
         <section class="card cbis-combined-card">
             <div class="cbis-reference-request-title"><span class="cbis-reference-icon"><x-ui.icon name="drop" /></span><h2>Donation Services</h2></div>

@@ -7,22 +7,29 @@ $components = \App\Models\BloodInventory::COMPONENTS;
 $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone-success';
 @endphp
 <div class="cbis-dashboard-heading">
-    <div><div class="cbis-eyebrow">{{ $isQao ? 'Central oversight' : 'Today’s operations' }}</div><h1 class="cbis-page-title">{{ $isQao ? 'Inventory Overview' : "Today's Work Queue" }}</h1><p class="cbis-page-subtitle">Bacolod Main Chapter · {{ now()->format('F d, Y') }}</p></div>
+    <div><div class="cbis-eyebrow">{{ $isQao ? 'Central oversight' : 'Today’s operations' }}</div><h1 class="cbis-page-title">{{ $isQao ? 'QAO Overview' : "Today's Work Queue" }}</h1><p class="cbis-page-subtitle">Bacolod Main Chapter · {{ now()->format('F d, Y') }}</p></div>
     <div class="cbis-heading-actions">
         @if($isQao)<a href="{{ route('donation-schedules.create') }}" class="btn btn-danger">Create Activity</a><a href="{{ route('reports.index') }}" class="btn btn-outline-danger">Export Reports</a>
         @else<a href="{{ route('donation-records.create') }}" class="btn btn-danger">Record Donation</a><a href="{{ route('blood-releases.create') }}" class="btn btn-outline-danger">Release Blood</a>@endif
     </div>
 </div>
 
+<div class="cbis-workflow-guide mb-4">
+    <strong>{{ $isQao ? 'Quality Assurance Officer' : 'Blood Bank Staff' }}</strong>
+    <p class="mb-0">{{ $isQao ? 'Review activity approvals, monitor inventory, and manage staff and public accounts. Blood Bank Staff process patient requests.' : 'Screen donors, record collections, and review patient requests. Approval reserves matching stock; recording a release completes the request and deducts inventory.' }}</p>
+</div>
+
 <div class="cbis-metric-grid mb-4">
-    <x-ui.kpi-card label="{{ $isQao ? 'Total Blood Units' : 'Pending Requests' }}" :value="$isQao ? $totalUnits : $pendingRequestCount" suffix="{{ $isQao ? 'Across four components' : 'Submitted or under review' }}" />
-    <x-ui.kpi-card label="Low-stock Items" :value="$lowStockCount" statusClass="{{ $lowStockCount ? 'text-warning' : 'text-success' }}" suffix="Requires attention" />
     @if($isQao)
         <x-ui.kpi-card label="Activity Approvals" :value="$pendingActivityCount" suffix="Waiting for QAO review" />
-        <x-ui.kpi-card label="Reservation Notices" :value="$submittedRequestCount" suffix="Monitoring only" />
+        <x-ui.kpi-card label="Active Facilities" :value="$activeFacilityCount" suffix="Enabled facilities" />
+        <x-ui.kpi-card label="Public Users" :value="$publicUserCount" suffix="Donor and patient accounts, counted once" />
+        <x-ui.kpi-card label="Total Blood Units" :value="$totalUnits" suffix="Recorded across all components" />
     @else
-        <x-ui.kpi-card label="Registered Donors" :value="$donors" suffix="Detailed records available" />
-        <x-ui.kpi-card label="Blood Releases" :value="$releases" suffix="Recorded transactions" />
+        <x-ui.kpi-card label="Pending Requests" :value="$pendingRequestCount" suffix="Submitted or under review" :href="route('reservations.index', ['status' => 'pending'])" />
+        <x-ui.kpi-card label="Low-stock Items" :value="$lowStockCount" suffix="Requires attention" :href="route('blood-inventory.index', ['status' => 'low_stock'])" />
+        <x-ui.kpi-card label="Expiring Stock Items" :value="$expiringStockCount" suffix="With stock, within 14 days" :href="route('blood-inventory.index', ['expiring' => 'soon'])" />
+        <x-ui.kpi-card label="Awaiting Screening" :value="$awaitingScreeningCount" suffix="Donors without a screening decision" :href="route('donors.index', ['eligibility' => 'awaiting'])" />
     @endif
 </div>
 

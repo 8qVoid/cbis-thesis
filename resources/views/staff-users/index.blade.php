@@ -21,6 +21,7 @@
            href="{{ route('staff-users.index', [...request()->except(['page', 'category', 'role']), 'category' => $value]) }}">{{ $label }}</a>
     @endforeach
 </nav>
+<details class="cbis-help mb-3"><summary>Staff roles and public services</summary><p class="mt-2 mb-0">QAO reviews activities and manages accounts. Event Facilitators organize activities. Blood Bank Staff handle screening, inventory, and blood requests. Donor and Patient are public services; one person can use both.</p></details>
 <form method="GET" class="card card-body mb-3" data-auto-filter="true" data-auto-search="true">
     <input type="hidden" name="category" value="{{ $category }}">
     <div class="row g-3 align-items-end">
@@ -86,7 +87,7 @@
             </td>
         </tr>
     @empty
-        <tr><td colspan="6" class="text-center py-5 text-muted">No users match these filters. Try another search or reset the filters.</td></tr>
+        <tr><td colspan="6"><div class="cbis-empty-state py-5"><strong>No matching accounts</strong><span>Try a different name, role, facility, or status.</span><a href="{{ route('staff-users.index', ['category' => $category]) }}" class="btn btn-outline-secondary mt-2">Clear filters</a></div></td></tr>
     @endforelse
     </tbody>
 </table>

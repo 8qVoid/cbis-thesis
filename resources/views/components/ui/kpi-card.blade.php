@@ -4,6 +4,7 @@
     'statusClass' => '',
     'suffix' => null,
     'icon' => null,
+    'href' => null,
 ])
 @php
 $icon ??= match (true) {
@@ -16,7 +17,7 @@ $icon ??= match (true) {
 };
 @endphp
 
-<div class="cbis-kpi h-100">
+@if($href)<a href="{{ $href }}" class="cbis-kpi cbis-kpi-link h-100" aria-label="{{ $label }}: {{ $value }}. View matching records">@else<div class="cbis-kpi h-100">@endif
     <div class="card-body">
         <span class="cbis-kpi-icon"><x-ui.icon :name="$icon" /></span>
         <div class="label mb-2">{{ $label }}</div>
@@ -25,4 +26,4 @@ $icon ??= match (true) {
             <div class="small text-muted mt-1">{{ $suffix }}</div>
         @endif
     </div>
-</div>
+@if($href)</a>@else</div>@endif

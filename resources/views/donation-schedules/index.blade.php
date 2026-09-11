@@ -87,7 +87,7 @@
             <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
             @if($canManageSchedules || $currentUser?->can('review activities'))
             <details class="cbis-event-actions">
-                <summary>More actions</summary>
+                <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
                 <div class="cbis-event-action-buttons">
                         @can('review activities')
                             <form method="POST" action="{{ route('donation-schedules.review',$schedule) }}" class="d-inline">@csrf @method('PATCH')<input type="hidden" name="approval_status" value="approved"><button class="btn btn-sm btn-outline-success">Approve</button></form>
@@ -131,7 +131,14 @@
         </div>
     </article>
 @empty
-    <div class="card card-body text-center py-5 text-muted">No events match these filters. Try another search or reset the filters.</div>
+    <div class="card card-body cbis-empty-state py-5">
+        <strong>No events to display</strong>
+        <span>Create an event to begin, or clear your filters to see other schedules.</span>
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+            @if($canManageSchedules)<a href="{{ route('donation-schedules.create') }}" class="btn btn-danger">Create Event</a>@endif
+            <a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Clear filters</a>
+        </div>
+    </div>
 @endforelse
 </div>
 

@@ -1,7 +1,17 @@
 @extends('layouts.app')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="cbis-page-title">Blood Reservations</h1><p class="text-muted mb-0">{{ auth()->user()->hasRole('Patient') ? 'Track your submitted requests.' : 'Review requests within your authorized branch scope.' }}</p></div>@if(auth()->user()->hasRole('Patient'))<a href="{{ route('reservations.create') }}" class="btn btn-danger">New Request</a>@endif</div>
+@if(request('status') === 'pending')
+<p class="small text-muted">Showing submitted and under-review requests. <a href="{{ route('reservations.index') }}">View all requests</a></p>
+@endif
+<div class="d-flex justify-content-between align-items-center mb-3"><div><h1 class="cbis-page-title">{{ auth()->user()->hasRole('Patient') ? 'My Blood Requests' : 'Blood Reservations' }}</h1><p class="text-muted mb-0">{{ auth()->user()->hasRole('Patient') ? 'Track your submitted requests.' : 'Review requests within your authorized branch scope.' }}</p></div>@if(auth()->user()->hasRole('Patient'))<a href="{{ route('reservations.create') }}" class="btn btn-danger">New Request</a>@endif</div>
 <div class="card"><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Reference</th>@unless(auth()->user()->hasRole('Patient'))<th>Patient</th>@endunless<th>Branch</th><th>Blood</th><th>Units</th><th>Needed</th><th>Status</th><th></th></tr></thead><tbody>
-@forelse($reservations as $reservation)<tr><td>{{ $reservation->reference }}</td>@unless(auth()->user()->hasRole('Patient'))<td>{{ $reservation->patient?->name }}</td>@endunless<td>{{ $reservation->facility?->name }}</td><td>{{ $reservation->blood_type }} · {{ \App\Models\BloodInventory::COMPONENTS[$reservation->component] ?? $reservation->component }}</td><td>{{ $reservation->units_requested }}</td><td>{{ $reservation->needed_on?->toDateString() }}</td><td>{{ str($reservation->status)->replace('_',' ')->title() }}</td><td><a href="{{ route('reservations.show',$reservation) }}" class="btn btn-sm btn-outline-danger">View</a></td></tr>@empty<tr><td colspan="8" class="text-center text-muted py-4">No reservations found.</td></tr>@endforelse
+@forelse($reservations as $reservation)<tr><td>{{ $reservation->reference }}</td>@unless(auth()->user()->hasRole('Patient'))<td>{{ $reservation->patient?->name }}</td>@endunless<td>{{ $reservation->facility?->name }}</td><td>{{ $reservation->blood_type }} · {{ \App\Models\BloodInventory::COMPONENTS[$reservation->component] ?? $reservation->component }}</td><td>{{ $reservation->units_requested }}</td><td>{{ $reservation->needed_on?->toDateString() }}</td><td>{{ str($reservation->status)->replace('_',' ')->title() }}</td><td><a href="{{ route('reservations.show',$reservation) }}" class="btn btn-sm btn-outline-danger">View</a></td></tr>@empty<tr><td colspan="8" class="text-center text-muted py-4">No blood requests found. {{ auth()->user()->hasRole('Patient') ? 'Use New Request to submit your ID and doctor’s blood request for staff review.' : 'New patient submissions will appear here for review.' }}</td></tr>@endforelse
 </tbody></table></div></div><div class="mt-3">{{ $reservations->links() }}</div>
+@if($reservations->isEmpty())
+<div class="d-flex gap-2 mt-3">
+    @if(auth()->user()->hasRole('Patient'))<a href="{{ route('reservations.create') }}" class="btn btn-danger">Create a blood request</a>
+    @elseif(auth()->user()->isBloodBankStaff())<a href="{{ route('blood-inventory.index') }}" class="btn btn-outline-secondary">Check inventory</a>
+    @else<a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Back to dashboard</a>@endif
+</div>
+@endif
 @endsection
