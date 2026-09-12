@@ -4,12 +4,11 @@
     <div><div class="cbis-eyebrow">Event Facilitator</div><h1 class="cbis-page-title">Activity Dashboard</h1><p class="cbis-page-subtitle">{{ auth()->user()->facility?->name }} · Plan activities and follow Bacolod QAO decisions.</p></div>
     <a href="{{ route('donation-schedules.create') }}" class="btn btn-danger">Create New Activity</a>
 </div>
-<div class="cbis-workflow-guide mb-4"><strong>Your activity workflow</strong><p class="mb-0">Create activity → QAO review → public listing with a map location → manage registrations → end event. Editing an activity sends it back for approval.</p></div>
 <div class="cbis-metric-grid mb-4">
-    <x-ui.kpi-card label="Upcoming Activities" :value="$upcomingEvents" suffix="Planned or ongoing" />
-    <x-ui.kpi-card label="Pending QAO Approval" :value="$pendingEvents" statusClass="{{ $pendingEvents ? 'text-warning' : 'text-success' }}" suffix="Submitted for review" />
-    <x-ui.kpi-card label="Upcoming Registrations" :value="$registeredDonors" suffix="Registered places across upcoming activities" />
-    <x-ui.kpi-card label="Completed Events" :value="$completedEvents" suffix="Events marked completed" />
+    <x-ui.kpi-card label="Upcoming Activities" :value="$upcomingEvents" suffix="Planned or ongoing" :href="route('donation-schedules.index', ['status' => 'planned'])" />
+    <x-ui.kpi-card label="Pending QAO Approval" :value="$pendingEvents" statusClass="{{ $pendingEvents ? 'text-warning' : 'text-success' }}" suffix="Submitted for review" :href="route('donation-schedules.index', ['approval_status' => 'pending'])" />
+    <x-ui.kpi-card label="Upcoming Registrations" :value="$registeredDonors" suffix="Registered places across upcoming activities" :href="route('donation-schedules.index', ['status' => 'planned'])" />
+    <x-ui.kpi-card label="Completed Events" :value="$completedEvents" suffix="Events marked completed" :href="route('donation-schedules.index', ['status' => 'completed'])" />
 </div>
 <div class="row g-4 mb-4">
     <div class="col-xl-7">

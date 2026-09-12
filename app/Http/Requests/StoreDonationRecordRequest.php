@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Donor;
+use App\Support\DonationAgePolicy;
+use Illuminate\Validation\Validator;
 
 class StoreDonationRecordRequest extends BaseFormRequest
 {
@@ -20,5 +23,18 @@ class StoreDonationRecordRequest extends BaseFormRequest
             'status' => ['required', 'in:pending,verified,rejected'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        parent::withValidator($validator);
+
+        $validator->after(function (Validator $validator): void {
+            $donor = Donor::query()->find($this->input('donor_id'));
+
+            if ($donor && ! DonationAgePolicy::isOldEnough($donor->birth_date)) {
+                $validator->errors()->add('donor_id', DonationAgePolicy::message());
+            }
+        });
     }
 }

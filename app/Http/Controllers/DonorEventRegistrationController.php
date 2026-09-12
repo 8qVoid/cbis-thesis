@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DonationSchedule;
 use App\Models\EventRegistration;
+use App\Support\DonationAgePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -23,8 +24,13 @@ class DonorEventRegistrationController extends Controller
         return view('donor-portal.events', compact('registrations'));
     }
 
-    public function join(DonationSchedule $donationSchedule): View
+    public function join(DonationSchedule $donationSchedule): View|RedirectResponse
     {
+        $donor = auth()->user()?->donorProfile;
+        if ($donor && ! DonationAgePolicy::isOldEnough($donor->birth_date)) {
+            return redirect()->route('public.map')->withErrors(['event' => DonationAgePolicy::message()]);
+        }
+
         abort_unless($donationSchedule->isRegistrationOpen(), 422, 'This event is no longer open for registration.');
 
         return view('donor-portal.confirm-event-registration', compact('donationSchedule'));
@@ -32,6 +38,11 @@ class DonorEventRegistrationController extends Controller
 
     public function store(DonationSchedule $donationSchedule): RedirectResponse
     {
+        $donor = auth()->user()?->donorProfile;
+        if ($donor && ! DonationAgePolicy::isOldEnough($donor->birth_date)) {
+            return redirect()->route('public.map')->withErrors(['event' => DonationAgePolicy::message()]);
+        }
+
         $created = $this->registerForEvent($donationSchedule);
 
         return redirect()->route('public.map')->with(

@@ -10,6 +10,7 @@ use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\User;
 use App\Support\DonorScope;
+use App\Support\DonationAgePolicy;
 use App\Support\MainChapter;
 use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Builder;
@@ -148,6 +149,13 @@ class CreateDonationRecord extends Component
 
         if ($this->selected_event_id !== null && ! $this->selectedEventRegistrationExists((int) $data['donor_id'], (int) $data['facility_id'])) {
             $this->addError('selected_event_id', 'The selected donor is not registered for this event.');
+
+            return null;
+        }
+
+        $donor = Donor::query()->find($data['donor_id']);
+        if ($donor && ! DonationAgePolicy::isOldEnough($donor->birth_date)) {
+            $this->addError('donor_id', DonationAgePolicy::message());
 
             return null;
         }

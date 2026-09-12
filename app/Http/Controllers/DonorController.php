@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateDonorRequest;
 use App\Models\Donor;
 use App\Models\Facility;
 use App\Notifications\DonorScreeningUpdated;
+use App\Support\DonationAgePolicy;
 use App\Support\DonorScope;
 use App\Support\MainChapter;
 use App\Traits\LogsAudit;
@@ -30,6 +31,11 @@ class DonorController extends Controller
             'donor_message' => ['required_if:status,deferred', 'nullable', 'string', 'max:1000'],
             'review_on' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
+
+        if ($data['status'] === 'eligible' && ! DonationAgePolicy::isOldEnough($donor->birth_date)) {
+            return back()->withInput()->withErrors(['status' => DonationAgePolicy::message()]);
+        }
+
         $screening = DB::transaction(function () use ($donor, $data, $request) {
             $screening = $donor->screenings()->create([...collect($data)->except('screening_confirmed')->all(), 'reviewed_by' => $request->user()->id]);
             $donor->update(['is_eligible' => $data['status'] === 'eligible']);

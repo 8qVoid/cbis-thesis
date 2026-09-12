@@ -38,4 +38,5 @@ class UpdateDonorPortalRequest extends BaseFormRequest
             'address' => ['required', 'string', 'max:500'],
         ];
     }
+
 }

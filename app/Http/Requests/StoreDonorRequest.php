@@ -36,4 +36,5 @@ class StoreDonorRequest extends BaseFormRequest
             'address' => ['nullable', 'string', 'max:500'],
         ];
     }
+
 }

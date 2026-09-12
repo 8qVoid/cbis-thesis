@@ -54,6 +54,74 @@ class DocumenterWorkflowTest extends TestCase
         $this->assertDatabaseCount('donors', 1);
     }
 
+    public function test_underage_public_user_can_create_donor_account_but_cannot_be_marked_eligible_yet(): void
+    {
+        $facility = $this->facility();
+        $underageBirthDate = today()->subYears(17)->toDateString();
+
+        $this->post(route('donor.register.store'), [
+            'services' => ['donor'], 'facility_id' => $facility->id,
+            'first_name' => 'Young', 'last_name' => 'Donor', 'birth_date' => $underageBirthDate,
+            'sex' => 'male', 'blood_type' => 'O+', 'contact_number' => '09170000001',
+            'email' => 'young-donor@example.test', 'address' => 'Bacolod City',
+            'password' => 'password123', 'password_confirmation' => 'password123',
+        ])->assertRedirect(route('account.dashboard'));
+
+        $donorUser = User::where('email', 'young-donor@example.test')->firstOrFail();
+        $this->assertTrue($donorUser->hasRole('Donor'));
+        $this->assertFalse($donorUser->donorProfile->is_eligible);
+        $this->post(route('logout'))->assertRedirect(route('login'));
+
+        $this->post(route('donor.register.store'), [
+            'services' => ['patient'], 'facility_id' => $facility->id,
+            'first_name' => 'Young', 'last_name' => 'Patient', 'birth_date' => $underageBirthDate,
+            'sex' => 'male', 'contact_number' => '09170000002',
+            'email' => 'young-patient@example.test', 'address' => 'Bacolod City',
+            'password' => 'password123', 'password_confirmation' => 'password123',
+        ])->assertRedirect(route('account.dashboard'));
+
+        $patient = User::where('email', 'young-patient@example.test')->firstOrFail();
+        $this->assertTrue($patient->hasRole('Patient'));
+        $this->assertFalse($patient->hasRole('Donor'));
+
+        $this->actingAs($patient)->put(route('account.profile.update'), [
+            'services' => ['patient', 'donor'],
+            'blood_type' => 'O+',
+        ])->assertRedirect(route('account.dashboard'));
+
+        $this->assertTrue($patient->fresh()->hasAllRoles(['Patient', 'Donor']));
+        $this->assertFalse($patient->fresh()->donorProfile->is_eligible);
+    }
+
+    public function test_underage_donor_cannot_register_for_donation_events_yet(): void
+    {
+        $facility = $this->facility();
+        $donorUser = User::factory()->create(['birth_date' => today()->subYears(17)->toDateString()]);
+        $donorUser->assignRole('Donor');
+        $donor = Donor::create([
+            'user_id' => $donorUser->id, 'facility_id' => $facility->id,
+            'first_name' => 'Young', 'last_name' => 'Event', 'birth_date' => today()->subYears(17)->toDateString(),
+            'sex' => 'male', 'blood_type' => 'O+', 'is_eligible' => false,
+        ]);
+        $event = DonationSchedule::create([
+            'facility_id' => $facility->id, 'title' => 'Open Donation Drive',
+            'event_type' => 'blood_donation', 'event_date' => today()->addWeek(),
+            'start_time' => '09:00', 'end_time' => '12:00',
+            'start_at' => today()->addWeek()->setTime(9, 0), 'end_at' => today()->addWeek()->setTime(12, 0),
+            'venue' => 'Demo Hall', 'is_public' => true, 'approval_status' => 'approved',
+            'status' => 'planned',
+        ]);
+
+        $this->actingAs($donorUser)->post(route('donor.events.register', $event))
+            ->assertRedirect(route('public.map'))
+            ->assertSessionHasErrors('event');
+
+        $this->assertDatabaseMissing('event_registrations', [
+            'donor_id' => $donor->id,
+            'donation_schedule_id' => $event->id,
+        ]);
+    }
+
     public function test_donor_can_reach_the_event_map_and_flash_messages_are_dismissible(): void
     {
         $donorUser = User::factory()->create();

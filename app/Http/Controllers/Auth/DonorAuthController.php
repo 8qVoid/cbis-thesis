@@ -10,6 +10,7 @@ use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\PatientProfile;
 use App\Models\User;
+use App\Support\DonationAgePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -101,7 +102,7 @@ class DonorAuthController extends Controller
         $request->session()->regenerate();
         $registeredForEvent = false;
 
-        if ($eventId && $donor) {
+        if ($eventId && $donor && DonationAgePolicy::isOldEnough($donor->birth_date)) {
             $event = DonationSchedule::query()
                 ->where('is_public', true)->where('approval_status', 'approved')
                 ->whereDate('event_date', '>=', now()->toDateString())
@@ -127,7 +128,9 @@ class DonorAuthController extends Controller
             ? 'Donor registration successful. You are now registered for the selected event.'
             : 'Donor registration successful.';
         if ($eventId && ! $registeredForEvent) {
-            $message .= ' The selected activity is no longer open. Please choose another event from the map.';
+            $message .= DonationAgePolicy::isOldEnough($donor?->birth_date)
+                ? ' The selected activity is no longer open. Please choose another event from the map.'
+                : ' You can keep your donor account, but event registration opens when you are at least '.DonationAgePolicy::MINIMUM_AGE.'.';
         }
 
         return redirect()->route('account.dashboard')->with('success', str_replace('Donor registration', 'Account registration', $message));

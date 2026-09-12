@@ -137,6 +137,46 @@ class OperationalAuditTest extends TestCase
         $this->actingAs($user)->get(route('account.dashboard'))->assertSee('Deferred')->assertSee('Please return for reassessment.');
     }
 
+    public function test_bbs_cannot_mark_an_underage_donor_eligible(): void
+    {
+        $donor = Donor::create([
+            'first_name' => 'Underage', 'last_name' => 'Donor',
+            'birth_date' => today()->subYears(17)->toDateString(),
+            'sex' => 'male', 'blood_type' => 'A+', 'is_eligible' => false,
+        ]);
+
+        $this->actingAs($this->bbs)->patch(route('donors.screening', $donor), [
+            'status' => 'eligible',
+            'screening_confirmed' => '1',
+        ])->assertSessionHasErrors('status');
+
+        $this->assertFalse($donor->fresh()->is_eligible);
+        $this->assertDatabaseCount('donor_screenings', 0);
+    }
+
+    public function test_bbs_cannot_record_a_donation_for_an_underage_donor(): void
+    {
+        $donor = Donor::create([
+            'facility_id' => $this->main->id, 'first_name' => 'Underage', 'last_name' => 'Donor',
+            'birth_date' => today()->subYears(17)->toDateString(),
+            'sex' => 'male', 'blood_type' => 'A+', 'is_eligible' => false,
+        ]);
+
+        $this->actingAs($this->bbs)->post(route('donation-records.store'), [
+            'facility_id' => $this->main->id,
+            'donor_id' => $donor->id,
+            'donation_no' => 'DN-UNDERAGE',
+            'donated_at' => now()->format('Y-m-d H:i:s'),
+            'blood_type' => 'A+',
+            'volume_ml' => 450,
+            'expiration_date' => today()->addDays(30)->toDateString(),
+            'status' => 'verified',
+        ])->assertSessionHasErrors('donor_id');
+
+        $this->assertDatabaseCount('donation_records', 0);
+        $this->assertDatabaseCount('blood_inventory', 0);
+    }
+
     public function test_reservation_fulfillment_requires_matching_recorded_releases(): void
     {
         Notification::fake();

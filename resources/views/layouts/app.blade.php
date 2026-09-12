@@ -213,6 +213,7 @@
                 window.setTimeout(() => message.remove(), 200);
             };
             message.querySelector('.btn-close')?.addEventListener('click', dismiss);
+            window.setTimeout(dismiss, Number(message.dataset.dismissAfter || 3000));
         })();
         </script>
     @endif

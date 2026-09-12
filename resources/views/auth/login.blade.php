@@ -3,8 +3,12 @@
 @section('content')
 <div class="row justify-content-center cbis-login-page">
     <div class="col-md-7 col-lg-5">
-        <div class="text-center mb-4"><span class="cbis-eyebrow">CBIS · Red Cross</span><h1 class="cbis-page-title mt-2">Welcome back</h1><p class="cbis-page-subtitle">Sign in to your blood services account.</p></div>
-        <div class="card">
+        <div class="text-center mb-4">
+            <span class="cbis-eyebrow">CBIS · Red Cross</span>
+            <h1 class="cbis-page-title mt-2">Welcome back</h1>
+            <p class="cbis-page-subtitle">Sign in to your blood services account.</p>
+        </div>
+        <div class="card cbis-login-card">
             <div class="card-header cbis-card-title"><span>Unified Login</span></div>
             <div class="card-body">
                 <form method="POST" action="{{ route('login.store') }}">

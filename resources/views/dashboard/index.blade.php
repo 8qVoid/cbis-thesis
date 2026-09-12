@@ -14,17 +14,19 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
     </div>
 </div>
 
-<div class="cbis-workflow-guide mb-4">
-    <strong>{{ $isQao ? 'Quality Assurance Officer' : 'Blood Bank Staff' }}</strong>
-    <p class="mb-0">{{ $isQao ? 'Review activity approvals, monitor inventory, and manage staff and public accounts. Blood Bank Staff process patient requests.' : 'Screen donors, record collections, and review patient requests. Approval reserves matching stock; recording a release completes the request and deducts inventory.' }}</p>
-</div>
+@unless($isQao)
+    <div class="cbis-workflow-guide mb-4">
+        <strong>Blood Bank Staff</strong>
+        <p class="mb-0">Screen donors, record collections, and review patient requests. Approval reserves matching stock; recording a release completes the request and deducts inventory.</p>
+    </div>
+@endunless
 
 <div class="cbis-metric-grid mb-4">
     @if($isQao)
-        <x-ui.kpi-card label="Activity Approvals" :value="$pendingActivityCount" suffix="Waiting for QAO review" />
-        <x-ui.kpi-card label="Active Facilities" :value="$activeFacilityCount" suffix="Enabled facilities" />
-        <x-ui.kpi-card label="Public Users" :value="$publicUserCount" suffix="Donor and patient accounts, counted once" />
-        <x-ui.kpi-card label="Total Blood Units" :value="$totalUnits" suffix="Recorded across all components" />
+        <x-ui.kpi-card label="Activity Approvals" :value="$pendingActivityCount" suffix="Waiting for QAO review" :href="route('donation-schedules.index', ['approval_status' => 'pending'])" />
+        <x-ui.kpi-card label="Active Facilities" :value="$activeFacilityCount" suffix="Enabled facilities" :href="route('facilities.index')" />
+        <x-ui.kpi-card label="Public Users" :value="$publicUserCount" suffix="Donor and patient accounts, counted once" :href="route('staff-users.index', ['category' => 'public'])" />
+        <x-ui.kpi-card label="Total Blood Units" :value="$totalUnits" suffix="Recorded across all components" :href="route('blood-inventory.index')" />
     @else
         <x-ui.kpi-card label="Pending Requests" :value="$pendingRequestCount" suffix="Submitted or under review" :href="route('reservations.index', ['status' => 'pending'])" />
         <x-ui.kpi-card label="Low-stock Items" :value="$lowStockCount" suffix="Requires attention" :href="route('blood-inventory.index', ['status' => 'low_stock'])" />
