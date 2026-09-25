@@ -63,7 +63,7 @@
                 </div>
                 <small class="text-muted">Enter the 9 digits after 09.</small>
             </div>
-            <div class="col-md-8"><label class="form-label">Address</label><input name="address" value="{{ old('address',$donor->address) }}" class="form-control" required></div>
+            <div class="col-12"><label class="form-label">Address</label><x-negros-occidental-address-fields :address="old('address',$donor->address)" /></div>
             <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>
         </div>
     </div>

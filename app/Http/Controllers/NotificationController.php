@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterNotificationsRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\Route;
 use App\Notifications\ActivityReviewStatusChanged;
 use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
@@ -74,6 +75,27 @@ class NotificationController extends Controller
         return back()->with('success', 'Notification marked as read.');
     }
 
+    public function open(Request $request, string $id): RedirectResponse
+    {
+        /** @var DatabaseNotification|null $notification */
+        $query = $request->user()
+            ->notifications()
+            ->whereIn('type', $this->notificationTypesFor($request->user()));
+
+        $this->limitToUserFacility($query, $request->user());
+        $notification = $query->whereKey($id)->first();
+
+        if (! $notification) {
+            abort(404);
+        }
+
+        if ($notification->read_at === null) {
+            $notification->markAsRead();
+        }
+
+        return redirect()->to($this->notificationUrl($notification, $request->user()));
+    }
+
     public function markAllRead(Request $request): RedirectResponse
     {
         $query = $request->user()
@@ -84,6 +106,47 @@ class NotificationController extends Controller
         $query->update(['read_at' => now()]);
 
         return back()->with('success', 'All notifications marked as read.');
+    }
+
+    private function notificationUrl(DatabaseNotification $notification, User $user): string
+    {
+        $data = $notification->data ?? [];
+
+        if (in_array($notification->type, [BloodReservationSubmitted::class, BloodReservationStatusChanged::class], true)) {
+            if (! empty($data['reservation_id']) && Route::has('reservations.show')) {
+                return route('reservations.show', $data['reservation_id']);
+            }
+
+            return route('reservations.index');
+        }
+
+        if ($notification->type === LowStockAlert::class) {
+            return route('blood-inventory.index', [
+                'component' => array_search($data['component'] ?? '', \App\Models\BloodInventory::COMPONENTS, true) ?: null,
+                'status' => 'low_stock',
+            ]);
+        }
+
+        if ($notification->type === ActivityReviewStatusChanged::class) {
+            if (! empty($data['activity_id']) && Route::has('donation-schedules.show')) {
+                return route('donation-schedules.show', $data['activity_id']);
+            }
+
+            return route('donation-schedules.index');
+        }
+
+        if ($notification->type === EventPostedNotification::class) {
+            return route('public.map', array_filter([
+                'event_type' => $data['event_type'] ?? null,
+                'event_date' => $data['event_date'] ?? null,
+            ]));
+        }
+
+        if ($notification->type === DonorScreeningUpdated::class) {
+            return route('account.dashboard', ['view' => 'donor']);
+        }
+
+        return route('notifications.index');
     }
 
     /**

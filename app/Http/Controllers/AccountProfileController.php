@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Donor;
 use App\Models\PatientProfile;
+use App\Rules\NegrosOccidentalAddressRule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class AccountProfileController extends Controller
             'first_name' => ['required', 'string', 'max:80'],
             'middle_name' => ['nullable', 'string', 'max:80'],
             'last_name' => ['required', 'string', 'max:80'],
-            'address' => ['required', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
         ]);
         DB::transaction(function () use ($user, $data): void {
             $user->update([...$data, 'name' => trim(implode(' ', array_filter([$data['first_name'], $data['middle_name'] ?? null, $data['last_name']])))]);

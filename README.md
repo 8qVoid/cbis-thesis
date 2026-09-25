@@ -202,9 +202,9 @@ These credentials are for local development only:
 
 | Role | Email | Password |
 | --- | --- | --- |
-| QAO | `qao@cbis.local` | `password` |
-| Event Facilitator | `facilitator@cbis.local` | `password` |
-| Blood Bank Staff | `bbs@cbis.local` | `password` |
+| QAO | `qao@gmail.com` | `password` |
+| Event Facilitator | `facilitator@gmail.com` | `password` |
+| Blood Bank Staff | `bbs@gmail.com` | `password` |
 
 The seed creates the Bacolod main chapter and these three staff accounts. Register Donor/Patient accounts through **Register as Donor or Patient**. QAO can add activity branches and assign Event Facilitators; Blood Bank Staff must belong to the main chapter. Existing prototype account display names may differ from their role badge. Change default passwords before using real data or exposing the site publicly.
 

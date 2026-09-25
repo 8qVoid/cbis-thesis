@@ -198,6 +198,9 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
         ->name('notifications.index');
+    Route::get('/notifications/{id}/open', [NotificationController::class, 'open'])
+        ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
+        ->name('notifications.open');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])
         ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')
         ->name('notifications.read');

@@ -78,7 +78,7 @@
                             $data = $notification->data ?? [];
                         @endphp
                         <tr>
-                            <td>{{ $data['title'] ?? 'Low stock alert' }}</td>
+                            <td>{{ $data['title'] ?? 'Notification' }}</td>
                             <td>
                                 @if($notification->type === $reservationSubmittedType)
                                     <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
@@ -112,20 +112,21 @@
                                 @endif
                             </td>
                             <td>
-                                @if($notification->read_at === null)
-                                    <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="btn btn-sm btn-outline-primary">Mark as read</button>
-                                    </form>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="{{ route('notifications.open', $notification->id) }}" class="btn btn-sm btn-outline-danger">Open</a>
+                                    @if($notification->read_at === null)
+                                        <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-outline-primary">Mark read</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No notifications found.</td>
+                            <td colspan="5" class="text-center py-4"><strong>You’re all caught up</strong><div class="small text-muted mt-1">New updates for your account will appear here.</div></td>
                         </tr>
                     @endforelse
                 </tbody>

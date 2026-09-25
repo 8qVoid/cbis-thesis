@@ -44,7 +44,10 @@
                             </div>
                             <small class="text-muted">Enter the 9 digits after 09.</small>
                         </div>
-                        <div class="col-12"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address') }}" required></div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <x-negros-occidental-address-fields :address="old('address')" />
+                        </div>
                         <div class="col-12">
                             <hr class="my-1">
                             <h5 class="mb-1">Account password</h5>

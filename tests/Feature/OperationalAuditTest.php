@@ -56,6 +56,68 @@ class OperationalAuditTest extends TestCase
             ->assertOk()->assertViewHas('inventory', fn ($items) => $items->count() === 1 && $items->first()->id === $platelets->id);
     }
 
+    public function test_manual_stock_rejects_duplicate_and_active_past_expiry(): void
+    {
+        $stock = $this->stock('whole_blood');
+        $data = $stock->only(['blood_type', 'component', 'units_available', 'status']);
+        $data['expiration_date'] = $stock->expiration_date->toDateString();
+        $this->actingAs($this->bbs)->post(route('blood-inventory.store'), $data)
+            ->assertSessionHasErrors('expiration_date');
+        $this->assertDatabaseCount('blood_inventory', 1);
+        $data['expiration_date'] = today()->subYear()->toDateString();
+        $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasErrors('expiration_date');
+        $this->assertTrue($stock->fresh()->expiration_date->isFuture());
+        $data['status'] = 'expired';
+        $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasNoErrors()->assertRedirect();
+        $this->get(route('blood-inventory.index'))->assertOk()
+            ->assertViewHas('totalAvailableUnits', 0);
+    }
+
+    public function test_manual_balance_changes_are_visible_as_stock_in_and_out(): void
+    {
+        $data = ['blood_type' => 'B+', 'component' => 'whole_blood', 'units_available' => 8,
+            'status' => 'active', 'expiration_date' => today()->addDays(10)->toDateString()];
+        $this->actingAs($this->bbs)->post(route('blood-inventory.store'), $data)->assertSessionHasNoErrors();
+        $stock = BloodInventory::firstOrFail();
+        $data['units_available'] = 5;
+        $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasNoErrors();
+        $this->get(route('blood-inventory.index'))->assertOk()->assertViewHas('stockMovements', function ($movements) {
+            return $movements->contains(fn ($m) => $m['type'] === 'in' && $m['units'] === 8)
+                && $movements->contains(fn ($m) => $m['type'] === 'out' && $m['units'] === 3);
+        });
+    }
+
+    public function test_donation_stock_in_keeps_original_quantity_after_release(): void
+    {
+        $donor = Donor::create(['first_name' => 'Stock', 'last_name' => 'Test', 'birth_date' => '2000-01-01', 'sex' => 'male', 'blood_type' => 'A+']);
+        $donation = \App\Models\DonationRecord::create(['facility_id' => $this->main->id, 'donor_id' => $donor->id,
+            'recorded_by' => $this->bbs->id, 'donation_no' => 'MOVEMENT-TEST', 'donated_at' => now(),
+            'blood_type' => 'A+', 'volume_ml' => 450, 'expiration_date' => today()->addDays(5), 'status' => 'verified']);
+        $stock = $this->stock('whole_blood');
+        $stock->update(['donation_record_id' => $donation->id, 'units_available' => 0]);
+        BloodRelease::create(['facility_id' => $this->main->id, 'blood_inventory_id' => $stock->id,
+            'released_by' => $this->bbs->id, 'units_released' => 1, 'released_at' => now(), 'patient_name' => 'Test Patient']);
+        $this->actingAs($this->bbs)->get(route('blood-inventory.index'))->assertOk()
+            ->assertViewHas('stockMovements', fn ($items) => $items->contains(fn ($m) => $m['type'] === 'in' && $m['units'] === 1)
+                && $items->contains(fn ($m) => $m['type'] === 'out' && $m['units'] === 1));
+        $this->post(route('blood-inventory.store'), ['donation_record_id' => $donation->id, 'blood_type' => 'A+',
+            'component' => 'whole_blood', 'units_available' => 1, 'status' => 'active', 'expiration_date' => today()->addDays(5)->toDateString()])
+            ->assertSessionHasErrors('donation_record_id');
+        $this->assertDatabaseCount('blood_inventory', 1);
+        $this->get(route('blood-inventory.edit', $stock))->assertOk()->assertSee('Correct the unit balance');
+        $this->get(route('blood-inventory.create'))->assertOk()->assertSee('Available stock must expire today or later');
+    }
+
+    public function test_stock_filters_match_the_selected_blood_type_and_exclude_unusable_low_stock(): void
+    {
+        $matching = $this->stock('whole_blood');
+        $other = $this->stock('whole_blood'); $other->update(['blood_type' => 'O+']);
+        $empty = $this->stock('whole_blood'); $empty->update(['units_available' => 0]);
+        $expired = $this->stock('whole_blood'); $expired->update(['expiration_date' => today()->subDay()]);
+        $this->actingAs($this->bbs)->get(route('blood-inventory.index', ['blood_type' => 'A+', 'component' => 'whole_blood', 'status' => 'low_stock']))
+            ->assertOk()->assertViewHas('inventory', fn ($items) => $items->count() === 1 && $items->first()->id === $matching->id);
+    }
+
     public function test_inactive_accounts_cannot_keep_using_an_existing_session(): void
     {
         $patient = User::factory()->create(['facility_id' => null, 'is_active' => true]);
@@ -92,9 +154,9 @@ class OperationalAuditTest extends TestCase
     public function test_redeploy_seeding_does_not_reactivate_disabled_or_deleted_demo_accounts(): void
     {
         $this->seed(FacilitySeeder::class);
-        $disabled = User::where('email', 'bbs@cbis.local')->firstOrFail();
+        $disabled = User::where('email', 'bbs@gmail.com')->firstOrFail();
         $disabled->update(['is_active' => false]);
-        $deleted = User::where('email', 'facilitator@cbis.local')->firstOrFail();
+        $deleted = User::where('email', 'facilitator@gmail.com')->firstOrFail();
         $deleted->delete();
         $this->seed(DatabaseSeeder::class);
         $this->assertFalse($disabled->fresh()->is_active);
@@ -110,7 +172,7 @@ class OperationalAuditTest extends TestCase
             'contact_number' => '09171234567', 'email' => $patient->email, 'address' => 'Test address',
             'legitimacy_proof_path' => 'test.pdf', 'doh_accreditation_proof_path' => 'test.pdf',
         ]);
-        $qao = User::where('email', 'qao@cbis.local')->firstOrFail();
+        $qao = User::where('email', 'qao@gmail.com')->firstOrFail();
         $this->actingAs($qao)->put(route('facility-applications.review', $application), ['status' => 'approved'])->assertSessionHasErrors('status');
         $this->assertTrue($patient->fresh()->hasRole('Patient'));
         $this->assertNull($patient->fresh()->facility_id);
@@ -124,7 +186,7 @@ class OperationalAuditTest extends TestCase
         $donor = Donor::create(['user_id' => $user->id, 'first_name' => 'Screen', 'last_name' => 'Audit', 'birth_date' => '2000-01-01', 'sex' => 'male', 'blood_type' => 'A+']);
         $payload = ['status' => 'eligible', 'screening_confirmed' => '1'];
         $this->actingAs($user)->patch(route('donors.screening', $donor), $payload)->assertForbidden();
-        $qao = User::where('email', 'qao@cbis.local')->firstOrFail();
+        $qao = User::where('email', 'qao@gmail.com')->firstOrFail();
         $this->actingAs($qao)->patch(route('donors.screening', $donor), $payload)->assertForbidden();
         $this->actingAs($this->bbs)->patch(route('donors.screening', $donor), $payload)->assertSessionHasNoErrors();
         $this->assertTrue($donor->fresh()->is_eligible);

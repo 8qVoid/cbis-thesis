@@ -15,10 +15,10 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
 </div>
 
 @unless($isQao)
-    <div class="cbis-workflow-guide mb-4">
-        <strong>Blood Bank Staff</strong>
-        <p class="mb-0">Screen donors, record collections, and review patient requests. Approval reserves matching stock; recording a release completes the request and deducts inventory.</p>
-    </div>
+    <details class="cbis-help mb-3">
+        <summary>How the blood request workflow works</summary>
+        <p class="mt-2 mb-0">Screen donors, record collections, and review patient requests. Approval reserves matching stock; recording a release completes the request and deducts inventory.</p>
+    </details>
 @endunless
 
 <div class="cbis-metric-grid mb-4">

@@ -116,7 +116,7 @@ class DashboardPresentationTest extends TestCase
             'contact_number' => '+639171234567', 'address' => 'Bacolod', 'is_eligible' => false,
         ]);
         $this->actingAs($user)->put(route('account.details.update'), [
-            'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'New address',
+            'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
             'services' => ['patient'], 'is_eligible' => true,
         ])->assertRedirect(route('account.details.edit'));
         $this->assertSame('Updated User', $user->fresh()->name);

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
 use Illuminate\Validation\Rule;
 
@@ -38,7 +39,7 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'blood_type' => [Rule::requiredIf(fn () => in_array('donor', (array) $this->input('services', []), true)), 'nullable', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'contact_number' => ['required', 'regex:/^\+639\d{9}$/', 'unique:users,phone'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'address' => ['required', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
         ];

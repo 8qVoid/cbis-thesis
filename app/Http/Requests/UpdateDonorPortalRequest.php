@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
 use Illuminate\Validation\Rule;
 
@@ -35,7 +36,7 @@ class UpdateDonorPortalRequest extends BaseFormRequest
             'sex' => ['required', 'in:male,female'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'contact_number' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('donors', 'contact_number')->ignore($donorId)],
-            'address' => ['required', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
         ];
     }
 

@@ -37,7 +37,7 @@ class DocumenterWorkflowTest extends TestCase
             'first_name' => 'Maria', 'middle_name' => '', 'last_name' => 'Santos',
             'birth_date' => '1995-01-01', 'sex' => 'female', 'blood_type' => 'O+',
             'contact_number' => '09171234567', 'email' => 'maria@example.test',
-            'address' => 'Bacolod City', 'password' => 'password123', 'password_confirmation' => 'password123',
+            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'password123', 'password_confirmation' => 'password123',
         ]);
 
         $user = User::where('email', 'maria@example.test')->firstOrFail();
@@ -63,7 +63,7 @@ class DocumenterWorkflowTest extends TestCase
             'services' => ['donor'], 'facility_id' => $facility->id,
             'first_name' => 'Young', 'last_name' => 'Donor', 'birth_date' => $underageBirthDate,
             'sex' => 'male', 'blood_type' => 'O+', 'contact_number' => '09170000001',
-            'email' => 'young-donor@example.test', 'address' => 'Bacolod City',
+            'email' => 'young-donor@example.test', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
             'password' => 'password123', 'password_confirmation' => 'password123',
         ])->assertRedirect(route('account.dashboard'));
 
@@ -76,7 +76,7 @@ class DocumenterWorkflowTest extends TestCase
             'services' => ['patient'], 'facility_id' => $facility->id,
             'first_name' => 'Young', 'last_name' => 'Patient', 'birth_date' => $underageBirthDate,
             'sex' => 'male', 'contact_number' => '09170000002',
-            'email' => 'young-patient@example.test', 'address' => 'Bacolod City',
+            'email' => 'young-patient@example.test', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
             'password' => 'password123', 'password_confirmation' => 'password123',
         ])->assertRedirect(route('account.dashboard'));
 
@@ -174,7 +174,7 @@ class DocumenterWorkflowTest extends TestCase
             'services' => ['patient'], 'facility_id' => $facility->id,
             'first_name' => 'Paolo', 'last_name' => 'Patient', 'birth_date' => '1990-05-05',
             'sex' => 'male', 'contact_number' => '09181234567', 'email' => 'paolo@example.test',
-            'address' => 'Bacolod City', 'password' => 'password123', 'password_confirmation' => 'password123',
+            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'password123', 'password_confirmation' => 'password123',
         ])->assertRedirect(route('account.dashboard'));
         $patient = User::where('email', 'paolo@example.test')->firstOrFail();
         $this->assertTrue($patient->hasRole('Patient'));

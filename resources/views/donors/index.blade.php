@@ -4,20 +4,20 @@
     $currentUser = auth('web')->user();
     $canManageDonors = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage donors') ?? false);
 @endphp
-<div class="d-flex justify-content-between align-items-end mb-3">
+<div class="cbis-page-heading">
     <div>
         <h1 class="cbis-page-title mb-0">Donors</h1>
-        <p class="cbis-page-subtitle">Donor records and facility association. Blood Bank Staff record screening decisions; donors are public users.</p>
+        <p class="cbis-page-subtitle">Manage donor profiles and access screening records.</p>
     </div>
     @if($canManageDonors)
         <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
     @endif
 </div>
-<div class="table-responsive">
+<div class="card cbis-record-table"><div class="table-responsive">
 @if(request('eligibility') === 'awaiting')
 <p class="small text-muted">Showing donors awaiting a screening decision. <a href="{{ route('donors.index') }}">View all donors</a></p>
 @endif
-    <table class="table table-striped bg-white">
+    <table class="table table-hover align-middle mb-0">
         <thead>
             <tr>
                 <th>ID</th>
@@ -33,7 +33,7 @@
                     <td>#{{ $donor->id }}</td>
                     <td>{{ $donor->full_name }}</td>
                     <td>{{ $donor->blood_type }}</td>
-                    <td>{{ $donor->facility->name ?? '-' }}</td>
+                    <td>{{ $donor->facility->name ?? 'Not assigned' }}</td>
                     <td class="text-nowrap">
                         <a href="{{ route('donors.show', $donor) }}" class="btn btn-sm btn-outline-secondary">View</a>
                         @if($canManageDonors)
@@ -61,7 +61,7 @@
         </tbody>
     </table>
 </div>
-{{ $donors->links() }}
+@if($donors->hasPages())<div class="card-footer bg-white">{{ $donors->links() }}</div>@endif</div>
 
 @if($canManageDonors)
     <div class="modal fade" id="deleteDonorModal" tabindex="-1" aria-hidden="true">

@@ -28,22 +28,24 @@ class FacilitySeeder extends Seeder
 
         // Rename legacy demo addresses on existing local databases rather
         // than creating duplicate staff accounts when the seeder is rerun.
-        $facilitator = User::withTrashed()->where('email', 'facilitator@cbis.local')->first()
+        $facilitator = User::withTrashed()->where('email', 'facilitator@gmail.com')->first()
+            ?? User::withTrashed()->where('email', 'facilitator@cbis.local')->first()
             ?? User::withTrashed()->where('email', 'facility.admin@cbis.local')->first()
             ?? new User(['password' => Hash::make('password')]);
         $facilitator->forceFill([
-            'email' => 'facilitator@cbis.local',
+            'email' => 'facilitator@gmail.com',
             'name' => 'Facility Facilitator',
             'facility_id' => $facility->id,
             'is_active' => $facilitator->exists ? $facilitator->is_active : true,
         ])->save();
         $facilitator->syncRoles(['Event Facilitator']);
 
-        $medicalStaff = User::withTrashed()->where('email', 'bbs@cbis.local')->first()
+        $medicalStaff = User::withTrashed()->where('email', 'bbs@gmail.com')->first()
+            ?? User::withTrashed()->where('email', 'bbs@cbis.local')->first()
             ?? User::withTrashed()->where('email', 'medical.staff@cbis.local')->first()
             ?? new User(['password' => Hash::make('password')]);
         $medicalStaff->forceFill([
-            'email' => 'bbs@cbis.local',
+            'email' => 'bbs@gmail.com',
             'name' => 'Blood Bank Staff',
             'facility_id' => $facility->id,
             'is_active' => $medicalStaff->exists ? $medicalStaff->is_active : true,

@@ -13,7 +13,7 @@
 <div class="col-md-4"><label class="form-label">Blood Type</label><select name="blood_type" class="form-select">@foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $type)<option>{{ $type }}</option>@endforeach</select></div>
 <div class="col-md-6"><label class="form-label">Mobile Number</label><div class="input-group"><span class="input-group-text">09</span><input name="contact_number" class="form-control js-mobile-suffix" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number')) }}" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789"></div><small class="text-muted">Enter the 9 digits after 09.</small></div>
 <div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control"></div>
-<div class="col-12"><label class="form-label">Address</label><input name="address" class="form-control"></div>
+<div class="col-12"><label class="form-label">Address</label><x-negros-occidental-address-fields :address="old('address')" :required="false" /></div>
 <div class="col-12"><button class="btn btn-danger">Save</button></div>
 </div>
 </form>

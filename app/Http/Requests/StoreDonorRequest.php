@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
 
 class StoreDonorRequest extends BaseFormRequest
@@ -33,7 +34,7 @@ class StoreDonorRequest extends BaseFormRequest
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'contact_number' => ['nullable', 'regex:/^\+639\d{9}$/'],
             'email' => ['nullable', 'email', 'max:255', 'unique:donors,email'],
-            'address' => ['nullable', 'string', 'max:500'],
+            'address' => ['nullable', 'string', 'max:500', new NegrosOccidentalAddressRule],
         ];
     }
 
