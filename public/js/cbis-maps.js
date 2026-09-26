@@ -1,10 +1,22 @@
 (() => {
-    const addLayers = (map) => {
+    const addLayers = (map, options = {}) => {
+        if (options.clearExisting) {
+            map.eachLayer((layer) => {
+                if (layer instanceof L.TileLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+        }
+
         const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19, attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 20,
+            maxNativeZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19, attribution: 'Tiles &copy; Esri',
+            maxZoom: 20,
+            maxNativeZoom: 17,
+            attribution: 'Tiles &copy; Esri',
         });
         const Layers = L.Control.extend({
             options: { position: 'topright' },

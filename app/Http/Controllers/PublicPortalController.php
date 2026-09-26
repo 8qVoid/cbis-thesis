@@ -157,6 +157,7 @@ class PublicPortalController extends Controller
                     'lng' => (float) $lng,
                     'photo_url' => $event->photo_path ? asset('storage/'.$event->photo_path) : null,
                     'action_url' => route('donor.events.join', $event),
+                    'registration_url' => route('donor.events.index'),
                     'is_registered' => in_array($event->id, $registeredEventIds, true),
                 ];
             })

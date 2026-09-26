@@ -10,7 +10,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/cbis-ui.css') }}" rel="stylesheet">
     <link href="{{ asset('css/cbis-polish.css') }}?v={{ filemtime(public_path('css/cbis-polish.css')) }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    @unless(request()->routeIs('public.map'))
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    @endunless
     <link rel="stylesheet" href="{{ asset('css/cbis-maps.css') }}?v={{ filemtime(public_path('css/cbis-maps.css')) }}" />
     @livewireStyles
 </head>
@@ -253,7 +255,9 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+@unless(request()->routeIs('public.map'))
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+@endunless
 <script src="{{ asset('js/cbis-maps.js') }}?v={{ filemtime(public_path('js/cbis-maps.js')) }}"></script>
 <script>
 let cbisPendingConfirmForm = null;

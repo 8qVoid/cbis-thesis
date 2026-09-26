@@ -219,7 +219,15 @@
 
 <div class="cbis-map-workspace">
     <div class="cbis-map-canvas">
-        <div id="map" role="region" aria-label="Events and facilities map"></div>
+        <x-maps-leaflet
+            id="map"
+            class="cbis-lara-map"
+            :centerPoint="['lat' => 10.6765, 'long' => 122.9511]"
+            :zoomLevel="9"
+            :maxZoomLevel="19"
+            leafletVersion="1.9.4"
+            style="height: 540px;"
+        />
         <div class="js-route-tools" role="group" aria-label="Map directions controls"></div>
         <div class="cbis-map-status js-location-status" role="status" aria-live="polite">Select an event or facility pin to view its details and directions.</div>
     </div>
@@ -264,7 +272,10 @@
                             <td>{{ $event->venue }}</td>
                             <td>
                                 @if(in_array($event->id, $registeredEventIds ?? [], true))
-                                    <span class="badge text-bg-success">Already Registered</span>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="badge text-bg-success">Already Registered</span>
+                                        <a href="{{ route('donor.events.index') }}" class="btn btn-sm btn-outline-secondary">Show registration</a>
+                                    </div>
                                 @else
                                     <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
                                 @endif
@@ -301,10 +312,11 @@
 <script>
 const NEGROS_CENTER = [10.6765, 122.9511];
 const NEGROS_BOUNDS = L.latLngBounds([9.0, 122.0], [11.5, 123.8]);
-const map = L.map('map', {
+const map = window.leafletMaps?.map ?? L.map('map', {
     scrollWheelZoom: true
 }).setView(NEGROS_CENTER, 9);
-CbisMaps.addLayers(map);
+map.scrollWheelZoom.enable();
+CbisMaps.addLayers(map, { clearExisting: true });
 const data = @json($mapLocations);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
@@ -389,7 +401,7 @@ const routeDistanceNote = (item) => {
 
 const eventPopup = (item) => {
     const action = item.is_registered
-        ? '<span class="badge text-bg-success align-self-center">Already Registered</span>'
+        ? `<div class="d-flex flex-wrap align-items-center gap-2"><span class="badge text-bg-success align-self-center">Already Registered</span><a href="${escapeHtml(item.registration_url)}" class="btn btn-sm btn-outline-secondary">Show registration</a></div>`
         : `<a href="${escapeHtml(item.action_url)}" class="btn btn-sm btn-outline-danger">Register</a>`;
 
     return `

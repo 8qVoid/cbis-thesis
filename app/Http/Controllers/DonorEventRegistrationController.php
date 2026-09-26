@@ -31,6 +31,12 @@ class DonorEventRegistrationController extends Controller
             return redirect()->route('public.map')->withErrors(['event' => DonationAgePolicy::message()]);
         }
 
+        if ($this->hasActiveRegistration($donationSchedule)) {
+            return redirect()
+                ->route('donor.events.index')
+                ->with('success', 'You are already registered for this event. Your registration is shown below.');
+        }
+
         abort_unless($donationSchedule->isRegistrationOpen(), 422, 'This event is no longer open for registration.');
 
         return view('donor-portal.confirm-event-registration', compact('donationSchedule'));
@@ -45,9 +51,9 @@ class DonorEventRegistrationController extends Controller
 
         $created = $this->registerForEvent($donationSchedule);
 
-        return redirect()->route('public.map')->with(
+        return redirect()->route($created ? 'public.map' : 'donor.events.index')->with(
             'success',
-            $created ? 'You are now registered for this event.' : 'You are already registered for this event.'
+            $created ? 'You are now registered for this event.' : 'You are already registered for this event. Your registration is shown below.'
         );
     }
 
@@ -102,5 +108,20 @@ class DonorEventRegistrationController extends Controller
         );
 
         return true;
+    }
+
+    private function hasActiveRegistration(DonationSchedule $donationSchedule): bool
+    {
+        $donor = auth()->user()?->donorProfile;
+
+        if (! $donor) {
+            return false;
+        }
+
+        return EventRegistration::query()
+            ->where('donation_schedule_id', $donationSchedule->id)
+            ->where('donor_id', $donor->id)
+            ->whereIn('status', ['registered', 'attended'])
+            ->exists();
     }
 }

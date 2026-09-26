@@ -61,7 +61,10 @@
                             <td>{{ ucfirst($event->status) }}</td>
                             <td>
                                 @if(in_array($event->id, $registeredEventIds ?? [], true))
-                                    <span class="badge text-bg-success">Already Registered</span>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="badge text-bg-success">Already Registered</span>
+                                        <a href="{{ route('donor.events.index') }}" class="btn btn-sm btn-outline-secondary">Show registration</a>
+                                    </div>
                                 @else
                                     <a href="{{ route('donor.events.join', $event) }}" class="btn btn-sm btn-outline-danger">Register for this Event</a>
                                 @endif

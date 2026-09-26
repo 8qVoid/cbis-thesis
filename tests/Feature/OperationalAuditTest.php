@@ -118,6 +118,51 @@ class OperationalAuditTest extends TestCase
             ->assertOk()->assertViewHas('inventory', fn ($items) => $items->count() === 1 && $items->first()->id === $matching->id);
     }
 
+    public function test_registered_donor_is_sent_to_existing_event_registration(): void
+    {
+        $user = User::factory()->create(['facility_id' => null, 'is_active' => true]);
+        $user->assignRole('Donor');
+        $donor = Donor::create([
+            'user_id' => $user->id,
+            'first_name' => 'Repeat',
+            'last_name' => 'Registrant',
+            'birth_date' => '2000-01-01',
+            'sex' => 'male',
+            'blood_type' => 'A+',
+        ]);
+        $event = DonationSchedule::create([
+            'facility_id' => $this->main->id,
+            'title' => 'Repeat Registration Drive',
+            'event_type' => 'blood_donation',
+            'event_date' => today()->addDays(7),
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'start_at' => today()->addDays(7)->setTime(8, 0),
+            'end_at' => today()->addDays(7)->setTime(12, 0),
+            'venue' => 'Audit Hall',
+            'is_public' => true,
+            'approval_status' => 'approved',
+            'status' => 'planned',
+        ]);
+        EventRegistration::create([
+            'donation_schedule_id' => $event->id,
+            'donor_id' => $donor->id,
+            'facility_id' => $this->main->id,
+            'status' => 'registered',
+            'registered_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('donor.events.join', $event))
+            ->assertRedirect(route('donor.events.index'))
+            ->assertSessionHas('success', 'You are already registered for this event. Your registration is shown below.');
+
+        $this->get(route('public.map'))
+            ->assertOk()
+            ->assertSee('Already Registered')
+            ->assertSee('Show registration');
+    }
+
     public function test_inactive_accounts_cannot_keep_using_an_existing_session(): void
     {
         $patient = User::factory()->create(['facility_id' => null, 'is_active' => true]);
