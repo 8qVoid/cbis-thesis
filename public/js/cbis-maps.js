@@ -14,10 +14,11 @@
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 20,
-            maxNativeZoom: 17,
+            maxZoom: 18,
+            maxNativeZoom: 18,
             attribution: 'Tiles &copy; Esri',
         });
+        const streetMaxZoom = map.getMaxZoom();
         const Layers = L.Control.extend({
             options: { position: 'topright' },
             onAdd() {
@@ -33,6 +34,7 @@
                     button.textContent = label;
                     button.setAttribute('aria-pressed', String(layer === street));
                     button.addEventListener('click', () => {
+                        map.setMaxZoom(layer === satellite ? 18 : streetMaxZoom);
                         options.forEach(([, other]) => { if (other !== layer) map.removeLayer(other); });
                         layer.addTo(map);
                         buttons.forEach((item, index) => item.setAttribute('aria-pressed', String(options[index][1] === layer)));

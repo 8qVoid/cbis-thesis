@@ -7,7 +7,7 @@ function setup(fetch) {
     const layers = new Set();
     const states = [];
     const fits = [];
-    const map = { removeLayer: layer => layers.delete(layer), fitBounds: bounds => fits.push(bounds), setView() {} };
+    const map = { maxZoom: 19, removeLayer: layer => layers.delete(layer), fitBounds: bounds => fits.push(bounds), setView() {}, getMaxZoom() { return this.maxZoom; }, setMaxZoom(zoom) { this.maxZoom = zoom; } };
     const element = () => ({
         children: [], attrs: {}, handlers: {},
         classList: { add() {}, toggle() {} },
@@ -85,7 +85,10 @@ test('Street/Satellite buttons expose selection and replace only the base layer'
     satellite.handlers.click();
     assert.equal(satellite.attrs['aria-pressed'], 'true');
     assert.equal(street.attrs['aria-pressed'], 'false');
+    assert.equal(map.maxZoom, 18);
     assert.equal(layers.size, 2); assert.equal(layers.has(route), true);
+    street.handlers.click();
+    assert.equal(map.maxZoom, 19);
 });
 
 test('route controls are disabled without a route; status spinner stops on completion', async () => {

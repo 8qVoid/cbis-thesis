@@ -43,32 +43,45 @@ class BloodReservationController extends Controller
     {
         abort_unless(auth()->user()->hasRole('Patient'), 403);
         $facilities = Facility::whereIn('id', MainChapter::ids())->get();
+        $identityDocument = auth()->user()->latestIdentityDocument;
 
-        return view('blood-reservations.create', compact('facilities'));
+        return view('blood-reservations.create', compact('facilities', 'identityDocument'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         abort_unless(auth()->user()->hasRole('Patient'), 403);
+        $user = auth()->user();
         $data = $request->validate([
             'facility_id' => ['required', Rule::exists('facilities', 'id')->where('is_main_chapter', true)->where('is_active', true)->whereNull('deleted_at')], 'blood_type' => ['required', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
             'component' => ['required', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))], 'units_requested' => ['required', 'integer', 'min:1', 'max:20'],
             'needed_on' => ['required', 'date', 'after_or_equal:today'], 'clinical_purpose' => ['nullable', 'string', 'max:1000'],
             'blood_request' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'identification' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'identification' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'use_saved_identification' => ['nullable', 'boolean'],
         ]);
-        $reservation = DB::transaction(function () use ($request, $data): BloodReservation {
+        $savedIdentity = $user->latestIdentityDocument;
+        if (! $request->hasFile('identification') && (! $request->boolean('use_saved_identification') || ! $savedIdentity)) {
+            throw ValidationException::withMessages(['identification' => 'Upload an ID or use the saved ID on your profile.']);
+        }
+
+        $reservation = DB::transaction(function () use ($request, $data, $savedIdentity, $user): BloodReservation {
             $reservation = BloodReservation::create([
-                ...collect($data)->except(['blood_request', 'identification'])->all(),
+                ...collect($data)->except(['blood_request', 'identification', 'use_saved_identification'])->all(),
                 'reference' => 'BR-'.now()->format('Ymd').'-'.strtoupper(str()->random(6)), 'patient_user_id' => auth()->id(),
             ]);
-            foreach (['blood_request', 'identification'] as $type) {
-                if (! $request->hasFile($type)) {
-                    continue;
-                }
-                $file = $request->file($type);
-                $path = $file->store("reservations/{$reservation->id}", 'local');
-                $reservation->documents()->create(['type' => $type, 'path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(), 'size' => $file->getSize()]);
+
+            $file = $request->file('blood_request');
+            $path = $file->store("reservations/{$reservation->id}", 'local');
+            $reservation->documents()->create(['type' => 'blood_request', 'path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(), 'size' => $file->getSize()]);
+
+            if ($request->hasFile('identification')) {
+                $file = $request->file('identification');
+                $path = $file->store("identity-documents/{$user->id}", 'local');
+                $identity = $user->identityDocuments()->create(['path' => $path, 'original_name' => $file->getClientOriginalName(), 'mime_type' => $file->getMimeType(), 'size' => $file->getSize(), 'status' => 'pending']);
+                $reservation->documents()->create(['type' => 'identification', 'identity_document_id' => $identity->id, 'path' => $identity->path, 'original_name' => $identity->original_name, 'mime_type' => $identity->mime_type, 'size' => $identity->size]);
+            } else {
+                $reservation->documents()->create(['type' => 'identification', 'identity_document_id' => $savedIdentity->id, 'path' => $savedIdentity->path, 'original_name' => $savedIdentity->original_name, 'mime_type' => $savedIdentity->mime_type, 'size' => $savedIdentity->size]);
             }
 
             return $reservation;

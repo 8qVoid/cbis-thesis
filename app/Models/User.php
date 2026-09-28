@@ -64,6 +64,8 @@ class User extends Authenticatable
     public function donorProfile(): HasOne { return $this->hasOne(Donor::class); }
     public function patientProfile(): HasOne { return $this->hasOne(PatientProfile::class); }
     public function bloodReservations(): HasMany { return $this->hasMany(BloodReservation::class, 'patient_user_id'); }
+    public function identityDocuments(): HasMany { return $this->hasMany(IdentityDocument::class); }
+    public function latestIdentityDocument(): HasOne { return $this->hasOne(IdentityDocument::class)->latestOfMany(); }
 
     public function sendPasswordResetNotification($token): void
     {

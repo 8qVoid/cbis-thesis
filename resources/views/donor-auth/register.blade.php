@@ -6,7 +6,7 @@
         <div class="card shadow-sm">
             <div class="card-header bg-danger text-white">Create Your Account</div>
             <div class="card-body">
-                <form method="POST" action="{{ route('donor.register.store') }}" class="js-confirm-action" data-confirm-title="Check your information" data-confirm-message="Please make sure your name, birth date, blood type, email, mobile number, and address are correct before continuing." data-confirm-button="Continue Registration" data-confirm-variant="danger">
+                <form method="POST" action="{{ route('donor.register.store') }}" enctype="multipart/form-data" class="js-confirm-action" data-confirm-title="Check your information" data-confirm-message="Please make sure your name, birth date, blood type, email, mobile number, and address are correct before continuing." data-confirm-button="Continue Registration" data-confirm-variant="danger">
                     @csrf
                     @if($selectedEvent)
                         <input type="hidden" name="event_id" value="{{ $selectedEvent->id }}">
@@ -47,6 +47,12 @@
                         <div class="col-12">
                             <label class="form-label">Address</label>
                             <x-negros-occidental-address-fields :address="old('address')" />
+                        </div>
+                        <div class="col-12">
+                            <label for="identity_document" class="form-label">Valid ID (optional)</label>
+                            <input id="identity_document" type="file" name="identity_document" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="text-muted">You can skip this now and upload it later from your profile or when requesting blood.</small>
+                            @error('identity_document')<div class="text-danger">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-12">
                             <hr class="my-1">

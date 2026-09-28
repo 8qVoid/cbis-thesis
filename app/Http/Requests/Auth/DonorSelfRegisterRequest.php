@@ -40,6 +40,7 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'contact_number' => ['required', 'regex:/^\+639\d{9}$/', 'unique:users,phone'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
+            'identity_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
         ];

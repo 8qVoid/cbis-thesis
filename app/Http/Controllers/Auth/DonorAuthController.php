@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\AccountProfileController;
 use App\Http\Requests\Auth\DonorSelfRegisterRequest;
 use App\Models\DonationSchedule;
 use App\Models\Donor;
@@ -68,7 +69,7 @@ class DonorAuthController extends Controller
         }
         unset($data['event_id'], $data['services'], $data['password_confirmation']);
 
-        [$user, $donor] = DB::transaction(function () use ($data, $services): array {
+        [$user, $donor] = DB::transaction(function () use ($request, $data, $services): array {
             $user = User::create([
                 'name' => trim($data['first_name'].' '.($data['middle_name'] ?? '').' '.$data['last_name']),
                 'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
@@ -94,6 +95,7 @@ class DonorAuthController extends Controller
                 PatientProfile::create(['user_id' => $user->id]);
             }
             $user->syncRoles($roles);
+            AccountProfileController::storeIdentityDocument($user, $request);
 
             return [$user, $donor];
         });

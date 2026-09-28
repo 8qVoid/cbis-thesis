@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Donor;
+use App\Models\IdentityDocument;
 use App\Models\PatientProfile;
+use App\Models\User;
 use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -18,6 +21,7 @@ class AccountProfileController extends Controller
     {
         $user = auth()->user();
         abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
+        $user->load('latestIdentityDocument');
 
         return view('account.details', compact('user'));
     }
@@ -36,17 +40,37 @@ class AccountProfileController extends Controller
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
+            'identity_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
-        DB::transaction(function () use ($user, $data): void {
+        DB::transaction(function () use ($request, $user, $data): void {
+            unset($data['identity_document']);
             $user->update([...$data, 'name' => trim(implode(' ', array_filter([$data['first_name'], $data['middle_name'] ?? null, $data['last_name']])))]);
             $user->donorProfile()->update([
                 'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
                 'last_name' => $data['last_name'], 'address' => $data['address'],
                 'contact_number' => $data['phone'],
             ]);
+            self::storeIdentityDocument($user, $request);
         });
 
         return redirect()->route('account.details.edit')->with('success', 'Profile updated.');
+    }
+
+    public function identityDocument(Request $request)
+    {
+        $user = auth()->user();
+        abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
+        $document = $user->identityDocuments()->latest()->firstOrFail();
+
+        abort_unless(Storage::disk('local')->exists($document->path), 404);
+        abort_unless(in_array($document->mime_type, ['application/pdf', 'image/jpeg', 'image/png'], true), 415);
+
+        return Storage::disk('local')->response($document->path, $document->original_name, [
+            'Content-Type' => $document->mime_type,
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Frame-Options' => 'SAMEORIGIN',
+        ], $request->boolean('download') ? 'attachment' : 'inline');
     }
 
     public function edit(): View
@@ -102,5 +126,23 @@ class AccountProfileController extends Controller
         };
 
         return redirect()->route($destination)->with('success', 'Account services updated. Your existing history was preserved.');
+    }
+
+    public static function storeIdentityDocument(User $user, Request $request): ?IdentityDocument
+    {
+        if (! $request->hasFile('identity_document')) {
+            return null;
+        }
+
+        $file = $request->file('identity_document');
+        $path = $file->store("identity-documents/{$user->id}", 'local');
+
+        return $user->identityDocuments()->create([
+            'path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'status' => 'pending',
+        ]);
     }
 }

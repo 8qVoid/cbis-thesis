@@ -9,9 +9,22 @@
 <div class="col-md-6"><label class="form-label">Blood Component</label><select name="component" class="form-select" required>@foreach(\App\Models\BloodInventory::COMPONENTS as $value=>$label)<option value="{{ $value }}" @selected(old('component')===$value)>{{ $label }}</option>@endforeach</select></div>
 <div class="col-md-6"><label class="form-label">Date Needed</label><input type="date" name="needed_on" min="{{ now()->toDateString() }}" value="{{ old('needed_on') }}" class="form-control" required></div>
 <div class="col-12"><label class="form-label">Clinical Purpose (optional)</label><textarea name="clinical_purpose" class="form-control" rows="2">{{ old('clinical_purpose') }}</textarea></div>
-<div class="col-12"><h2 class="h5">Two required documents</h2><p class="text-muted mb-0">Select your ID and your doctor's blood request/prescription separately below. Both files must be attached before submitting.</p></div>
-@foreach(['identification'=>'1. Government or student ID', 'blood_request'=>"2. Doctor's blood request / prescription"] as $field=>$label)
-<div class="col-md-6"><label for="{{ $field }}" class="form-label">{{ $label }}</label><input id="{{ $field }}" type="file" name="{{ $field }}" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required aria-describedby="{{ $field }}_help"><small id="{{ $field }}_help" class="text-muted">Upload one clear photo or PDF; maximum 5 MB.</small>@error($field)<div class="text-danger">{{ $message }}</div>@enderror</div>
-@endforeach
+<div class="col-12"><h2 class="h5">Required documents</h2><p class="text-muted mb-0">Your doctor’s blood request is required every time. Your ID can be reused from your profile or replaced with a new upload.</p></div>
+<div class="col-md-6">
+    <label for="identification" class="form-label">1. Government or student ID</label>
+    @if($identityDocument)
+        <div class="form-check border rounded p-3 ps-5 mb-2 bg-light">
+            <input class="form-check-input" type="checkbox" name="use_saved_identification" id="use_saved_identification" value="1" checked>
+            <label class="form-check-label" for="use_saved_identification">Use saved ID: <span class="text-break">{{ $identityDocument->original_name }}</span></label>
+        </div>
+        <small class="text-muted d-block mb-2">Upload a new ID below only if you want to replace the saved copy for this request and future requests.</small>
+    @else
+        <small class="text-muted d-block mb-2">No saved ID yet. Upload one now; it will be saved to your profile for next time.</small>
+    @endif
+    <input id="identification" type="file" name="identification" class="form-control" accept=".pdf,.jpg,.jpeg,.png" @required(! $identityDocument) aria-describedby="identification_help">
+    <small id="identification_help" class="text-muted">Upload one clear photo or PDF; maximum 5 MB.</small>
+    @error('identification')<div class="text-danger">{{ $message }}</div>@enderror
+</div>
+<div class="col-md-6"><label for="blood_request" class="form-label">2. Doctor's blood request / prescription</label><input id="blood_request" type="file" name="blood_request" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required aria-describedby="blood_request_help"><small id="blood_request_help" class="text-muted">Upload one clear photo or PDF; maximum 5 MB.</small>@error('blood_request')<div class="text-danger">{{ $message }}</div>@enderror</div>
 <div class="col-12"><button class="btn btn-danger">Submit Reservation</button></div></div></div></form>
 @endsection

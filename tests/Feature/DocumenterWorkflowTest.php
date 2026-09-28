@@ -216,6 +216,40 @@ class DocumenterWorkflowTest extends TestCase
         $this->assertSame('approved', $reservation->fresh()->status);
     }
 
+    public function test_patient_can_reuse_saved_identity_document_for_blood_request(): void
+    {
+        Storage::fake('local');
+        Notification::fake();
+        $facility = $this->facility();
+        $patient = User::factory()->create();
+        $patient->assignRole('Patient');
+        $idFile = UploadedFile::fake()->image('school-id.jpg');
+        $idPath = $idFile->store("identity-documents/{$patient->id}", 'local');
+        $savedId = $patient->identityDocuments()->create([
+            'path' => $idPath,
+            'original_name' => 'school-id.jpg',
+            'mime_type' => 'image/jpeg',
+            'size' => $idFile->getSize(),
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($patient)->post(route('reservations.store'), [
+            'facility_id' => $facility->id,
+            'blood_type' => 'O+',
+            'component' => 'whole_blood',
+            'units_requested' => 1,
+            'needed_on' => now()->addDay()->toDateString(),
+            'use_saved_identification' => '1',
+            'blood_request' => UploadedFile::fake()->image('doctors-request.jpg'),
+        ])->assertRedirect(route('reservations.index'));
+
+        $reservation = BloodReservation::with('documents')->firstOrFail();
+        $document = $reservation->documents->firstWhere('type', 'identification');
+        $this->assertSame($savedId->id, $document->identity_document_id);
+        $this->assertSame($savedId->path, $document->path);
+        $this->assertDatabaseCount('identity_documents', 1);
+    }
+
     public function test_reservation_requires_both_separate_documents_before_creating_a_request(): void
     {
         Storage::fake('local');

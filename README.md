@@ -9,7 +9,7 @@ Blood inventory and patient reservation processing belong exclusively to the Bac
 - Blood inventory managed only at the Bacolod main chapter
 - Four blood components: whole blood, packed red blood cells, platelet concentrate, and fresh frozen plasma
 - Donation and bloodletting records
-- Patient blood reservations with two separate required uploads: ID and doctor's blood request/prescription
+- Patient blood reservations with a required doctor's blood request/prescription and an ID that can be uploaded or reused from the account
 - Event scheduling with QAO approval before map publication
 - Low-stock, reservation, and event-review notifications
 - Facility-specific summaries and QAO report exports
@@ -94,7 +94,8 @@ Can:
 
 - Register and sign in using a public account
 - Submit a blood reservation to the Bacolod main chapter
-- Upload an ID and a doctor's blood request/prescription separately; both are required
+- Save an ID during registration, later from the profile, or with a blood reservation
+- Reuse the saved ID for later reservations; upload a doctor's blood request/prescription for each reservation
 - View reservation status and receive status notifications
 - Maintain their patient profile
 
@@ -106,6 +107,8 @@ Cannot:
 ## Donor and Patient Accounts
 
 A person uses one account and one personal profile. During registration, they may select Donor, Patient, or both services. Services can be enabled later without creating a duplicate person or losing existing history.
+
+Uploading an ID at registration is optional. A public account holder can add or replace the saved ID from **My Profile**. A patient can also upload an ID with a blood reservation; that copy becomes the saved ID for future requests. Each reservation keeps a reference to the exact ID copy used for that request, so replacing the saved ID does not change earlier submissions. Blood Bank Staff still review the submitted documents when processing a reservation.
 
 ## Reservation Workflow
 
@@ -191,6 +194,19 @@ php artisan schedule:work
 ```
 
 Open [http://localhost:8000](http://localhost:8000). Keep MySQL running. After restarting your PC, restart MySQL and the three Artisan commands; you do not need to reinstall or reseed. Map tiles require internet access.
+
+For an existing local clone receiving the saved-ID feature, pull the latest code and apply its new database migration while MySQL is running:
+
+```powershell
+git pull origin main
+composer install
+php artisan migrate
+php artisan optimize:clear
+npm ci
+npm run build
+```
+
+Satellite view loads Esri imagery through zoom level 18 where available. It stops there because the tile service may have no imagery at a closer zoom for a location; Street view retains its own zoom range.
 
 Do not use `migrate:fresh` on an existing database: it deletes all tables. For an existing checkout, back up the database, run `git pull`, `composer install`, `php artisan migrate`, `php artisan db:seed --class=RolePermissionSeeder`, `php artisan optimize:clear`, `npm ci`, and `npm run build`; then restart workers. The role seeder updates permissions and converts legacy role names, so review customized accounts first. Do not regenerate an existing application key.
 

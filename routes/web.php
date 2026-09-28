@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', AccountDashboardController::class)->name('account.dashboard');
     Route::get('/account/profile', [AccountProfileController::class, 'details'])->name('account.details.edit');
     Route::put('/account/profile', [AccountProfileController::class, 'saveDetails'])->name('account.details.update');
+    Route::get('/account/profile/identity-document', [AccountProfileController::class, 'identityDocument'])->name('account.identity-document.show');
     Route::get('/account/services', [AccountProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('/account/services', [AccountProfileController::class, 'update'])->name('account.profile.update');
     Route::get('/reservations', [BloodReservationController::class, 'index'])->name('reservations.index');
