@@ -52,8 +52,11 @@ class BloodInventoryController extends Controller
                 'type' => 'in', 'date' => $record->donated_at, 'blood_type' => $record->blood_type,
                 'component' => $record->inventory?->component_label ?? 'Donation stock',
                 'units' => max(1, (int) floor($record->volume_ml / 450)),
-                'source' => 'Donation '.$record->donation_no, 'person' => $record->donor?->full_name ?? 'Recorded donor',
-                'url' => route('donation-records.show', $record),
+                'source' => 'Donation '.$record->donation_no,
+                'person' => auth()->user()->can('manage donation records') ? ($record->donor?->full_name ?? 'Recorded donor') : 'Verified donation',
+                'url' => auth()->user()->can('manage donation records')
+                    ? route('donation-records.show', $record)
+                    : route('blood-inventory.show', $record->inventory),
             ]);
         $recentStockOuts = FacilityScope::apply(BloodRelease::query()->with(['inventory', 'reservation']), auth()->user())
             ->latest('released_at')->limit(20)->get()->map(fn ($release) => [

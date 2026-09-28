@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStaffUserRequest;
-use App\Http\Requests\UpdateStaffUserRequest;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -101,25 +100,6 @@ class StaffUserController extends Controller
         $user->syncRoles([$data['role']]);
 
         return redirect()->route('staff-users.index')->with('success', 'Staff account created by admin.');
-    }
-
-    public function edit(Request $request, User $staffUser): View
-    {
-        $this->authorizeStaffAccess($request->user(), $staffUser);
-
-        return view('staff-users.edit', compact('staffUser'));
-    }
-
-    public function update(UpdateStaffUserRequest $request, User $staffUser): RedirectResponse
-    {
-        $data = $request->validated();
-
-        $staffUser->update([
-            'name' => $data['name'],
-            'phone' => $data['phone'] ?? null,
-        ]);
-
-        return redirect()->route('staff-users.index')->with('success', 'Account contact details updated.');
     }
 
     public function updateStatus(Request $request, User $staffUser): RedirectResponse

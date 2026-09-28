@@ -16,6 +16,7 @@ class FilterReportsRequest extends BaseFormRequest
             'records' => ['required_if:export_selection,1', 'array', 'min:1'],
             'records.*' => ['required', 'distinct', 'in:inventory,donations,releases,reservations'],
             'detail' => ['nullable', 'in:details,summary,both'],
+            'requested_by' => ['nullable', 'string', 'max:120'],
             'period' => ['nullable', 'in:month,day,range'],
             'month' => ['nullable', 'date_format:Y-m'],
             'day' => ['nullable', 'date'],

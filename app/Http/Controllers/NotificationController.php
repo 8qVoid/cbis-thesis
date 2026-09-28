@@ -124,7 +124,7 @@ class NotificationController extends Controller
             return route('blood-inventory.index', [
                 'component' => array_search($data['component'] ?? '', \App\Models\BloodInventory::COMPONENTS, true) ?: null,
                 'status' => 'low_stock',
-            ]);
+            ]).'#stock-batches';
         }
 
         if ($notification->type === ActivityReviewStatusChanged::class) {
@@ -139,7 +139,7 @@ class NotificationController extends Controller
             return route('public.map', array_filter([
                 'event_type' => $data['event_type'] ?? null,
                 'event_date' => $data['event_date'] ?? null,
-            ]));
+            ])).(! empty($data['event_id']) ? '#event-'.(int) $data['event_id'] : '');
         }
 
         if ($notification->type === DonorScreeningUpdated::class) {

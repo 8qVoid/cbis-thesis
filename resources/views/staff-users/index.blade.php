@@ -53,12 +53,10 @@
                 </span>
             </td>
             <td class="cbis-account-actions">
-                @if($canEditStaff)
+                @if($canEditStaff && ! $user->is($currentUser))
                     <div class="dropdown">
                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle js-account-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $user->name }}">Actions</button>
                         <ul class="dropdown-menu dropdown-menu-end cbis-account-menu">
-                            <li><a href="{{ route('staff-users.edit', $user) }}" class="dropdown-item">Edit account</a></li>
-                    @if(! $user->is($currentUser))
                         <li><hr class="dropdown-divider"></li>
                         <li>
                         <form
@@ -78,7 +76,6 @@
                             </button>
                         </form>
                         </li>
-                    @endif
                         </ul>
                     </div>
                 @else

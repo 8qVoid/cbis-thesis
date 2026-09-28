@@ -117,10 +117,14 @@ class DashboardPresentationTest extends TestCase
         ]);
         $this->actingAs($user)->put(route('account.details.update'), [
             'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
+            'email' => 'updated@example.test', 'phone' => '917987654',
             'services' => ['patient'], 'is_eligible' => true,
         ])->assertRedirect(route('account.details.edit'));
         $this->assertSame('Updated User', $user->fresh()->name);
+        $this->assertSame('updated@example.test', $user->fresh()->email);
+        $this->assertSame('+639917987654', $user->fresh()->phone);
         $this->assertSame('Updated', $donor->fresh()->first_name);
+        $this->assertSame('+639917987654', $donor->fresh()->contact_number);
         $this->assertFalse($donor->fresh()->is_eligible);
         $this->assertTrue($user->fresh()->hasRole('Donor'));
         $this->assertFalse($user->fresh()->hasRole('Patient'));

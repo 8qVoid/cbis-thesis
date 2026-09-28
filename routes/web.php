@@ -107,12 +107,6 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::post('/staff-users', [StaffUserController::class, 'store'])
         ->middleware(['role_or_permission:Super Administrator|manage users', 'facility.operator'])
         ->name('staff-users.store');
-    Route::get('/staff-users/{staffUser}/edit', [StaffUserController::class, 'edit'])
-        ->middleware('role_or_permission:Super Administrator|manage users')
-        ->name('staff-users.edit');
-    Route::put('/staff-users/{staffUser}', [StaffUserController::class, 'update'])
-        ->middleware('role_or_permission:Super Administrator|manage users')
-        ->name('staff-users.update');
     Route::patch('/staff-users/{staffUser}/status', [StaffUserController::class, 'updateStatus'])
         ->middleware(['role_or_permission:manage users', 'facility.operator'])
         ->name('staff-users.status');

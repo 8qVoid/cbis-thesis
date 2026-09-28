@@ -14,6 +14,22 @@ class NotificationFlowAuditTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_opening_an_event_notification_marks_it_read_and_targets_its_map_pin(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $donor = User::factory()->create(['facility_id' => null, 'is_active' => true]);
+        $donor->assignRole('Donor');
+        $notification = $donor->notifications()->create([
+            'id' => (string) Str::uuid(), 'type' => EventPostedNotification::class,
+            'data' => ['title' => 'New donation activity', 'event_id' => 42,
+                'event_type' => 'blood_donation', 'event_date' => '2026-09-30'],
+        ]);
+
+        $this->actingAs($donor)->get(route('notifications.open', $notification->id))
+            ->assertRedirect(route('public.map', ['event_type' => 'blood_donation', 'event_date' => '2026-09-30']).'#event-42');
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+
     public function test_public_accounts_can_filter_and_read_only_their_own_notifications(): void
     {
         $this->seed(RolePermissionSeeder::class);

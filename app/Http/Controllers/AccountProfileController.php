@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Donor;
 use App\Models\PatientProfile;
 use App\Rules\NegrosOccidentalAddressRule;
+use App\Support\PhilippinePhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,15 +26,24 @@ class AccountProfileController extends Controller
     {
         $user = auth()->user();
         abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
+        if ($request->filled('phone')) {
+            $request->merge(['phone' => PhilippinePhone::normalizeMobileInput((string) $request->input('phone')) ?? trim((string) $request->input('phone'))]);
+        }
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:80'],
             'middle_name' => ['nullable', 'string', 'max:80'],
             'last_name' => ['required', 'string', 'max:80'],
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
         ]);
         DB::transaction(function () use ($user, $data): void {
             $user->update([...$data, 'name' => trim(implode(' ', array_filter([$data['first_name'], $data['middle_name'] ?? null, $data['last_name']])))]);
-            $user->donorProfile()->update($data);
+            $user->donorProfile()->update([
+                'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
+                'last_name' => $data['last_name'], 'address' => $data['address'],
+                'contact_number' => $data['phone'],
+            ]);
         });
 
         return redirect()->route('account.details.edit')->with('success', 'Profile updated.');

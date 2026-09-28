@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Centralized Blood Inventory System</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/philippine-red-cross-transparent.png') }}?v={{ filemtime(public_path('images/philippine-red-cross-transparent.png')) }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -71,12 +72,12 @@
         }
 
         $unreadCount = $unreadQuery->count();
-        $recentNotifications = $recentQuery->latest()->limit(5)->get();
+        $recentNotifications = $recentQuery->latest()->limit(20)->get();
     }
 @endphp
 <nav class="navbar navbar-expand-lg navbar-light cbis-navbar" aria-label="Main navigation">
     <div class="container">
-        <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}"><x-ui.icon name="drop" /> CBIS</a>
+        <a class="navbar-brand" href="{{ $webAuthenticated ? ($webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard')) : ($donorAuthenticated ? route('donor.portal.profile') : route('public.index')) }}"><img class="cbis-brand-logo" src="{{ asset('images/philippine-red-cross-transparent.png') }}" alt="Philippine Red Cross" width="34" height="34"> CBIS</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -133,39 +134,31 @@
                                         <a href="{{ route('notifications.index', ['type' => 'reservation']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reservations</a>
                                     </div>
                                 @endif
-                                <div class="list-group list-group-flush">
+                                @if($recentNotifications->count() > 5)
+                                    <div class="cbis-notification-scroll-hint">Scroll to see more updates</div>
+                                @endif
+                                <div class="list-group list-group-flush cbis-notification-list">
                                     @forelse($recentNotifications as $notification)
                                         @php
                                             $data = $notification->data ?? [];
                                         @endphp
-                                        <div class="list-group-item small">
-                                            <div class="fw-semibold">{{ $data['title'] ?? 'Notification' }}</div>
+                                        <a href="{{ route('notifications.open', $notification->id) }}" class="list-group-item list-group-item-action cbis-notification-item {{ $notification->read_at ? '' : 'is-unread' }}">
+                                            <div class="cbis-notification-title"><strong>{{ $data['title'] ?? 'Notification' }}</strong>@if($notification->read_at === null)<span class="cbis-notification-unread" aria-label="Unread"></span>@endif</div>
                                             @if($notification->type === $reservationSubmittedType)
-                                                <div>Reservation: {{ $data['reference'] ?? 'N/A' }}</div>
-                                                <div>{{ $data['blood_type'] ?? 'N/A' }} · {{ \App\Models\BloodInventory::COMPONENTS[$data['component'] ?? ''] ?? ($data['component'] ?? 'N/A') }}</div>
+                                                <div class="cbis-notification-summary">{{ $data['reference'] ?? 'Blood request' }} · {{ $data['blood_type'] ?? 'N/A' }}</div>
                                             @elseif($notification->type === $activityReviewType)
-                                                <div>{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
+                                                <div class="cbis-notification-summary">{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
                                             @elseif($notification->type === $reservationStatusType)
-                                                <div>Reservation: {{ $data['reference'] ?? 'N/A' }}</div>
-                                                <div>Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                                <div class="cbis-notification-summary">{{ $data['reference'] ?? 'Blood request' }} · {{ str($data['status'] ?? 'updated')->headline() }}</div>
                                             @elseif($notification->type === \App\Notifications\DonorScreeningUpdated::class)
-                                                <div>Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
+                                                <div class="cbis-notification-summary">Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
                                             @elseif($notification->type === $eventPostedType)
-                                                <div>{{ $data['event_title'] ?? 'Donation activity' }}</div>
-                                                <div>{{ $data['event_date'] ?? 'Date to be announced' }} · {{ $data['facility_name'] ?? 'Facility to be announced' }}</div>
+                                                <div class="cbis-notification-summary">{{ $data['event_title'] ?? 'Donation activity' }} · {{ $data['event_date'] ?? 'Date TBA' }}</div>
                                             @else
-                                                <div>Facility: {{ $data['facility_name'] ?? 'N/A' }}</div>
-                                                <div>Blood Type: {{ $data['blood_type'] ?? 'N/A' }} | Units: {{ $data['units_available'] ?? 'N/A' }}</div>
+                                                <div class="cbis-notification-summary">{{ $data['blood_type'] ?? 'N/A' }} · {{ $data['units_available'] ?? 'N/A' }} units · {{ $data['facility_name'] ?? 'Facility' }}</div>
                                             @endif
-                                            <div class="text-muted mb-1">{{ $notification->created_at?->diffForHumans() }}</div>
-                                            @if($notification->read_at === null)
-                                                <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button class="btn btn-sm btn-outline-secondary">Mark as read</button>
-                                                </form>
-                                            @endif
-                                        </div>
+                                            <small>{{ $notification->created_at?->diffForHumans() }} · Open update</small>
+                                        </a>
                                     @empty
                                         <div class="list-group-item text-muted small">No alerts yet.</div>
                                     @endforelse
@@ -234,6 +227,19 @@
 @if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
     </div>
 @endif
+<footer class="cbis-site-footer">
+    <div class="cbis-site-footer-inner">
+        <div class="cbis-site-footer-about">
+            <img src="{{ asset('images/philippine-red-cross-transparent.png') }}" alt="Philippine Red Cross logo" width="54" height="54">
+            <div><strong>About CBIS</strong><p>Centralized Blood Inventory System for blood services, donation activities, and patient requests in Negros Occidental.</p></div>
+        </div>
+        <div class="cbis-site-footer-contact">
+            <strong>Philippine Red Cross Negros Occidental – Bacolod City Chapter</strong>
+            <span>Blood Services: <a href="tel:0344589798">(034) 458-9798</a> · <a href="tel:09683292625">0968 329 2625</a></span>
+            <span>Admin: <a href="tel:0344584930">(034) 458-4930</a> · Safety Services: <a href="tel:09685008340">0968 500 8340</a></span>
+        </div>
+    </div>
+</footer>
 <div class="modal fade" id="cbisConfirmModal" tabindex="-1" aria-labelledby="cbisConfirmTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content cbis-confirm-modal">

@@ -78,7 +78,7 @@
                             $data = $notification->data ?? [];
                         @endphp
                         <tr>
-                            <td>{{ $data['title'] ?? 'Notification' }}</td>
+                            <td><a href="{{ route('notifications.open', $notification->id) }}" class="fw-semibold text-decoration-none">{{ $data['title'] ?? 'Notification' }}</a></td>
                             <td>
                                 @if($notification->type === $reservationSubmittedType)
                                     <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>

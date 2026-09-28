@@ -98,10 +98,23 @@ class MainChapterDecisionsTest extends TestCase
         $this->assertSame([], ReportData::sections(['reservations'], 'details', '2000-01-01', '2000-01-02', $this->qao)[0]['rows']);
         foreach (['inventory', 'donations', 'releases', 'reservations'] as $type) {
             $this->actingAs($this->qao)->get(route('reports.excel', ['records' => [$type]]))->assertOk()->assertDownload();
-            $this->get(route('reports.pdf', ['records' => [$type]]))->assertOk()->assertDownload();
+            $this->get(route('reports.pdf', ['records' => [$type], 'requested_by' => 'Report Requester']))->assertOk()->assertDownload();
         }
+        $this->get(route('reports.pdf', ['records' => ['inventory']]))->assertSessionHasErrors('requested_by');
         $this->get(route('reports.excel', ['records' => array_keys(ReportData::TYPES)]))->assertOk()->assertDownload();
         $this->get(route('reports.excel', ['export_selection' => 1]))->assertSessionHasErrors('records');
         $this->get(route('reports.excel', ['records' => ['bad']]))->assertSessionHasErrors('records.0');
+    }
+
+    public function test_qao_cannot_change_account_name_or_phone_from_user_management(): void
+    {
+        $publicUser = User::factory()->create(['name' => 'Public User', 'phone' => '+639171234567']);
+        $publicUser->assignRole('Donor');
+
+        $this->actingAs($this->qao)->get(route('staff-users.index'))->assertOk()->assertDontSee('Edit account');
+        $this->get('/staff-users/'.$publicUser->id.'/edit')->assertNotFound();
+        $this->put('/staff-users/'.$publicUser->id, ['name' => 'Changed Name', 'phone' => '917987654'])->assertNotFound();
+        $this->assertSame('Public User', $publicUser->fresh()->name);
+        $this->assertSame('+639171234567', $publicUser->fresh()->phone);
     }
 }

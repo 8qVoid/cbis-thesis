@@ -118,6 +118,28 @@ class OperationalAuditTest extends TestCase
             ->assertOk()->assertViewHas('inventory', fn ($items) => $items->count() === 1 && $items->first()->id === $matching->id);
     }
 
+    public function test_stock_movement_links_follow_the_viewers_record_permissions(): void
+    {
+        $donor = Donor::create(['first_name' => 'Stock', 'last_name' => 'Donor', 'birth_date' => '2000-01-01', 'sex' => 'male', 'blood_type' => 'A+']);
+        $donation = \App\Models\DonationRecord::create([
+            'facility_id' => $this->main->id, 'donor_id' => $donor->id, 'recorded_by' => $this->bbs->id,
+            'donation_no' => 'LINK-TEST', 'donated_at' => now(), 'blood_type' => 'A+',
+            'volume_ml' => 450, 'expiration_date' => today()->addDays(5), 'status' => 'verified',
+        ]);
+        $stock = $this->stock('whole_blood');
+        $stock->update(['donation_record_id' => $donation->id]);
+
+        $this->actingAs($this->bbs)->get(route('blood-inventory.index'))->assertOk()
+            ->assertViewHas('stockMovements', fn ($items) => $items->contains(fn ($item) => $item['url'] === route('donation-records.show', $donation)));
+
+        $qao = User::factory()->create(['facility_id' => null]);
+        $qao->assignRole('Quality Assurance Officer');
+        $this->actingAs($qao)->get(route('blood-inventory.index'))->assertOk()
+            ->assertViewHas('stockMovements', fn ($items) => $items->contains(fn ($item) => $item['url'] === route('blood-inventory.show', $stock)));
+        $this->get(route('blood-inventory.show', $stock))->assertOk();
+        $this->get(route('donation-records.show', $donation))->assertForbidden();
+    }
+
     public function test_registered_donor_is_sent_to_existing_event_registration(): void
     {
         $user = User::factory()->create(['facility_id' => null, 'is_active' => true]);

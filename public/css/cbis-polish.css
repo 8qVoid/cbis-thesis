@@ -4,6 +4,7 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-navbar { background:#fff; box-shadow:none; border-bottom:1px solid var(--cbis-border); padding:14px 0; }
 .cbis-navbar>.container { max-width:1560px; gap:24px; padding-inline:28px; }
 .cbis-navbar .navbar-brand { color:var(--cbis-accent); font-size:1.5rem; font-weight:800; letter-spacing:-.06em; display:flex; align-items:center; gap:6px; }
+.cbis-navbar .cbis-brand-logo { width:34px; height:34px; object-fit:contain; flex:none; }
 .cbis-navbar .navbar-brand .cbis-icon { width:29px; height:34px; stroke-width:2.5; }
 .cbis-navbar .navbar-brand:hover { color:#991b35; }
 .cbis-navbar .nav-link { color:#687387; font-size:.85rem; font-weight:600; }
@@ -146,6 +147,16 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-primary-action-card h2 { font-size:1.05rem; }
 .cbis-number-card>strong { font-size:2.4rem; }
 .cbis-notification-menu { max-width:calc(100vw - 32px); }
+.cbis-notification-list { max-height: min(610px, 68vh); overflow-y: auto; overscroll-behavior: contain; }
+.cbis-notification-scroll-hint { padding: 5px 16px; color: #738096; background: #fafbfc; border-bottom: 1px solid #edf0f4; font-size: 11px; }
+.cbis-notification-item { padding: 10px 16px; border-color: #edf0f4; color: #21304a; font-size: 12px; }
+.cbis-notification-item:hover, .cbis-notification-item:focus { color: #21304a; background: #f9fafc; }
+.cbis-notification-item.is-unread { background: #fff8fa; }
+.cbis-notification-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cbis-notification-title strong { font-size: 12px; }
+.cbis-notification-unread { width: 7px; height: 7px; background: #c9113b; border-radius: 50%; flex: none; }
+.cbis-notification-summary { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-top: 3px; color: #536177; }
+.cbis-notification-item small { display: block; margin-top: 3px; color: #7c8799; font-size: 11px; }
 .cbis-section-toggle { width:100%; display:flex; align-items:center; gap:10px; border-radius:0; padding:14px 20px; text-align:left; background:#fff; border-bottom:1px solid var(--cbis-border); }
 .cbis-section-toggle>span { margin-left:auto; }
 .cbis-kpi { position:relative; border:1px solid var(--cbis-border); box-shadow:0 3px 12px #26364b04; }
@@ -365,3 +376,13 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 
 /* Apply inventory anchors instantly on filter reloads and browser refresh. */
 html.cbis-inventory-page { scroll-behavior:auto !important; }
+.cbis-site-footer { background: #fff; border-top: 1px solid #e2e7ee; color: #4c5a70; font-size: 12px; }
+.cbis-site-footer-inner { max-width: 1360px; margin: auto; padding: 22px 24px; display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.cbis-site-footer-about { display: flex; align-items: center; gap: 14px; max-width: 550px; }
+.cbis-site-footer-about img { width: 54px; height: 54px; object-fit: contain; flex: none; }
+.cbis-site-footer strong { display: block; color: #172b4d; font-size: 13px; margin-bottom: 4px; }
+.cbis-site-footer p { margin: 0; }
+.cbis-site-footer-contact span { display: block; line-height: 1.65; }
+.cbis-site-footer a { color: #b90d37; text-decoration: none; }
+.cbis-site-footer a:hover { text-decoration: underline; }
+@media (max-width: 760px) { .cbis-site-footer-inner { flex-direction: column; align-items: flex-start; } }

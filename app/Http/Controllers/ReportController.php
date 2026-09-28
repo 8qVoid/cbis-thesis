@@ -54,11 +54,17 @@ class ReportController extends Controller
         [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
 
         abort_unless(auth()->user()->can('export reports'), 403);
+        $requester = $request->validate([
+            'requested_by' => ['required', 'string', 'max:120', "regex:/^[\\pL\\s.'-]+$/u"],
+        ])['requested_by'];
         $detail = $filters['detail'] ?? 'both';
         $pdf = Pdf::loadView('reports.pdf.selected', [
             'sections' => ReportData::sections($filters['records'] ?? ['inventory'], $detail, $from, $to, auth()->user()),
             'detail' => $detail,
             'periodLabel' => $periodLabel,
+            'requestedBy' => trim($requester),
+            'printedBy' => auth()->user()->name,
+            'printedAt' => now()->format('M d, Y g:i A'),
         ]);
 
         $fileName = 'bacolod-reports-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.pdf';

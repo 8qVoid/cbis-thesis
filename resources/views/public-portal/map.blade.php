@@ -542,6 +542,15 @@ if (inBoundsMarkers.length === 0) {
     map.fitBounds(featureGroup.getBounds().pad(0.15));
 }
 
+const focusedEventId = window.location.hash.match(/^#event-(\d+)$/)?.[1];
+if (focusedEventId) {
+    const focusedEvent = markerItems.find(({ item }) => item.type === 'event' && String(item.event_id) === focusedEventId);
+    if (focusedEvent) {
+        selectLocation(focusedEvent.item, focusedEvent.marker);
+        map.setView(focusedEvent.marker.getLatLng(), Math.max(map.getZoom(), 14));
+    }
+}
+
 document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
     toggle.addEventListener('change', () => {
         const type = toggle.value;
