@@ -108,7 +108,7 @@
                         $roleLabel = $webUser->hasAllRoles(['Patient', 'Donor']) ? 'Patient/Donor' : ($webUser?->getRoleNames()->join(' & ') ?: 'Staff User');
                     @endphp
                     @if($showNotificationCenter)
-                        <div class="dropdown me-2">
+                        <div class="dropdown me-2" data-live-notifications>
                             <button class="btn btn-outline-light btn-sm position-relative cbis-bell-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
                                 <svg class="cbis-bell-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                     <path d="M18 8.2a6 6 0 0 0-12 0v3.1c0 .7-.24 1.38-.68 1.92L4 14.8V17h16v-2.2l-1.32-1.58A2.98 2.98 0 0 1 18 11.3V8.2Z" />
@@ -178,6 +178,7 @@
                         <div class="dropdown-menu dropdown-menu-end cbis-account-menu">
                             <div class="px-3 py-2 border-bottom mb-2"><strong class="d-block text-break">{{ $webUser->name }}</strong><small class="text-muted">{{ $roleLabel }}</small></div>
                             @if($webUser->hasAnyRole(['Donor','Patient']))<a class="dropdown-item" href="{{ route('account.details.edit') }}">My Profile</a>@endif
+                            @if($webUser->hasRole('Blood Bank Staff'))<a class="dropdown-item" href="{{ route('staff-profile.edit') }}">My Profile</a>@endif
                             <a class="dropdown-item" href="{{ route('password.change') }}">Change Password</a>
                             <div class="dropdown-divider"></div>
                             <form method="POST" action="{{ route('logout') }}" class="js-logout-form">@csrf<button class="dropdown-item text-danger" type="submit">Logout</button></form>
@@ -196,7 +197,7 @@
 @endif
 <main id="main-content" class="{{ $webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-staff-content' : 'container cbis-main' }} py-4">
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status">
+        <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status" data-dismiss-after="5000">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss message"></button>
         </div>
@@ -273,8 +274,9 @@ const cbisConfirmTitle = document.getElementById('cbisConfirmTitle');
 const cbisConfirmMessage = document.getElementById('cbisConfirmMessage');
 const cbisConfirmButton = document.getElementById('cbisConfirmButton');
 
-document.querySelectorAll('.js-confirm-action').forEach((form) => {
-    form.addEventListener('submit', (event) => {
+document.addEventListener('submit', (event) => {
+    const form = event.target.closest('.js-confirm-action');
+    if (form) {
         if (form.dataset.confirmed === 'true' || !cbisConfirmModal) {
             return;
         }
@@ -287,7 +289,7 @@ document.querySelectorAll('.js-confirm-action').forEach((form) => {
         cbisConfirmButton.textContent = form.dataset.confirmButton || 'Confirm';
         cbisConfirmButton.className = `btn btn-${form.dataset.confirmVariant || 'danger'}`;
         cbisConfirmModal.show();
-    });
+    }
 });
 
 cbisConfirmButton?.addEventListener('click', () => {
@@ -384,6 +386,9 @@ window.addEventListener('storage', (event) => {
     }
 });
 </script>
+@if($webAuthenticated || request()->routeIs('public.map', 'public.events'))
+<script src="{{ asset('js/cbis-live.js') }}?v={{ filemtime(public_path('js/cbis-live.js')) }}"></script>
+@endif
 @livewireScripts
 @stack('scripts')
 </body>

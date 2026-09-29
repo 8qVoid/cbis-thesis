@@ -7,7 +7,7 @@
         default => 'cbis-tone-warning',
     };
 @endphp
-<section class="card card-body my-3 cbis-screening-card" aria-label="Donation screening">
+<section class="card card-body my-3 cbis-screening-card" aria-label="Donation screening" data-live-region="screening-status">
     <div class="cbis-screening-card-header">
         <div>
             <small>Donation screening</small>

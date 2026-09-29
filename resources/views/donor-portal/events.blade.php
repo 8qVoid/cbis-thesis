@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<div class="card">
+<div class="card" data-live-region="registrations-list">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-striped mb-0">
@@ -62,7 +62,7 @@
     </div>
 </div>
 
-<div class="mt-3">
+<div class="mt-3" data-live-region="registrations-pages">
     {{ $registrations->links() }}
 </div>
 @endsection

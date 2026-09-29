@@ -29,7 +29,7 @@
     <a class="btn btn-sm btn-outline-secondary" href="#stock-movements">Stock in / out</a>
 </nav>
 
-<div class="cbis-inventory-summary-grid mb-3">
+<div class="cbis-inventory-summary-grid mb-3" data-live-region="inventory-summary">
     <section class="card cbis-inventory-summary-card">
         <small>Units in storage</small>
         <strong>{{ $totalAvailableUnits }}</strong>
@@ -47,7 +47,7 @@
     </section>
 </div>
 
-<section id="current-storage" class="card mb-4">
+<section id="current-storage" class="card mb-4" data-live-region="inventory-storage">
     <div class="card-header cbis-card-title">
         <span>Current Storage</span>
         <small class="text-muted">Grouped by blood type and component</small>
@@ -101,6 +101,7 @@
         @if(request('status'))<input type="hidden" name="status" value="{{ request('status') }}"><small class="d-block mt-2">Showing non-expired batches with 1–5 units.</small>@endif
         @if(request('expiring'))<input type="hidden" name="expiring" value="{{ request('expiring') }}"><small class="d-block mt-2">Showing stock expiring within 14 days.</small>@endif
     </form>
+    <div data-live-region="inventory-batches">
     <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
@@ -143,9 +144,10 @@
         </table>
     </div>
     @if($inventory->hasPages())<div class="card-footer bg-white">{{ $inventory->fragment('stock-batches')->links() }}</div>@endif
+    </div>
 </section>
 
-<section id="stock-movements" class="card mb-4">
+<section id="stock-movements" class="card mb-4" data-live-region="inventory-movements">
     <div class="card-header cbis-card-title">
         <span>Recent Stock In / Out</span>
         <small class="text-muted">Latest 20 donations, releases, and recorded manual adjustments</small>

@@ -9,11 +9,11 @@
     };
 @endphp
 <h4>Donor Details</h4>
-<div class="card card-body"><p><strong>Name:</strong> {{ $donor->full_name }}</p><p><strong>Blood Type:</strong> {{ $donor->blood_type }}</p><p><strong>Age:</strong> {{ $donor->birth_date?->age ?? 'Not recorded' }}</p><p><strong>Eligibility:</strong> <span class="cbis-inline-status {{ $screeningTone }}">{{ $donor->screening_label }}</span></p>@can('view detailed donors')<p><strong>Contact:</strong> {{ $donor->contact_number }}</p><p><strong>Email:</strong> {{ $donor->email ?: $donor->user?->email }}</p><p><strong>Address:</strong> {{ $donor->address }}</p>@else<p class="text-muted mb-0">Contact details and private records are restricted to Blood Bank Staff.</p>@endcan</div>
+<div class="card card-body" data-live-region="donor-details"><p><strong>Name:</strong> {{ $donor->full_name }}</p><p><strong>Blood Type:</strong> {{ $donor->blood_type }}</p><p><strong>Age:</strong> {{ $donor->birth_date?->age ?? 'Not recorded' }}</p><p><strong>Eligibility:</strong> <span class="cbis-inline-status {{ $screeningTone }}">{{ $donor->screening_label }}</span></p>@can('view detailed donors')<p><strong>Contact:</strong> {{ $donor->contact_number }}</p><p><strong>Email:</strong> {{ $donor->email ?: $donor->user?->email }}</p><p><strong>Address:</strong> {{ $donor->address }}</p>@else<p class="text-muted mb-0">Contact details and private records are restricted to Blood Bank Staff.</p>@endcan</div>
 @can('manage donors')
 @php($donorMeetsMinimumAge = \App\Support\DonationAgePolicy::isOldEnough($donor->birth_date))
 <section class="card card-body mt-3 cbis-screening-panel">
-    <div class="cbis-screening-panel-header">
+    <div class="cbis-screening-panel-header" data-live-region="donor-screening-header">
         <div>
             <small>Blood Bank Staff decision</small>
             <h2 class="h5">Record screening decision</h2>

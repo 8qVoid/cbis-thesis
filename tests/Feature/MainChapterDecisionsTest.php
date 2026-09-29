@@ -69,7 +69,9 @@ class MainChapterDecisionsTest extends TestCase
     {
         $mainStock = BloodInventory::create(['facility_id' => $this->main->id, 'blood_type' => 'O+', 'component' => 'whole_blood', 'units_available' => 20, 'expiration_date' => now()->addMonth(), 'status' => 'active']);
         $branchStock = BloodInventory::create(['facility_id' => $this->branch->id, 'blood_type' => 'AB-', 'component' => 'whole_blood', 'units_available' => 999, 'expiration_date' => now()->addMonth(), 'status' => 'active']);
-        $this->actingAs($this->qao)->get(route('blood-inventory.index'))->assertOk()->assertSee('O+')->assertDontSee('AB-');
+        $this->actingAs($this->qao)->get(route('blood-inventory.index'))
+            ->assertOk()->assertViewHas('inventory', fn ($inventory) =>
+                $inventory->contains('id', $mainStock->id) && ! $inventory->contains('id', $branchStock->id));
         $this->get(route('blood-inventory.show', $branchStock))->assertForbidden();
         $this->get(route('blood-inventory.show', $mainStock))->assertOk();
         $bbs = User::factory()->create(['facility_id' => $this->branch->id]);
@@ -97,11 +99,12 @@ class MainChapterDecisionsTest extends TestCase
         $this->assertSame([], ReportData::sections(['reservations'], 'summary', null, null, $this->qao)[0]['rows']);
         $this->assertSame([], ReportData::sections(['reservations'], 'details', '2000-01-01', '2000-01-02', $this->qao)[0]['rows']);
         foreach (['inventory', 'donations', 'releases', 'reservations'] as $type) {
-            $this->actingAs($this->qao)->get(route('reports.excel', ['records' => [$type]]))->assertOk()->assertDownload();
+            $this->actingAs($this->qao)->get(route('reports.excel', ['records' => [$type], 'requested_by' => 'Report Requester']))->assertOk()->assertDownload();
             $this->get(route('reports.pdf', ['records' => [$type], 'requested_by' => 'Report Requester']))->assertOk()->assertDownload();
         }
         $this->get(route('reports.pdf', ['records' => ['inventory']]))->assertSessionHasErrors('requested_by');
-        $this->get(route('reports.excel', ['records' => array_keys(ReportData::TYPES)]))->assertOk()->assertDownload();
+        $this->get(route('reports.excel', ['records' => ['inventory']]))->assertSessionHasErrors('requested_by');
+        $this->get(route('reports.excel', ['records' => array_keys(ReportData::TYPES), 'requested_by' => 'Report Requester']))->assertOk()->assertDownload();
         $this->get(route('reports.excel', ['export_selection' => 1]))->assertSessionHasErrors('records');
         $this->get(route('reports.excel', ['records' => ['bad']]))->assertSessionHasErrors('records.0');
     }

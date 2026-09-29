@@ -54,8 +54,8 @@
     </div>
 </form>
 
-<p class="small text-muted">{{ $schedules->total() }} matching {{ str('event')->plural($schedules->total()) }}</p>
-<div class="cbis-event-list">
+<p class="small text-muted" data-live-region="event-count">{{ $schedules->total() }} matching {{ str('event')->plural($schedules->total()) }}</p>
+<div class="cbis-event-list" data-live-region="event-list">
 @forelse($schedules as $schedule)
     <article class="card cbis-schedule-card mb-3">
         <div class="card-body cbis-event-overview">
@@ -168,5 +168,5 @@
 @endforelse
 </div>
 
-{{ $schedules->links() }}
+<div data-live-region="event-pages">{{ $schedules->links() }}</div>
 @endsection

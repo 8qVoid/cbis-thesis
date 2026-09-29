@@ -13,7 +13,7 @@
         <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
     @endif
 </div>
-<div class="card cbis-record-table"><div class="table-responsive">
+<div class="card cbis-record-table" data-live-region="donor-list"><div class="table-responsive">
 @if(request('eligibility') === 'awaiting')
 <p class="small text-muted">Showing donors awaiting a screening decision. <a href="{{ route('donors.index') }}">View all donors</a></p>
 @endif
@@ -98,13 +98,14 @@
     const confirmBtn = document.getElementById('confirmDeleteDonorBtn');
     let targetFormId = null;
 
-    document.querySelectorAll('.js-open-delete-modal').forEach((button) => {
-        button.addEventListener('click', () => {
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('.js-open-delete-modal');
+        if (button) {
             targetFormId = button.getAttribute('data-form-id');
             const donorName = button.getAttribute('data-donor-name') || 'Selected donor';
             nameField.textContent = donorName;
             modal.show();
-        });
+        }
     });
 
     confirmBtn.addEventListener('click', () => {

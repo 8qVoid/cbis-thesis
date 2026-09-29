@@ -33,7 +33,7 @@
         <select class="form-select js-negros-city" @required($required)>
             <option value="">Select city / municipality</option>
             @foreach($cities as $city)
-                <option value="{{ $city }}" @selected($selectedAddress['city'] === $city)>{{ $city }}</option>
+                <option value="{{ $city }}" @selected($selectedAddress['city'] === $city)>{{ \App\Support\NegrosOccidentalAddress::cityLabel($city) }}</option>
             @endforeach
         </select>
     </div>

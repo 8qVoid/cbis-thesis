@@ -6,6 +6,7 @@ $isQao = $user->isQao();
 $components = \App\Models\BloodInventory::COMPONENTS;
 $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone-success';
 @endphp
+<div data-live-region="staff-dashboard">
 <div class="cbis-dashboard-heading">
     <div><div class="cbis-eyebrow">{{ $isQao ? 'Central oversight' : 'Today’s operations' }}</div><h1 class="cbis-page-title">{{ $isQao ? 'QAO Overview' : "Today's Work Queue" }}</h1><p class="cbis-page-subtitle">Bacolod Main Chapter · {{ now()->format('F d, Y') }}</p></div>
     <div class="cbis-heading-actions">
@@ -92,5 +93,6 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
         @else<a href="{{ route('donation-records.create') }}" class="cbis-quick-action"><span><x-ui.icon name="drop" /></span><strong>Record Donation</strong><small>Add a completed collection</small></a><a href="{{ route('blood-inventory.create') }}" class="cbis-quick-action"><span><x-ui.icon name="grid" /></span><strong>Add Inventory</strong><small>Record blood stock by component</small></a><a href="{{ route('blood-releases.create') }}" class="cbis-quick-action"><span><x-ui.icon name="arrow" /></span><strong>Release Blood</strong><small>Fulfill an approved request</small></a>@endif
         </div></section>
     </div>
+</div>
 </div>
 @endsection

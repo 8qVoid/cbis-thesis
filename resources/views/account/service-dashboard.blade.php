@@ -12,12 +12,12 @@
         <h1>Donation Dashboard</h1>
         @include('account.screening-status')
         <a href="{{ route('public.map') }}" class="btn btn-danger cbis-reference-action" aria-label="Find Events on Map"><x-ui.icon name="calendar" /> Find Donation Event</a>
-        <div class="cbis-reference-metrics">
+        <div class="cbis-reference-metrics" data-live-region="account-donor-metrics">
             <section class="card"><span class="cbis-reference-icon"><x-ui.icon name="drop" /></span><div><small>Blood type</small><strong>{{ $donor?->blood_type ?? 'Not recorded' }}</strong></div></section>
             <section class="card"><span class="cbis-reference-icon"><x-ui.icon name="pin" /></span><div><small>Donations</small><strong>{{ $donationHistory->count() }}</strong></div></section>
         </div>
         <section class="card cbis-reference-map"><h2>Approved Donation Events</h2><x-ui.event-map :events="$upcomingEvents" /></section>
-        <section class="card cbis-reference-history"><div class="d-flex justify-content-between align-items-center"><h2>Donation History</h2><a href="{{ route('donor.events.index') }}" class="small">My Registrations</a></div>
+        <section class="card cbis-reference-history" data-live-region="account-donor-history"><div class="d-flex justify-content-between align-items-center"><h2>Donation History</h2><a href="{{ route('donor.events.index') }}" class="small">My Registrations</a></div>
             @forelse($donationHistory->take(5) as $record)
                 <details><summary><x-ui.icon name="calendar" /><span>{{ $record->donated_at?->format('M d, Y') }}</span><span>{{ $record->facility?->name ?? 'Bacolod Main Chapter' }}</span><span aria-hidden="true">›</span></summary><div class="small text-muted p-3">{{ $record->donation_no }} · {{ $record->blood_type }} · {{ str($record->status)->title() }}</div></details>
             @empty<div class="cbis-empty-state"><strong>No donations recorded yet</strong><span>Find an approved event to register. Blood Bank Staff record your donation after collection.</span><a href="{{ route('public.map') }}" class="btn btn-sm btn-outline-danger mt-2">Explore events</a></div>@endforelse
@@ -25,7 +25,7 @@
     @else
         <h1>Blood Requests</h1>
         <a href="{{ route('reservations.create') }}" class="btn btn-danger cbis-reference-action"><span aria-hidden="true">⊕</span> Request Blood</a>
-        <section class="card cbis-reference-request" aria-label="My Blood Requests">
+        <section class="card cbis-reference-request" aria-label="My Blood Requests" data-live-region="account-patient-request">
             <div class="cbis-reference-request-title"><span class="cbis-reference-icon"><x-ui.icon name="report" /></span><div><h2>{{ $latest?->reference ?? 'No requests yet' }}</h2>
                 @if($latest)<span class="cbis-inline-status {{ in_array($latest->status, ['rejected','cancelled']) ? 'cbis-tone-danger' : (in_array($latest->status, ['approved','fulfilled']) ? 'cbis-tone-success' : 'cbis-tone-warning') }}">{{ str($latest->status)->replace('_', ' ')->title() }}</span>@endif
                 <p>Bacolod Main Chapter</p></div></div>
@@ -37,7 +37,7 @@
             </div>
             @if($latest)<x-ui.request-status :status="$latest->status" /><a class="small mt-3" href="{{ route('reservations.show', $latest) }}">View request details and staff notes</a>@else<p class="text-muted mb-0">Start a blood request when ready. Prepare your ID and doctor's blood request; Blood Bank Staff will review both.</p>@endif
         </section>
-        <section class="card cbis-reference-timeline"><h2>Request Status</h2>
+        <section class="card cbis-reference-timeline" data-live-region="account-patient-timeline"><h2>Request Status</h2>
             @php($decided = $latest && in_array($latest->status, ['approved', 'rejected', 'fulfilled', 'cancelled']))
             <ol>
                 <li class="{{ $latest ? 'complete' : '' }}"><span class="cbis-reference-icon"><x-ui.icon name="report" /></span><strong>Submitted</strong><small>{{ $latest?->created_at?->format('M d, Y') ?? 'Not submitted' }}</small></li>

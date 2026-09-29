@@ -4,7 +4,7 @@
     <div><div class="cbis-eyebrow">Stock record #{{ $bloodInventory->id }}</div><h1 class="cbis-page-title mb-0">{{ $bloodInventory->blood_type }} · {{ $bloodInventory->component_label }}</h1></div>
     <div class="d-flex gap-2"><a href="{{ route('blood-inventory.index') }}#stock-batches" class="btn btn-outline-secondary">Back to inventory</a>@can('manage inventory')<a href="{{ route('blood-inventory.edit', $bloodInventory) }}" class="btn btn-danger">Edit stock</a>@endcan</div>
 </div>
-<div class="card card-body">
+<div class="card card-body" data-live-region="inventory-record">
     <dl class="row mb-0">
         <dt class="col-sm-3">Units in storage</dt><dd class="col-sm-9">{{ $bloodInventory->units_available }}</dd>
         <dt class="col-sm-3">Expiration date</dt><dd class="col-sm-9">{{ $bloodInventory->expiration_date?->format('M j, Y') }}</dd>

@@ -4,7 +4,7 @@
     $currentUser = auth('web')->user();
     $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
 @endphp
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-live-region="event-detail-actions">
     <h4 class="mb-0">Event Details</h4>
     @if($canManageSchedules && in_array($donationSchedule->status, ['planned', 'ongoing'], true))
         <form
@@ -22,7 +22,7 @@
         </form>
     @endif
 </div>
-<div class="card card-body">
+<div class="card card-body" data-live-region="event-details">
     @if($donationSchedule->photo_path)
         <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border mb-3" style="max-height: 280px; object-fit: cover;">
     @endif
@@ -41,7 +41,7 @@
     <p><strong>Coordinates:</strong> {{ $donationSchedule->latitude ?? '-' }}, {{ $donationSchedule->longitude ?? '-' }}</p>
 </div>
 
-<div class="card mt-3">
+<div class="card mt-3" data-live-region="event-registrations">
     <div class="card-header">Event Registrations</div>
     <div class="card-body p-0">
         <table class="table table-striped mb-0">

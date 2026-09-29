@@ -217,6 +217,7 @@
     }
 </style>
 
+<script type="application/json" id="cbis-live-map-data">@json($mapLocations)</script>
 <div class="cbis-map-workspace">
     <div class="cbis-map-canvas">
         <x-maps-leaflet
@@ -245,7 +246,7 @@
     </aside>
 </div>
 
-<div class="card">
+<div class="card" data-live-region="public-map-events">
     <div class="card-header">Upcoming Events</div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -317,7 +318,8 @@ const map = window.leafletMaps?.map ?? L.map('map', {
 }).setView(NEGROS_CENTER, 9);
 map.scrollWheelZoom.enable();
 CbisMaps.addLayers(map, { clearExisting: true });
-const data = @json($mapLocations);
+const mapDataElement = document.getElementById('cbis-live-map-data');
+let data = JSON.parse(mapDataElement.textContent);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
 const markerItems = [];
@@ -514,7 +516,7 @@ const focusNearestPin = () => {
     focusDirections(nearest.item);
 };
 
-data.forEach((item) => {
+const addMarkers = (locations) => locations.forEach((item) => {
     if (!NEGROS_BOUNDS.contains([item.lat, item.lng])) {
         return;
     }
@@ -522,7 +524,8 @@ data.forEach((item) => {
         icon: markerIcons[item.type] ?? markerIcons.event,
         title: item.title,
         alt: item.title,
-    }).addTo(map);
+    });
+    if (document.querySelector(`.js-map-toggle[value="${item.type}"]`)?.checked !== false) marker.addTo(map);
     inBoundsMarkers.push(marker);
     markersByType[item.type]?.push(marker);
     markerItems.push({ marker, item });
@@ -530,6 +533,44 @@ data.forEach((item) => {
     marker.on('click', () => {
         focusDirections(item);
     });
+});
+addMarkers(data);
+
+document.addEventListener('cbis:live-document', (event) => {
+    const nextDataElement = event.detail.document.getElementById('cbis-live-map-data');
+    if (!nextDataElement || nextDataElement.textContent === mapDataElement.textContent) return;
+
+    const nextData = JSON.parse(nextDataElement.textContent);
+    const hadMarkers = markerItems.length > 0;
+    const previousSelected = selectedItem;
+    const selectedKey = selectedItem?.type === 'event'
+        ? `event:${selectedItem.event_id}`
+        : selectedItem ? `facility:${selectedItem.title}:${selectedItem.lat}:${selectedItem.lng}` : null;
+
+    markerItems.forEach(({ marker }) => marker.removeFrom(map));
+    inBoundsMarkers.length = 0;
+    markersByType.event.length = 0;
+    markersByType.facility.length = 0;
+    markerItems.length = 0;
+    data = nextData;
+    mapDataElement.textContent = nextDataElement.textContent;
+    addMarkers(data);
+
+    const selected = markerItems.find(({ item }) =>
+        (item.type === 'event' ? `event:${item.event_id}` : `facility:${item.title}:${item.lat}:${item.lng}`) === selectedKey);
+    if (selected) {
+        if (previousSelected.lat !== selected.item.lat || previousSelected.lng !== selected.item.lng) routing.clear();
+        selectLocation(selected.item, selected.marker);
+    } else if (selectedKey) {
+        selectedMarker = null;
+        selectedItem = null;
+        selectedLocation.innerHTML = emptyLocation;
+        routing.clear();
+    }
+    if (!hadMarkers && inBoundsMarkers.length) map.closePopup();
+    if (hadMarkers && !inBoundsMarkers.length) {
+        L.popup().setLatLng(map.getCenter()).setContent('No map coordinates available for the current filters.').openOn(map);
+    }
 });
 
 if (inBoundsMarkers.length === 0) {

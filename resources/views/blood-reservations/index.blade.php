@@ -16,7 +16,7 @@
     @endif
 </div>
 
-<div class="cbis-reservation-list">
+<div class="cbis-reservation-list" data-live-region="reservation-list">
     @forelse($reservations as $reservation)
         <article class="card cbis-reservation-card">
             <div class="cbis-reservation-main">
@@ -69,5 +69,5 @@
     @endforelse
 </div>
 
-<div class="mt-3">{{ $reservations->links() }}</div>
+<div class="mt-3" data-live-region="reservation-pages">{{ $reservations->links() }}</div>
 @endsection

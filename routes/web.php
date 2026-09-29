@@ -22,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StaffUserController;
+use App\Http\Controllers\StaffProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/portal');
@@ -49,6 +50,10 @@ Route::middleware('guest:web,donor')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/account', AccountDashboardController::class)->name('account.dashboard');
+    Route::middleware('role:Blood Bank Staff')->group(function () {
+        Route::get('/staff/profile', [StaffProfileController::class, 'edit'])->name('staff-profile.edit');
+        Route::put('/staff/profile', [StaffProfileController::class, 'update'])->name('staff-profile.update');
+    });
     Route::get('/account/profile', [AccountProfileController::class, 'details'])->name('account.details.edit');
     Route::put('/account/profile', [AccountProfileController::class, 'saveDetails'])->name('account.details.update');
     Route::get('/account/profile/identity-document', [AccountProfileController::class, 'identityDocument'])->name('account.identity-document.show');

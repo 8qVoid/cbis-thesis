@@ -18,7 +18,7 @@ trait LogsAudit
             'action' => $action,
             'auditable_type' => $model ? $model::class : null,
             'auditable_id' => $model?->getKey(),
-            'details' => $details,
+            'details' => [...$details, 'actor_name' => $user?->name],
             'ip_address' => $request?->ip(),
         ]);
     }

@@ -118,6 +118,10 @@ Uploading an ID at registration is optional. A public account holder can add or 
 4. The request moves through `Submitted`, `Under Review`, `Approved` or `Rejected`, then `Fulfilled` when released.
 5. Approval is blocked when the selected facility lacks sufficient unexpired stock for the requested blood type and component.
 
+## Automatic Page Updates
+
+While a page is visible, the browser checks for changes about every 15 seconds. Notification counts and recent alerts, role dashboards, inventory, blood reservations, donor screening, event schedules and registrations, and the public events map update without a manual browser refresh. Open forms and filters are left in place. This is periodic polling, so another user's change may take up to 15 seconds to appear; it does not require a separate WebSocket server. Keep the queue worker running for queued notifications.
+
 ## Event Publication Workflow
 
 QAO-created activities are automatically approved. Public map visibility still requires a planned/ongoing event dated today or later. Facilitator-created or Facilitator-edited activities follow this workflow:

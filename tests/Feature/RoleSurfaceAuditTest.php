@@ -117,7 +117,9 @@ class RoleSurfaceAuditTest extends TestCase
     private function assertPagesOk(User $user, array $routes): void
     {
         foreach ($routes as $routeName) {
-            $this->actingAs($user)->get(route($routeName))->assertOk("{$user->getRoleNames()->join(', ')} cannot open {$routeName}");
+            $parameters = in_array($routeName, ['reports.pdf', 'reports.excel'], true)
+                ? ['requested_by' => 'Report Requester'] : [];
+            $this->actingAs($user)->get(route($routeName, $parameters))->assertOk("{$user->getRoleNames()->join(', ')} cannot open {$routeName}");
         }
     }
 

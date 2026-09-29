@@ -93,23 +93,12 @@
     <select id="report-detail" name="detail" class="form-select mb-3">
         @foreach(['details'=>'Detailed records','summary'=>'Totals only','both'=>'Detailed records and totals'] as $value=>$label)<option value="{{ $value }}" @selected($selectedDetail===$value)>{{ $label }}</option>@endforeach
     </select>
-    <label for="requested-by" class="form-label">Requested by <span class="text-muted">(required for PDF)</span></label>
-    <input id="requested-by" name="requested_by" class="form-control mb-2 js-report-requester" value="{{ old('requested_by') }}" maxlength="120" placeholder="Full name of the person requesting the printed report">
-    <small class="text-muted mb-3">The name appears above a blank signature line in the PDF. The requester signs the printed copy.</small>
+    <label for="requested-by" class="form-label">Requested by <span class="text-muted">(required for both downloads)</span></label>
+    <input id="requested-by" name="requested_by" class="form-control mb-2" value="{{ old('requested_by') }}" maxlength="120" required placeholder="Full name of the person requesting the printed report">
+    <small class="text-muted mb-3">The name and a blank signature line appear in both the Excel and PDF reports. The requester signs the printed copy.</small>
     <div class="d-flex gap-2"><button type="submit" class="btn btn-outline-success">Download Excel</button><button type="submit" formaction="{{ route('reports.pdf') }}" class="btn btn-outline-danger">Download PDF</button></div>
 </form>
 @endcan
-@push('scripts')
-<script>
-document.querySelectorAll('button[formaction="{{ route('reports.pdf') }}"]').forEach(button => {
-    button.addEventListener('click', () => button.form.querySelector('.js-report-requester').required = true);
-});
-document.querySelectorAll('form[action="{{ route('reports.excel') }}"] button:not([formaction])').forEach(button => {
-    button.addEventListener('click', () => button.form.querySelector('.js-report-requester').required = false);
-});
-</script>
-@endpush
-
 <div class="row g-3 mb-3">
     <div class="col-md-3">
         <x-ui.kpi-card label="Blood Demand" :value="$demandUnits" suffix="Units released" />

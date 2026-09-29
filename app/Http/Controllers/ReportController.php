@@ -77,13 +77,23 @@ class ReportController extends Controller
         $this->authorizeFacilityReports();
 
         $filters = $request->validated();
-        [$from, $to, $selectedMonth, $selectedDay, $periodMode] = $this->resolvePeriod($filters);
+        [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
 
         abort_unless(auth()->user()->can('export reports'), 403);
+        $requester = $request->validate([
+            'requested_by' => ['required', 'string', 'max:120', "regex:/^[\\pL\\s.'-]+$/u"],
+        ])['requested_by'];
         $fileName = 'bacolod-reports-'.$this->filePeriodSlug($periodMode, $selectedMonth, $from, $to).'.xlsx';
 
         return Excel::download(
-            new SelectedReportsExport(ReportData::sections($filters['records'] ?? ['inventory'], $filters['detail'] ?? 'both', $from, $to, auth()->user())),
+            new SelectedReportsExport(
+                ReportData::sections($filters['records'] ?? ['inventory'], $filters['detail'] ?? 'both', $from, $to, auth()->user()),
+                $filters['detail'] ?? 'both',
+                $periodLabel,
+                trim($requester),
+                auth()->user()->name,
+                now()->format('M d, Y g:i A'),
+            ),
             $fileName
         );
     }

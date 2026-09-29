@@ -8,7 +8,15 @@ class NegrosOccidentalAddress
 
     public static function cities(): array
     {
-        return array_keys(self::barangaysByCity());
+        $cities = array_keys(self::barangaysByCity());
+        usort($cities, fn (string $first, string $second): int => strcasecmp(self::cityLabel($first), self::cityLabel($second)));
+
+        return $cities;
+    }
+
+    public static function cityLabel(string $city): string
+    {
+        return str_starts_with($city, 'City of ') ? substr($city, 8).' City' : $city;
     }
 
     public static function barangaysFor(?string $city): array
