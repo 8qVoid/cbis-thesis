@@ -7,9 +7,11 @@ use App\Http\Requests\FilterReportsRequest;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
 use App\Models\DonationRecord;
+use App\Models\ReportRequest;
 use App\Support\FacilityScope;
 use App\Support\ReportData;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -17,17 +19,26 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportController extends Controller
 {
-    public function index(FilterReportsRequest $request): View
+    public function index(FilterReportsRequest $request): View|RedirectResponse
     {
         $this->authorizeFacilityReports();
 
         $filters = $request->validated();
+        if ($this->hasFuturePeriod($filters)) {
+            return redirect()->route('reports.index')
+                ->with('error', 'Reports cannot be filtered to a future date.');
+        }
         [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
         $report = $this->buildReportData($from, $to);
         $currentMonth = now()->startOfMonth();
         $activeMonth = $selectedMonth
             ? Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth()
             : $currentMonth->copy();
+        $reportRequests = ReportRequest::query()
+            ->when(! auth()->user()->isQao(), fn ($query) => $query->where('requested_by', auth()->id()))
+            ->when($filters['request_status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->latest()->paginate(10, ['*'], 'request_page')->withQueryString()->fragment('report-requests');
 
         return view('reports.index', [
             'selectedRecords' => $filters['records'] ?? ['inventory'],
@@ -43,6 +54,8 @@ class ReportController extends Controller
             'previousMonth' => $activeMonth->copy()->subMonth()->format('Y-m'),
             'nextMonth' => $activeMonth->copy()->addMonth()->format('Y-m'),
             'currentMonth' => $currentMonth->format('Y-m'),
+            'reportRequests' => $reportRequests,
+            'requestStatus' => $filters['request_status'] ?? '',
         ]);
     }
 
@@ -51,6 +64,7 @@ class ReportController extends Controller
         $this->authorizeFacilityReports();
 
         $filters = $request->validated();
+        abort_if($this->hasFuturePeriod($filters), 422, 'Reports cannot be exported for a future date.');
         [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
 
         abort_unless(auth()->user()->can('export reports'), 403);
@@ -77,6 +91,7 @@ class ReportController extends Controller
         $this->authorizeFacilityReports();
 
         $filters = $request->validated();
+        abort_if($this->hasFuturePeriod($filters), 422, 'Reports cannot be exported for a future date.');
         [$from, $to, $selectedMonth, $selectedDay, $periodMode, $periodLabel] = $this->resolvePeriod($filters);
 
         abort_unless(auth()->user()->can('export reports'), 403);
@@ -154,7 +169,7 @@ class ReportController extends Controller
             ];
         }
 
-        if ($periodMode === 'range' && (! empty($filters['from']) || ! empty($filters['to']))) {
+        if ($periodMode === 'range') {
             $from = $filters['from'] ?? null;
             $to = $filters['to'] ?? null;
 
@@ -220,6 +235,21 @@ class ReportController extends Controller
             'month',
             $month->format('F Y'),
         ];
+    }
+
+    private function hasFuturePeriod(array $filters): bool
+    {
+        if (! empty($filters['month']) && $filters['month'] > now()->format('Y-m')) {
+            return true;
+        }
+
+        foreach (['day', 'from', 'to'] as $field) {
+            if (! empty($filters[$field]) && Carbon::parse($filters[$field])->startOfDay()->isAfter(today())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function exportQuery(string $periodMode, ?string $selectedMonth, ?string $selectedDay, ?string $from, ?string $to): array

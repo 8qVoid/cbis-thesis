@@ -28,14 +28,16 @@
     $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
     $eventPostedType = \App\Notifications\EventPostedNotification::class;
+    $reportSubmittedType = \App\Notifications\ReportRequestSubmitted::class;
+    $reportReviewedType = \App\Notifications\ReportRequestReviewed::class;
     $notificationTypes = [];
     $notificationTitle = 'Notifications';
 
     if ($webAuthenticated && $webUser?->isQao()) {
-        $notificationTypes = [$lowStockType, $reservationSubmittedType];
+        $notificationTypes = [$lowStockType, $reservationSubmittedType, $reportSubmittedType];
         $notificationTitle = 'QAO Alerts';
     } elseif ($webAuthenticated && $webUser?->isBloodBankStaff()) {
-        $notificationTypes = [$lowStockType, $reservationSubmittedType];
+        $notificationTypes = [$lowStockType, $reservationSubmittedType, $reportReviewedType];
         $notificationTitle = 'Blood Bank Alerts';
     } elseif ($webAuthenticated && $webUser?->isEventFacilitator()) {
         $notificationTypes = [$activityReviewType];
@@ -132,6 +134,7 @@
                                     <div class="d-flex gap-2 px-3 py-2 border-bottom">
                                         <a href="{{ route('notifications.index', ['type' => 'low_stock']) }}" class="btn btn-sm btn-outline-danger flex-fill">Low stock</a>
                                         <a href="{{ route('notifications.index', ['type' => 'reservation']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reservations</a>
+                                        <a href="{{ route('notifications.index', ['type' => 'report']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reports</a>
                                     </div>
                                 @endif
                                 @if($recentNotifications->count() > 5)
@@ -150,6 +153,8 @@
                                                 <div class="cbis-notification-summary">{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
                                             @elseif($notification->type === $reservationStatusType)
                                                 <div class="cbis-notification-summary">{{ $data['reference'] ?? 'Blood request' }} · {{ str($data['status'] ?? 'updated')->headline() }}</div>
+                                            @elseif(in_array($notification->type, [$reportSubmittedType, $reportReviewedType], true))
+                                                <div class="cbis-notification-summary">{{ \App\Models\ReportRequest::TYPES[$data['report_type'] ?? ''] ?? 'Report' }} · {{ str($data['status'] ?? 'updated')->headline() }}</div>
                                             @elseif($notification->type === \App\Notifications\DonorScreeningUpdated::class)
                                                 <div class="cbis-notification-summary">Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
                                             @elseif($notification->type === $eventPostedType)
@@ -252,7 +257,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-0 text-muted" id="cbisConfirmMessage">Please confirm this action.</p>
+                <p class="mb-0 text-muted" id="cbisConfirmMessage" style="white-space: pre-line">Please confirm this action.</p>
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>

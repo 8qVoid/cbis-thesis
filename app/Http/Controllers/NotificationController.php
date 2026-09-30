@@ -11,6 +11,8 @@ use App\Notifications\BloodReservationSubmitted;
 use App\Notifications\DonorScreeningUpdated;
 use App\Notifications\EventPostedNotification;
 use App\Notifications\LowStockAlert;
+use App\Notifications\ReportRequestReviewed;
+use App\Notifications\ReportRequestSubmitted;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -29,7 +31,9 @@ class NotificationController extends Controller
         $notificationTypes = $this->notificationTypesFor($user);
         $selectedType = $this->notificationClassForFilter($alertType);
 
-        if ($selectedType !== null && in_array($selectedType, $notificationTypes, true)) {
+        if ($alertType === 'report') {
+            $notificationTypes = array_values(array_intersect($notificationTypes, [ReportRequestSubmitted::class, ReportRequestReviewed::class]));
+        } elseif ($selectedType !== null && in_array($selectedType, $notificationTypes, true)) {
             $notificationTypes = [$selectedType];
         }
 
@@ -146,6 +150,11 @@ class NotificationController extends Controller
             return route('account.dashboard', ['view' => 'donor']);
         }
 
+        if (in_array($notification->type, [ReportRequestSubmitted::class, ReportRequestReviewed::class], true)
+            && ! empty($data['report_request_id'])) {
+            return route('report-requests.show', $data['report_request_id']);
+        }
+
         return route('notifications.index');
     }
 
@@ -155,10 +164,10 @@ class NotificationController extends Controller
     private function notificationTypesFor(User $user): array
     {
         if ($user->isQao()) {
-            return [LowStockAlert::class, BloodReservationSubmitted::class];
+            return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestSubmitted::class];
         }
         if ($user->isBloodBankStaff()) {
-            return [LowStockAlert::class, BloodReservationSubmitted::class];
+            return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestReviewed::class];
         }
         if ($user->isEventFacilitator()) {
             return [ActivityReviewStatusChanged::class];

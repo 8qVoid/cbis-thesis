@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Worksheet\Protection;
 
 class SelectedReportsExport extends StringValueBinder implements FromArray, WithCustomValueBinder, WithEvents
 {
@@ -24,6 +25,7 @@ class SelectedReportsExport extends StringValueBinder implements FromArray, With
         private string $requestedBy,
         private string $printedBy,
         private string $printedAt,
+        private string $attributionLabel = 'Printed by',
     ) {}
 
     public function array(): array
@@ -99,6 +101,18 @@ class SelectedReportsExport extends StringValueBinder implements FromArray, With
                 ->setFitToWidth(1)->setFitToHeight(0);
             $sheet->getPageMargins()->setLeft(0.3)->setRight(0.3)->setTop(0.5)->setBottom(0.5);
             $sheet->getPageSetup()->setPrintArea("A1:{$lastColumn}{$lastRow}");
+
+            // Protect the delivered worksheet from ordinary edits. This is not
+            // tamper-proof; the signed PDF remains the authoritative copy.
+            $protection = $sheet->getProtection();
+            $protection->setAlgorithm(Protection::ALGORITHM_SHA_512);
+            $protection->setSpinCount(20000);
+            $protection->setPassword(bin2hex(random_bytes(16)));
+            $protection->setSheet(true);
+
+            $workbookSecurity = $sheet->getParent()->getSecurity();
+            $workbookSecurity->setLockStructure(true);
+            $workbookSecurity->setWorkbookPassword(bin2hex(random_bytes(16)));
         }];
     }
 
@@ -147,7 +161,7 @@ class SelectedReportsExport extends StringValueBinder implements FromArray, With
         $rows[] = [];
         $signature = [];
         foreach (['label' => 'Requested by', 'name' => $this->requestedBy, 'line' => '',
-            'caption' => 'Signature of requester', 'meta' => "Printed by {$this->printedBy} on {$this->printedAt}"] as $part => $value) {
+            'caption' => 'Signature of requester', 'meta' => "{$this->attributionLabel} {$this->printedBy} on {$this->printedAt}"] as $part => $value) {
             $signature[$part] = count($rows) + 1;
             $rows[] = [$value];
         }

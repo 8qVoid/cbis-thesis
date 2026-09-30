@@ -22,6 +22,8 @@ class FilterReportsRequest extends BaseFormRequest
             'day' => ['nullable', 'date'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'request_status' => ['nullable', 'in:pending,approved,rejected'],
+            'request_page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

@@ -47,12 +47,12 @@ Can:
 - Manage donation, bloodletting, inventory, and blood-release transactions
 - Review patient requirements and approve, reject, or fulfill blood reservations
 - Monitor their facility's stock and receive low-stock notifications
-- Request and view system-generated summaries
+- Request inventory summaries or records for QAO approval, then download approved PDF and protected Excel copies
 
 Cannot:
 
 - Access another facility's inventory or records
-- Generate downloadable Excel/PDF reports
+- Export reports directly without QAO approval
 - Create or publish map pins
 - Approve event map publication
 - Manage system roles or staff accounts
@@ -117,6 +117,14 @@ Uploading an ID at registration is optional. A public account holder can add or 
 3. Blood Bank Staff review the requirements.
 4. The request moves through `Submitted`, `Under Review`, `Approved` or `Rejected`, then `Fulfilled` when released.
 5. Approval is blocked when the selected facility lacks sufficient unexpired stock for the requested blood type and component.
+
+## Inventory Report Requests
+
+1. Bacolod main chapter BBS opens **Reports** and requests either a current blood stock summary or a selected report. For a selected report, they choose Inventory, Donations, Releases, and/or Reservations, the detail level, and the report period shown above the form. The system records their account name and prevents a second pending request of the same type.
+2. QAO receives an in-app notification, reviews the request and current inventory, then approves or rejects it. A rejection requires a reason. The decision and reviewer are audit logged.
+3. Approval saves a fixed inventory snapshot. The requesting BBS receives a notification linked to the request and can download its PDF or protected Excel copy from **My report requests**. Other BBS accounts cannot open that request or its files.
+
+The exported copy identifies the requester and QAO approver and includes a line for the requester's signature when printed. The worksheet lock discourages casual edits but is not tamper-proof; retain the approved report and signed PDF as the official record. Notifications use the application's existing page updates, which can take up to 15 seconds.
 
 ## Automatic Page Updates
 

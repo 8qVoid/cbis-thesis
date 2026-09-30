@@ -6,6 +6,8 @@
     $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
     $eventPostedType = \App\Notifications\EventPostedNotification::class;
+    $reportSubmittedType = \App\Notifications\ReportRequestSubmitted::class;
+    $reportReviewedType = \App\Notifications\ReportRequestReviewed::class;
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -34,6 +36,7 @@
                     <option value="all" @selected(($alertType ?? 'all') === 'all')>All alerts</option>
                     <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
                     <option value="reservation" @selected(($alertType ?? 'all') === 'reservation')>Blood reservations</option>
+                    <option value="report" @selected(($alertType ?? 'all') === 'report')>Inventory reports</option>
                 </select>
             </div>
         @endif
@@ -89,6 +92,9 @@
                                 @elseif($notification->type === $reservationStatusType)
                                     <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                @elseif(in_array($notification->type, [$reportSubmittedType, $reportReviewedType], true))
+                                    <div>{{ \App\Models\ReportRequest::TYPES[$data['report_type'] ?? ''] ?? 'Report' }}</div>
+                                    <div class="text-muted small">{{ $data['requester_name'] ?? 'Request' }} · {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
                                 @elseif($notification->type === \App\Notifications\DonorScreeningUpdated::class)
                                     <div>Screening: {{ str($data['status'] ?? 'awaiting')->headline() }}</div>
                                     <div>{{ $data['donor_message'] ?? '' }}</div>

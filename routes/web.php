@@ -21,6 +21,7 @@ use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPortalController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportRequestController;
 use App\Http\Controllers\StaffUserController;
 use App\Http\Controllers\StaffProfileController;
 use Illuminate\Support\Facades\Route;
@@ -194,6 +195,19 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::get('/reports/excel', [ReportController::class, 'excel'])
         ->middleware('permission:export reports')
         ->name('reports.excel');
+
+    Route::post('/report-requests', [ReportRequestController::class, 'store'])
+        ->middleware('permission:request summaries')
+        ->name('report-requests.store');
+    Route::get('/report-requests/{reportRequest}', [ReportRequestController::class, 'show'])
+        ->middleware('role_or_permission:view reports|request summaries')
+        ->name('report-requests.show');
+    Route::post('/report-requests/{reportRequest}/review', [ReportRequestController::class, 'review'])
+        ->middleware('permission:export reports')
+        ->name('report-requests.review');
+    Route::get('/report-requests/{reportRequest}/download/{format}', [ReportRequestController::class, 'download'])
+        ->middleware('role_or_permission:view reports|request summaries')
+        ->name('report-requests.download');
 
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->middleware('role_or_permission:Quality Assurance Officer|Event Facilitator|Blood Bank Staff|Donor|Patient')

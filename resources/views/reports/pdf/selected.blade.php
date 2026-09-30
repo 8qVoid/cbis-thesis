@@ -10,6 +10,6 @@
     <p>Requested by</p>
     <div class="signature-name">{{ $requestedBy }}</div>
     <div class="signature-line">Signature of requester</div>
-    <p class="print-meta">Printed by {{ $printedBy }} on {{ $printedAt }}</p>
+    <p class="print-meta">{{ $attributionLabel ?? 'Printed by' }} {{ $printedBy }} on {{ $printedAt }}</p>
 </div>
 </body></html>

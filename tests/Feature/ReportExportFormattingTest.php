@@ -21,7 +21,8 @@ class ReportExportFormattingTest extends TestCase
         $path = tempnam(sys_get_temp_dir(), 'cbis-report-');
         try {
             file_put_contents($path, Excel::raw($export, \Maatwebsite\Excel\Excel::XLSX));
-            $sheet = IOFactory::load($path)->getActiveSheet();
+            $workbook = IOFactory::load($path);
+            $sheet = $workbook->getActiveSheet();
             $rows = $sheet->toArray();
             $firstColumn = array_column($rows, 0);
 
@@ -31,6 +32,10 @@ class ReportExportFormattingTest extends TestCase
             $this->assertContains('Printed by QAO User on Sep 29, 2026 9:00 AM', $firstColumn);
             $this->assertGreaterThan(20, $sheet->getColumnDimension('C')->getWidth());
             $this->assertSame(1, $sheet->getPageSetup()->getFitToWidth());
+            $this->assertTrue($sheet->getProtection()->getSheet());
+            $this->assertNotEmpty($sheet->getProtection()->getPassword());
+            $this->assertSame('SHA-512', $sheet->getProtection()->getAlgorithm());
+            $this->assertTrue($workbook->getSecurity()->getLockStructure());
         } finally {
             unlink($path);
         }
