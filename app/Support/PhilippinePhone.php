@@ -20,7 +20,10 @@ class PhilippinePhone
             return null;
         }
 
-        return self::normalizeMobile($value);
+        // Phone forms now require the complete 11-digit local number.
+        return preg_match('/^09\d{9}$/', $value) === 1
+            ? self::normalizeMobile($value)
+            : null;
     }
 
     public static function normalizeMobile(?string $value): ?string
@@ -63,6 +66,13 @@ class PhilippinePhone
         $normalized = self::normalizeMobile($value);
 
         return $normalized ? substr($normalized, 4) : '';
+    }
+
+    public static function mobileLocal(?string $value): string
+    {
+        $normalized = self::normalizeMobile($value);
+
+        return $normalized ? '0'.substr($normalized, 3) : '';
     }
 
     public static function isValidContactNumber(?string $value, bool $allowMultiple = false, int $maxNumbers = 1): bool

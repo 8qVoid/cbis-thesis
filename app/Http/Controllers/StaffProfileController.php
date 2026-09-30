@@ -26,7 +26,7 @@ class StaffProfileController extends Controller
             $request->merge(['phone' => PhilippinePhone::normalizeMobileInput((string) $request->input('phone')) ?? trim((string) $request->input('phone'))]);
         }
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', "regex:/^[\\pL\\s.'-]+$/u"],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['nullable', 'regex:/^\+639\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
         ]);

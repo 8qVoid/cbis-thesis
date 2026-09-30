@@ -34,9 +34,9 @@ class AccountProfileController extends Controller
             $request->merge(['phone' => PhilippinePhone::normalizeMobileInput((string) $request->input('phone')) ?? trim((string) $request->input('phone'))]);
         }
         $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:80'],
-            'middle_name' => ['nullable', 'string', 'max:80'],
-            'last_name' => ['required', 'string', 'max:80'],
+            'first_name' => ['required', 'string', 'max:80', "regex:/^[\\pL\\s.'-]+$/u"],
+            'middle_name' => ['nullable', 'string', 'max:80', "regex:/^[\\pL\\s.'-]+$/u"],
+            'last_name' => ['required', 'string', 'max:80', "regex:/^[\\pL\\s.'-]+$/u"],
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],

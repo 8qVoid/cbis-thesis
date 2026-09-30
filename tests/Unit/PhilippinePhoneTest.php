@@ -7,12 +7,18 @@ use PHPUnit\Framework\TestCase;
 
 class PhilippinePhoneTest extends TestCase
 {
-    public function test_phone_form_input_accepts_digits_only(): void
+    public function test_phone_form_input_requires_full_eleven_digit_local_number(): void
     {
-        $this->assertSame('+639171234567', PhilippinePhone::normalizeMobileInput('9171234567'));
+        $this->assertSame('+639171234567', PhilippinePhone::normalizeMobileInput('09171234567'));
+        $this->assertSame('09171234567', PhilippinePhone::mobileLocal('+639171234567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('9171234567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('171234567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('08171234567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('0917123456'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('091712345678'));
         $this->assertNull(PhilippinePhone::normalizeMobileInput('+639171234567'));
-        $this->assertNull(PhilippinePhone::normalizeMobileInput('917-123-4567'));
-        $this->assertNull(PhilippinePhone::normalizeMobileInput('917abc4567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('0917-123-4567'));
+        $this->assertNull(PhilippinePhone::normalizeMobileInput('0917abc4567'));
     }
 
     public function test_contact_numbers_reject_letters_and_symbols(): void

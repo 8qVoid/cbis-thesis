@@ -393,3 +393,15 @@ html.cbis-inventory-page { scroll-behavior:auto !important; }
 .cbis-site-footer a { color: #b90d37; text-decoration: none; }
 .cbis-site-footer a:hover { text-decoration: underline; }
 @media (max-width: 760px) { .cbis-site-footer-inner { flex-direction: column; align-items: flex-start; } }
+
+@media (max-width: 575px) {
+    .cbis-metric-grid,
+    .cbis-metric-grid-three { grid-template-columns: minmax(0, 1fr); }
+    .cbis-nav-actions { flex-wrap: wrap; }
+    .cbis-profile-label { max-width: min(210px, calc(100vw - 145px)); }
+    .cbis-services-form { padding: 16px; }
+}
+
+/* Full-bleed landing sections use viewport units, which include the scrollbar width. */
+html.cbis-public-landing-page,
+html.cbis-public-landing-page body { overflow-x: clip; }

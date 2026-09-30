@@ -117,7 +117,7 @@ class DashboardPresentationTest extends TestCase
         ]);
         $this->actingAs($user)->put(route('account.details.update'), [
             'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
-            'email' => 'updated@example.test', 'phone' => '917987654',
+            'email' => 'updated@example.test', 'phone' => '09917987654',
             'services' => ['patient'], 'is_eligible' => true,
         ])->assertRedirect(route('account.details.edit'));
         $this->assertSame('Updated User', $user->fresh()->name);
@@ -128,6 +128,13 @@ class DashboardPresentationTest extends TestCase
         $this->assertFalse($donor->fresh()->is_eligible);
         $this->assertTrue($user->fresh()->hasRole('Donor'));
         $this->assertFalse($user->fresh()->hasRole('Patient'));
+
+        $this->put(route('account.details.update'), [
+            'first_name' => 'Updated2', 'middle_name' => null, 'last_name' => 'User',
+            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
+            'email' => 'updated@example.test', 'phone' => '09917987654',
+        ])->assertSessionHasErrors('first_name');
+        $this->assertSame('Updated User', $user->fresh()->name);
     }
 
     public function test_enabling_patient_service_keeps_donor_identity_and_continues_to_request(): void

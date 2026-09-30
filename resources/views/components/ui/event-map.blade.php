@@ -16,7 +16,7 @@ $points = collect($events)->filter(fn ($event) => $event->latitude !== null && $
  if (!window.L) { element.textContent = 'Map could not load. Please check your connection and reload.'; return; }
  element.replaceChildren();
  const map = L.map(element, {scrollWheelZoom:true}).setView([10.45,123.05], 9);
- CbisMaps.addLayers(map);
+ CbisMaps.addLayers(map, { satelliteMaxZoom: 16 });
  const status = document.getElementById(@js($id . '-status'));
  const renderStatus = CbisMaps.statusView(status);
  const showStatus = (...args) => { status.hidden = false; renderStatus(...args); };

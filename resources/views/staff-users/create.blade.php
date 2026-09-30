@@ -12,9 +12,9 @@
 <form method="POST" action="{{ route('staff-users.store') }}" class="card card-body">
     @csrf
     <div class="row g-3">
-        <div class="col-md-4"><label class="form-label">Name</label><input name="name" class="form-control" value="{{ old('name') }}" required></div>
+        <div class="col-md-4"><label class="form-label">Name</label><input name="name" class="form-control js-person-name" maxlength="255" pattern="[\p{L}\s.'-]+" value="{{ old('name') }}" required></div>
         <div class="col-md-4"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="{{ old('email') }}" required></div>
-        <div class="col-md-4"><label class="form-label">Mobile Number <span class="text-muted">(Optional)</span></label><div class="input-group"><span class="input-group-text">09</span><input name="phone" class="form-control js-mobile-suffix" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('phone')) }}" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789"></div><small class="text-muted">Used as staff contact information. Leave blank if not available.</small></div>
+        <div class="col-md-4"><label class="form-label">Mobile Number <span class="text-muted">(Optional)</span></label><input name="phone" class="form-control js-mobile-local" value="{{ \App\Support\PhilippinePhone::mobileLocal(old('phone')) }}" inputmode="numeric" minlength="11" maxlength="11" pattern="09\d{9}" title="Enter exactly 11 digits starting with 09" placeholder="09171234567"><small class="text-muted">Enter all 11 digits starting with 09, or leave blank.</small></div>
         @if(auth('web')->user()?->isCentralAdmin())
             <div class="col-md-4"><label class="form-label">Facility</label><select name="facility_id" class="form-select" required>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string) old('facility_id') === (string) $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
         @else

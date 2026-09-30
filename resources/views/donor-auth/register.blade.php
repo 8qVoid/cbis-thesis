@@ -38,11 +38,8 @@
                         <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
                         <div class="col-md-6">
                             <label class="form-label">Mobile Number</label>
-                            <div class="input-group">
-                                <span class="input-group-text">09</span>
-                                <input name="contact_number" class="form-control js-mobile-suffix" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number')) }}" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789" required>
-                            </div>
-                            <small class="text-muted">Enter the 9 digits after 09.</small>
+                            <input name="contact_number" class="form-control js-mobile-local" value="{{ \App\Support\PhilippinePhone::mobileLocal(old('contact_number')) }}" inputmode="numeric" minlength="11" maxlength="11" pattern="09\d{9}" title="Enter exactly 11 digits starting with 09" placeholder="09171234567" required>
+                            <small class="text-muted">Enter all 11 digits, starting with 09.</small>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Address</label>

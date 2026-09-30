@@ -57,11 +57,8 @@
             <div class="col-md-6"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((int) old('facility_id', $donor->facility_id ?? 0) === $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
             <div class="col-md-6">
                 <label class="form-label">Mobile Number</label>
-                <div class="input-group">
-                    <span class="input-group-text">09</span>
-                    <input name="contact_number" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('contact_number', $donor->contact_number)) }}" class="form-control js-mobile-suffix" inputmode="numeric" maxlength="9" pattern="\d{9}" placeholder="123456789" required>
-                </div>
-                <small class="text-muted">Enter the 9 digits after 09.</small>
+                <input name="contact_number" value="{{ \App\Support\PhilippinePhone::mobileLocal(old('contact_number', $donor->contact_number)) }}" class="form-control js-mobile-local" inputmode="numeric" minlength="11" maxlength="11" pattern="09\d{9}" title="Enter exactly 11 digits starting with 09" placeholder="09171234567" required>
+                <small class="text-muted">Enter all 11 digits, starting with 09.</small>
             </div>
             <div class="col-12"><label class="form-label">Address</label><x-negros-occidental-address-fields :address="old('address',$donor->address)" /></div>
             <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>

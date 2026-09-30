@@ -20,7 +20,7 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label for="staffName" class="form-label">Full name</label>
-                        <input id="staffName" name="name" class="form-control" maxlength="255" value="{{ old('name', $user->name) }}" required>
+                        <input id="staffName" name="name" class="form-control js-person-name" maxlength="255" pattern="[\p{L}\s.'-]+" value="{{ old('name', $user->name) }}" required>
                         @error('name')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
@@ -31,11 +31,8 @@
                     </div>
                     <div class="col-md-6">
                         <label for="staffPhone" class="form-label">Mobile number <span class="text-muted">(optional)</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">09</span>
-                            <input id="staffPhone" name="phone" class="form-control js-mobile-suffix" inputmode="numeric" maxlength="9" pattern="\d{9}" value="{{ \App\Support\PhilippinePhone::mobileSuffix(old('phone', $user->phone)) }}" placeholder="123456789">
-                        </div>
-                        <small class="text-muted">Enter the 9 digits after 09.</small>
+                        <input id="staffPhone" name="phone" class="form-control js-mobile-local" inputmode="numeric" minlength="11" maxlength="11" pattern="09\d{9}" title="Enter exactly 11 digits starting with 09" value="{{ \App\Support\PhilippinePhone::mobileLocal(old('phone', $user->phone)) }}" placeholder="09171234567">
+                        <small class="text-muted">Enter all 11 digits, starting with 09.</small>
                         @error('phone')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>

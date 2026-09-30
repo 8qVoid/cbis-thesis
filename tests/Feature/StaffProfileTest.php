@@ -30,7 +30,7 @@ class StaffProfileTest extends TestCase
         $this->get(route('staff-profile.edit'))->assertOk()->assertSee('Original Staff');
         $this->put(route('staff-profile.update'), [
             'name' => 'Corrected Staff', 'email' => 'corrected@example.test',
-            'phone' => '912345678', 'facility_id' => 999, 'role' => 'Quality Assurance Officer',
+            'phone' => '09912345678', 'facility_id' => 999, 'role' => 'Quality Assurance Officer',
         ])->assertRedirect(route('staff-profile.edit'));
 
         $staff->refresh();
@@ -57,5 +57,19 @@ class StaffProfileTest extends TestCase
         $this->put(route('staff-profile.update'), [
             'name' => 'Changed', 'email' => 'changed@example.test',
         ])->assertForbidden();
+    }
+
+    public function test_staff_name_with_digits_is_rejected_by_the_server(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $facility = Facility::create(['code' => 'MAIN', 'name' => 'Bacolod Main', 'type' => 'blood_bank', 'is_active' => true, 'is_main_chapter' => true]);
+        $staff = User::factory()->create(['name' => 'Original Staff', 'facility_id' => $facility->id]);
+        $staff->assignRole('Blood Bank Staff');
+
+        $this->actingAs($staff)->put(route('staff-profile.update'), [
+            'name' => 'Staff 123', 'email' => $staff->email,
+        ])->assertSessionHasErrors('name');
+
+        $this->assertSame('Original Staff', $staff->fresh()->name);
     }
 }

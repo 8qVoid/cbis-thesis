@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" @class(['cbis-inventory-page' => request()->routeIs('blood-inventory.index')])>
+<html lang="en" @class(['cbis-inventory-page' => request()->routeIs('blood-inventory.index'), 'cbis-public-landing-page' => request()->routeIs('public.index')])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -320,15 +320,23 @@ document.querySelectorAll('.js-logout-form').forEach((form) => {
     });
 });
 
-document.querySelectorAll('.js-mobile-suffix').forEach((input) => {
+document.querySelectorAll('.js-mobile-local').forEach((input) => {
+    input.addEventListener('focus', () => {
+        if (!input.value) input.value = '09';
+    });
     input.addEventListener('input', () => {
-        input.value = input.value.replace(/\D/g, '').slice(0, 9);
+        const digits = input.value.replace(/\D/g, '').slice(0, 11);
+        input.value = digits.length <= 2 ? '09' : digits;
+        input.setCustomValidity(input.value.startsWith('09') ? '' : 'Mobile numbers must start with 09.');
+    });
+    input.addEventListener('blur', () => {
+        if (input.value === '09' && !input.required) input.value = '';
     });
 });
 
 document.querySelectorAll('.js-person-name').forEach((input) => {
     input.addEventListener('input', () => {
-        input.value = input.value.replace(/\d/g, '').slice(0, 80);
+        input.value = input.value.replace(/\d/g, '').slice(0, input.maxLength > 0 ? input.maxLength : 80);
     });
 });
 

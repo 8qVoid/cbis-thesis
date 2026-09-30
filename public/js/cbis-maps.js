@@ -1,5 +1,6 @@
 (() => {
     const addLayers = (map, options = {}) => {
+        const satelliteMaxZoom = options.satelliteMaxZoom ?? 18;
         if (options.clearExisting) {
             map.eachLayer((layer) => {
                 if (layer instanceof L.TileLayer) {
@@ -14,8 +15,8 @@
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 18,
-            maxNativeZoom: 18,
+            maxZoom: satelliteMaxZoom,
+            maxNativeZoom: satelliteMaxZoom,
             attribution: 'Tiles &copy; Esri',
         });
         const streetMaxZoom = map.getMaxZoom();
@@ -34,7 +35,9 @@
                     button.textContent = label;
                     button.setAttribute('aria-pressed', String(layer === street));
                     button.addEventListener('click', () => {
-                        map.setMaxZoom(layer === satellite ? 18 : streetMaxZoom);
+                        const maxZoom = layer === satellite ? satelliteMaxZoom : streetMaxZoom;
+                        map.setMaxZoom(maxZoom);
+                        if (map.getZoom() > maxZoom) map.setZoom(maxZoom);
                         options.forEach(([, other]) => { if (other !== layer) map.removeLayer(other); });
                         layer.addTo(map);
                         buttons.forEach((item, index) => item.setAttribute('aria-pressed', String(options[index][1] === layer)));
