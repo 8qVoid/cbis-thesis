@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PasswordController extends Controller
@@ -30,10 +31,21 @@ class PasswordController extends Controller
         }
 
         $user->password = $data['password'];
+        $user->remember_token = Str::random(60);
         $user->save();
 
+        $sessionGuard = Auth::guard($guard);
+        $remember = $request->cookies->has($sessionGuard->getRecallerName());
+        // Login renews the current session and its password fingerprint while
+        // every other session and old remember cookie retains stale credentials.
+        $sessionGuard->login($user, $remember);
+
+        $destination = $guard === 'web'
+            ? ($user->hasAnyRole(['Donor', 'Patient']) ? 'account.dashboard' : 'dashboard')
+            : 'donor.portal.profile';
+
         return redirect()
-            ->route($guard === 'web' ? 'dashboard' : 'donor.portal.profile')
+            ->route($destination)
             ->with('success', 'Password updated successfully.');
     }
 }

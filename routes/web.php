@@ -22,8 +22,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportRequestController;
-use App\Http\Controllers\StaffUserController;
 use App\Http\Controllers\StaffProfileController;
+use App\Http\Controllers\StaffUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/portal');
@@ -155,6 +155,9 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
         ->only(['index', 'show'])
         ->middleware('role_or_permission:Super Administrator|manage bloodletting records');
 
+    Route::get('/blood-inventory/storage', [BloodInventoryController::class, 'storage'])
+        ->middleware('role_or_permission:Super Administrator|view inventory|manage inventory')
+        ->name('blood-inventory.storage');
     Route::resource('blood-inventory', BloodInventoryController::class)
         ->except(['index', 'show'])
         ->middleware(['permission:manage inventory', 'facility.operator']);

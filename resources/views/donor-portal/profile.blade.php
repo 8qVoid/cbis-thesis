@@ -7,7 +7,7 @@
         ->filter(fn ($name) => filled($name))
         ->implode(' ');
 @endphp
-<div class="cbis-donor-hero mb-4">
+<div class="cbis-donor-hero mb-3">
     <div>
         <div class="cbis-eyebrow">Profile</div>
         <h1 class="cbis-page-title mb-1">{{ $donorFullName }}</h1>
@@ -61,19 +61,19 @@
                 <small class="text-muted">Enter all 11 digits, starting with 09.</small>
             </div>
             <div class="col-12"><label class="form-label">Address</label><x-negros-occidental-address-fields :address="old('address',$donor->address)" /></div>
-            <div class="col-md-4 d-flex align-items-end"><button class="btn btn-danger w-100">Update Profile</button></div>
         </div>
     </div>
+    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-danger">Update profile</button></div>
 </form>
 
-<div class="card mt-4">
+<div class="card mt-3">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>My Event Registrations</span>
         <a href="{{ route('donor.events.index') }}" class="btn btn-sm btn-outline-danger">View All</a>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <div class="table-responsive cbis-mobile-table-wrap">
+        <table class="table table-striped mb-0 cbis-mobile-card-table cbis-status-table">
             <thead>
                 <tr>
                     <th>Event</th>
@@ -85,12 +85,12 @@
             </thead>
             <tbody>
                 @forelse($eventRegistrations as $registration)
-                    <tr>
-                        <td>{{ $registration->event?->title ?? '-' }}</td>
-                        <td>{{ $registration->event?->facility?->name ?? '-' }}</td>
-                        <td>{{ $registration->event?->event_date?->toDateString() ?? '-' }}</td>
-                        <td>{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</td>
-                        <td>
+                    <tr class="cbis-reservation-row">
+                        <td data-label="Event">{{ $registration->event?->title ?? '-' }}</td>
+                        <td data-label="Facility">{{ $registration->event?->facility?->name ?? '-' }}</td>
+                        <td data-label="Date">{{ $registration->event?->event_date?->format('M j, Y') ?? '-' }}</td>
+                        <td data-label="Status"><span class="cbis-inline-status {{ $registration->status === 'registered' ? 'cbis-tone-success' : ($registration->status === 'cancelled' ? 'cbis-tone-danger' : 'cbis-tone-warning') }}">{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</span></td>
+                        <td data-label="Action" class="cbis-record-actions">
                             @if($registration->status === 'registered' && $registration->event?->isRegistrationOpen())
                                 <form
                                     method="POST"
@@ -125,11 +125,11 @@
     </div>
 </div>
 
-<div class="card mt-4">
+<div class="card mt-3">
     <div class="card-header">My Donation History</div>
     <div class="card-body p-0">
-        <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <div class="table-responsive cbis-mobile-table-wrap">
+        <table class="table table-striped mb-0 cbis-mobile-card-table cbis-status-table">
             <thead>
                 <tr>
                     <th>Donation No.</th>
@@ -143,14 +143,14 @@
             </thead>
             <tbody>
                 @forelse($donationHistory as $record)
-                    <tr>
-                        <td>{{ $record->donation_no }}</td>
-                        <td>{{ $record->donated_at?->format('Y-m-d H:i') }}</td>
-                        <td>{{ $record->blood_type }}</td>
-                        <td>{{ $record->volume_ml }}</td>
-                        <td>{{ $record->status }}</td>
-                        <td>{{ $record->bloodlettingRecord->verification_status ?? 'N/A' }}</td>
-                        <td>{{ $record->expiration_date?->toDateString() }}</td>
+                    <tr class="cbis-reservation-row">
+                        <td data-label="Donation no."><strong>{{ $record->donation_no }}</strong></td>
+                        <td data-label="Date">{{ $record->donated_at?->format('M j, Y · g:i A') }}</td>
+                        <td data-label="Blood type">{{ $record->blood_type }}</td>
+                        <td data-label="Volume">{{ $record->volume_ml }} ml</td>
+                        <td data-label="Record status"><span class="cbis-inline-status {{ $record->status === 'verified' ? 'cbis-tone-success' : 'cbis-tone-warning' }}">{{ str($record->status)->headline() }}</span></td>
+                        <td data-label="Bloodletting">{{ str($record->bloodlettingRecord->verification_status ?? 'N/A')->headline() }}</td>
+                        <td data-label="Expiry">{{ $record->expiration_date?->format('M j, Y') ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr>

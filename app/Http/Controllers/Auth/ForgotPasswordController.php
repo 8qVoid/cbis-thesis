@@ -61,6 +61,11 @@ class ForgotPasswordController extends Controller
             }
         );
 
+        if ($status === Password::PASSWORD_RESET) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('success', __($status))
             : back()->withErrors(['email' => __($status)])->onlyInput('email', 'account_type');

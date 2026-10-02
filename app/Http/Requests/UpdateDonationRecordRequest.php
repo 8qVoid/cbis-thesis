@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\DonationVolumePolicy;
 use Illuminate\Validation\Rule;
 
 class UpdateDonationRecordRequest extends StoreDonationRecordRequest
@@ -14,7 +15,7 @@ class UpdateDonationRecordRequest extends StoreDonationRecordRequest
             'donation_no' => ['required', 'string', 'max:50', Rule::unique('donation_records', 'donation_no')->ignore($this->route('donation_record'))],
             'donated_at' => ['required', 'date'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'volume_ml' => ['required', 'integer', 'min:1'],
+            'volume_ml' => DonationVolumePolicy::rules(),
             'expiration_date' => ['required', 'date', 'after:donated_at'],
             'status' => ['required', 'in:pending,verified,rejected'],
             'remarks' => ['nullable', 'string'],

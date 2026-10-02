@@ -4,8 +4,8 @@
     $currentUser = auth('web')->user();
     $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
 @endphp
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-live-region="event-detail-actions">
-    <h4 class="mb-0">Event Details</h4>
+<div class="cbis-page-heading" data-live-region="event-detail-actions">
+    <div><div class="cbis-eyebrow">{{ $donationSchedule->event_type_label }}</div><h1 class="cbis-page-title mb-0">{{ $donationSchedule->title }}</h1><p class="cbis-page-subtitle">Schedule, venue, publication status, and registrations.</p></div><div class="d-flex flex-wrap gap-2"><a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Back to events</a>
     @if($canManageSchedules && in_array($donationSchedule->status, ['planned', 'ongoing'], true))
         <form
             method="POST"
@@ -20,32 +20,24 @@
             @method('PATCH')
             <button class="btn btn-outline-success">End Event</button>
         </form>
-    @endif
+    @endif</div>
 </div>
 <div class="card card-body" data-live-region="event-details">
     @if($donationSchedule->photo_path)
-        <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="img-fluid rounded border mb-3" style="max-height: 280px; object-fit: cover;">
+        <img src="{{ asset('storage/'.$donationSchedule->photo_path) }}" alt="{{ $donationSchedule->title }}" class="cbis-detail-photo mb-3">
     @endif
-    <p><strong>Title:</strong> {{ $donationSchedule->title }}</p>
-    <p><strong>Type:</strong> {{ $donationSchedule->event_type_label }}</p>
-    <p><strong>Facility:</strong> {{ $donationSchedule->facility?->name ?? '-' }}</p>
-    <p><strong>Date:</strong> {{ $donationSchedule->event_date?->toDateString() }}</p>
-    <p><strong>Time:</strong> {{ $donationSchedule->time_range_label }}</p>
-    <p><strong>Venue / Address:</strong> {{ $donationSchedule->venue }}</p>
+    <dl class="cbis-record-details mb-0"><div><dt>Type</dt><dd>{{ $donationSchedule->event_type_label }}</dd></div><div><dt>Facility</dt><dd>{{ $donationSchedule->facility?->name ?? 'Not assigned' }}</dd></div><div><dt>Date</dt><dd>{{ $donationSchedule->event_date?->format('M j, Y') }}</dd></div><div><dt>Time</dt><dd>{{ $donationSchedule->time_range_label }}</dd></div><div class="cbis-detail-span"><dt>Venue / address</dt><dd>{{ $donationSchedule->venue }}</dd></div>
     @if($donationSchedule->contact_person || $donationSchedule->contact_number)
-    <p><strong>Contact:</strong> {{ collect([$donationSchedule->contact_person, $donationSchedule->contact_number])->filter()->implode(' / ') }}</p>
+    <div><dt>Contact</dt><dd>{{ collect([$donationSchedule->contact_person, $donationSchedule->contact_number])->filter()->implode(' / ') }}</dd></div>
     @endif
-    <p><strong>Status:</strong> {{ ucfirst($donationSchedule->status) }}</p>
-    <p><strong>Public:</strong> {{ $donationSchedule->is_public ? 'Yes' : 'No' }}</p>
-    <p><strong>Description:</strong> {{ $donationSchedule->description ?: '-' }}</p>
-    <p><strong>Coordinates:</strong> {{ $donationSchedule->latitude ?? '-' }}, {{ $donationSchedule->longitude ?? '-' }}</p>
+    <div><dt>Status</dt><dd><span class="cbis-inline-status {{ in_array($donationSchedule->status, ['planned','ongoing']) ? 'cbis-tone-success' : 'cbis-tone-warning' }}">{{ ucfirst($donationSchedule->status) }}</span></dd></div><div><dt>Public listing</dt><dd>{{ $donationSchedule->is_public ? 'Visible' : 'Private' }}</dd></div><div><dt>Coordinates</dt><dd>{{ $donationSchedule->latitude ?? '—' }}, {{ $donationSchedule->longitude ?? '—' }}</dd></div><div class="cbis-detail-span"><dt>Description</dt><dd>{{ $donationSchedule->description ?: 'No description provided' }}</dd></div></dl>
 </div>
 
 <div class="card mt-3" data-live-region="event-registrations">
     <div class="card-header">Event Registrations</div>
     <div class="card-body p-0">
-        <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <div class="table-responsive cbis-mobile-table-wrap">
+        <table class="table table-striped mb-0 cbis-mobile-card-table cbis-status-table">
             <thead>
                 <tr>
                     <th>Donor Name</th>
@@ -71,12 +63,12 @@
                             'cancelled' => 'Cancelled',
                         ];
                     @endphp
-                    <tr>
-                        <td>{{ $registration->donor?->full_name ?? '-' }}</td>
-                        <td>{{ $registration->donor?->blood_type ?? '-' }}</td>
-                        <td>{{ $registration->donor?->contact_number ?? '-' }}</td>
-                        <td>{{ $registration->registered_at?->format('Y-m-d H:i') ?? '-' }}</td>
-                        <td>
+                    <tr class="cbis-reservation-row">
+                        <td data-label="Donor">{{ $registration->donor?->full_name ?? '-' }}</td>
+                        <td data-label="Blood type">{{ $registration->donor?->blood_type ?? '-' }}</td>
+                        <td data-label="Contact">{{ $registration->donor?->contact_number ?? '-' }}</td>
+                        <td data-label="Registered">{{ $registration->registered_at?->format('M j, Y · g:i A') ?? '-' }}</td>
+                        <td data-label="Status">
                             <span class="badge {{ $statusClasses[$registration->status] ?? 'text-bg-secondary' }}">
                                 {{ $statusLabels[$registration->status] ?? ucfirst($registration->status) }}
                             </span>

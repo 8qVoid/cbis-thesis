@@ -1,5 +1,5 @@
 @extends('layouts.app')
 @section('content')
-<h4>{{ $facility->name }}</h4>
-<div class="card card-body"><p><strong>Code:</strong> {{ $facility->code }}</p><p><strong>Type:</strong> {{ $facility->type }}</p><p><strong>Contact:</strong> {{ $facility->contact_person }} / {{ $facility->contact_number }}</p><p><strong>Email:</strong> {{ $facility->email }}</p><p><strong>Address:</strong> {{ $facility->address }}</p></div>
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Facility</div><h1 class="cbis-page-title mb-0">{{ $facility->name }}</h1><p class="cbis-page-subtitle">Facility identity and contact information.</p></div><a href="{{ route('facilities.index') }}" class="btn btn-outline-secondary">Back to facilities</a></div>
+<section class="card"><div class="card-header cbis-card-title"><span>Facility details</span></div><div class="card-body"><dl class="cbis-record-details mb-0"><div><dt>Code</dt><dd>{{ $facility->code }}</dd></div><div><dt>Type</dt><dd>{{ str($facility->type)->headline() }}</dd></div><div><dt>Contact person</dt><dd>{{ $facility->contact_person ?: 'Not recorded' }}</dd></div><div><dt>Contact number</dt><dd>{{ $facility->contact_number ?: 'Not recorded' }}</dd></div><div><dt>Email</dt><dd>{{ $facility->email ?: 'Not recorded' }}</dd></div><div class="cbis-detail-span"><dt>Address</dt><dd>{{ $facility->address ?: 'Not recorded' }}</dd></div></dl></div></section>
 @endsection

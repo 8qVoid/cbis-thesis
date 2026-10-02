@@ -13,6 +13,7 @@ use App\Support\DonorScope;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -41,10 +42,13 @@ class DonationRecordController extends Controller
             $data['facility_id'] = auth()->user()->facility_id;
         }
         $data['recorded_by'] = auth()->id();
-        $record = DonationRecord::create($data);
+        $record = DB::transaction(function () use ($data, $request) {
+            $record = DonationRecord::create($data);
+            event(new DonationRecorded($record));
+            $this->logAudit('donation_record.created', $record, $data, $request);
 
-        event(new DonationRecorded($record));
-        $this->logAudit('donation_record.created', $record, $data, $request);
+            return $record;
+        });
 
         return redirect()->route('donation-records.index')->with('success', $record->status === 'verified' ? 'Verified donation recorded and inventory added.' : 'Donation recorded. Inventory is added only after verification.');
     }
@@ -75,18 +79,21 @@ class DonationRecordController extends Controller
             $data['facility_id'] = auth()->user()->facility_id;
         }
 
-        if (BloodInventory::withTrashed()->where('donation_record_id', $donationRecord->id)->exists()) {
-            $candidate = clone $donationRecord;
-            $candidate->fill($data);
-            foreach (['donor_id', 'facility_id', 'blood_type', 'volume_ml', 'expiration_date', 'status'] as $field) {
-                if ($candidate->isDirty($field)) {
-                    throw ValidationException::withMessages([$field => 'This donation has already created inventory. Its donor, stock details and verification status cannot be changed here.']);
+        DB::transaction(function () use ($data, $request, $donationRecord) {
+            $record = DonationRecord::whereKey($donationRecord->id)->lockForUpdate()->firstOrFail();
+            if (BloodInventory::withTrashed()->where('donation_record_id', $record->id)->exists()) {
+                $candidate = clone $record;
+                $candidate->fill($data);
+                foreach (['donor_id', 'facility_id', 'blood_type', 'volume_ml', 'expiration_date', 'status'] as $field) {
+                    if ($candidate->isDirty($field)) {
+                        throw ValidationException::withMessages([$field => 'This donation has already created inventory. Its donor, stock details and verification status cannot be changed here.']);
+                    }
                 }
             }
-        }
-        $donationRecord->update($data);
-        event(new DonationRecorded($donationRecord->fresh()));
-        $this->logAudit('donation_record.updated', $donationRecord, $data, $request);
+            $record->update($data);
+            event(new DonationRecorded($record->fresh()));
+            $this->logAudit('donation_record.updated', $record, $data, $request);
+        });
 
         return redirect()->route('donation-records.index')->with('success', 'Donation record updated.');
     }

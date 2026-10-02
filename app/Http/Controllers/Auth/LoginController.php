@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Support\PhilippinePhone;
+use App\Support\LoginIdentity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,23 +21,20 @@ class LoginController extends Controller
     {
         $data = $request->validated();
 
-        $login = trim($data['login']);
-        $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
-        $normalizedMobile = PhilippinePhone::normalizeMobileInput($login);
-        $isPhilippineMobile = $normalizedMobile !== null;
+        $identity = LoginIdentity::credential($data['login']);
 
-        if (! $isEmail && ! $isPhilippineMobile) {
+        if ($identity === null) {
             return back()->withErrors([
                 'login' => 'Use a valid email or Philippine mobile number.',
             ])->onlyInput('login');
         }
 
         $remember = $request->boolean('remember');
-        $loginValue = $isEmail ? $login : $normalizedMobile;
+        $loginValue = $identity['value'];
 
         // Try staff account first.
         $webCredentials = [
-            ($isEmail ? 'email' : 'phone') => $loginValue,
+            $identity['field'] => $loginValue,
             'password' => $data['password'],
             'is_active' => true,
         ];
@@ -52,7 +49,7 @@ class LoginController extends Controller
 
         // Fallback to donor account.
         $donorCredentials = [
-            ($isEmail ? 'email' : 'contact_number') => $loginValue,
+            ($identity['field'] === 'email' ? 'email' : 'contact_number') => $loginValue,
             'password' => $data['password'],
             'is_online_registered' => true,
         ];

@@ -3,117 +3,27 @@
 @php
     $currentUser = auth('web')->user();
     $canManageDonors = ! ($currentUser?->isCentralAdmin() ?? false) && ($currentUser?->can('manage donors') ?? false);
+    $tone = fn ($donor) => match ($donor->latestScreening?->status ?? 'awaiting') { 'eligible' => 'cbis-tone-success', 'deferred' => 'cbis-tone-danger', default => 'cbis-tone-warning' };
 @endphp
-<div class="cbis-page-heading">
-    <div>
-        <h1 class="cbis-page-title mb-0">Donors</h1>
-        <p class="cbis-page-subtitle">Manage donor profiles and access screening records.</p>
-    </div>
-    @if($canManageDonors)
-        <a href="{{ route('donors.create') }}" class="btn btn-danger">Add Donor</a>
-    @endif
-</div>
-<div class="card cbis-record-table" data-live-region="donor-list"><div class="table-responsive">
-@if(request('eligibility') === 'awaiting')
-<p class="small text-muted">Showing donors awaiting a screening decision. <a href="{{ route('donors.index') }}">View all donors</a></p>
-@endif
-    <table class="table table-hover align-middle mb-0">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Blood Type</th>
-                <th>Facility</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($donors as $donor)
-                <tr>
-                    <td>#{{ $donor->id }}</td>
-                    <td>{{ $donor->full_name }}</td>
-                    <td>{{ $donor->blood_type }}</td>
-                    <td>{{ $donor->facility->name ?? 'Not assigned' }}</td>
-                    <td class="text-nowrap">
-                        <a href="{{ route('donors.show', $donor) }}" class="btn btn-sm btn-outline-secondary">View</a>
-                        @if($canManageDonors)
-                            <details class="cbis-row-actions"><summary>More actions</summary><div class="cbis-row-action-list">
-                            <a href="{{ route('donors.edit', $donor) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form method="POST" action="{{ route('donors.destroy', $donor) }}" class="d-inline donor-delete-form" id="donor-delete-{{ $donor->id }}">
-                                @csrf
-                                @method('DELETE')
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-outline-danger js-open-delete-modal"
-                                    data-form-id="donor-delete-{{ $donor->id }}"
-                                    data-donor-name="{{ $donor->full_name }}"
-                                >
-                                    Delete
-                                </button>
-                            </form>
-                            </div></details>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="5"><div class="cbis-empty-state"><strong>No donor records yet</strong><span>Donor profiles appear here after registration or when Blood Bank Staff add a record.</span>@if($canManageDonors)<a href="{{ route('donors.create') }}" class="btn btn-danger mt-2">Add Donor</a>@endif</div></td></tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-@if($donors->hasPages())<div class="card-footer bg-white">{{ $donors->links() }}</div>@endif</div>
-
-@if($canManageDonors)
-    <div class="modal fade" id="deleteDonorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Donor Record</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mb-1">Are you sure you want to delete this donor record?</p>
-                    <p class="mb-1"><strong id="deleteDonorName">-</strong></p>
-                    <p class="text-danger mb-0"><strong>This action cannot be undone.</strong></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteDonorBtn">Yes, Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-@endif
+<div class="cbis-page-heading"><div><h1 class="cbis-page-title mb-0">Donors</h1><p class="cbis-page-subtitle">Find donor profiles and review their current screening status.</p></div>@if($canManageDonors)<a href="{{ route('donors.create') }}" class="btn btn-danger">Add donor</a>@endif</div>
+<form method="GET" action="{{ route('donors.index') }}" class="card card-body cbis-filter-card cbis-compact-form mb-3" data-auto-filter="true" data-auto-search="true"><div class="row g-2 align-items-end">
+<div class="col-lg-4"><label for="donor-search" class="form-label">Search donor</label><input id="donor-search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" placeholder="Name, email, or mobile number"></div>
+<div class="col-6 col-lg-2"><label for="donor-blood-type" class="form-label">Blood type</label><select id="donor-blood-type" name="blood_type" class="form-select"><option value="">All types</option>@foreach(\App\Models\BloodInventory::BLOOD_TYPES as $type)<option value="{{ $type }}" @selected(($filters['blood_type'] ?? '') === $type)>{{ $type }}</option>@endforeach</select></div>
+<div class="col-6 col-lg-2"><label for="donor-status" class="form-label">Eligibility</label><select id="donor-status" name="eligibility" class="form-select"><option value="">All statuses</option><option value="awaiting" @selected(($filters['eligibility'] ?? '') === 'awaiting')>Awaiting</option><option value="eligible" @selected(($filters['eligibility'] ?? '') === 'eligible')>Eligible</option><option value="deferred" @selected(($filters['eligibility'] ?? '') === 'deferred')>Deferred</option></select></div>
+<div class="col-lg-3"><label for="donor-facility" class="form-label">Facility</label><select id="donor-facility" name="facility_id" class="form-select"><option value="">All facilities</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string) ($filters['facility_id'] ?? '') === (string) $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
+<div class="col-lg-1 d-flex gap-2"><button class="btn btn-danger js-auto-filter-submit">Apply</button><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary" aria-label="Clear donor filters">Reset</a></div>
+</div></form>
+<div class="card cbis-record-table cbis-donor-directory" data-live-region="donor-list"><div class="table-responsive cbis-mobile-table-wrap"><table class="table table-hover align-middle mb-0 cbis-mobile-card-table"><thead><tr><th>Donor</th><th>Blood type</th><th>Facility</th><th>Eligibility</th><th>Action</th></tr></thead><tbody>
+@forelse($donors as $donor)
+<tr class="cbis-reservation-row"><td data-label="Donor"><strong>{{ $donor->full_name }}</strong><span class="cbis-record-meta">Donor #{{ $donor->id }}</span></td><td data-label="Blood type"><strong>{{ $donor->blood_type }}</strong></td><td data-label="Facility">{{ $donor->facility->name ?? 'Not assigned' }}</td><td data-label="Eligibility"><span class="cbis-inline-status {{ $tone($donor) }}">{{ $donor->screening_label }}</span></td><td data-label="Actions" class="cbis-record-actions text-nowrap"><a href="{{ route('donors.show', $donor) }}" class="btn btn-sm btn-outline-secondary">View</a>@if($canManageDonors)<details class="cbis-row-actions"><summary>More actions</summary><div class="cbis-row-action-list"><a href="{{ route('donors.edit', $donor) }}" class="btn btn-sm btn-outline-primary">Edit</a><form method="POST" action="{{ route('donors.destroy', $donor) }}" id="donor-delete-{{ $donor->id }}">@csrf @method('DELETE')<button type="button" class="btn btn-sm btn-outline-danger js-open-delete-modal" data-form-id="donor-delete-{{ $donor->id }}" data-donor-name="{{ $donor->full_name }}">Delete</button></form></div></details>@endif</td></tr>
+@empty
+<tr class="cbis-table-empty"><td colspan="5"><div class="cbis-empty-state"><strong>No matching donors</strong><span>Try clearing the filters or add a donor profile.</span><div class="d-flex gap-2 mt-2"><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary">Clear filters</a>@if($canManageDonors)<a href="{{ route('donors.create') }}" class="btn btn-danger">Add donor</a>@endif</div></div></td></tr>
+@endforelse
+</tbody></table></div>@if($donors->hasPages())<div class="card-footer bg-white">{{ $donors->links() }}</div>@endif</div>
+@if($canManageDonors)<div class="modal fade" id="deleteDonorModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Delete donor record</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p class="mb-1">Delete this donor record?</p><p class="mb-1"><strong id="deleteDonorName">-</strong></p><p class="text-danger mb-0"><strong>This action cannot be undone.</strong></p></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger" id="confirmDeleteDonorBtn">Delete donor</button></div></div></div></div>@endif
 @endsection
-
 @if($canManageDonors)
 @push('scripts')
-<script>
-(() => {
-    const modalElement = document.getElementById('deleteDonorModal');
-    if (!modalElement) return;
-
-    const modal = new bootstrap.Modal(modalElement);
-    const nameField = document.getElementById('deleteDonorName');
-    const confirmBtn = document.getElementById('confirmDeleteDonorBtn');
-    let targetFormId = null;
-
-    document.addEventListener('click', (event) => {
-        const button = event.target.closest('.js-open-delete-modal');
-        if (button) {
-            targetFormId = button.getAttribute('data-form-id');
-            const donorName = button.getAttribute('data-donor-name') || 'Selected donor';
-            nameField.textContent = donorName;
-            modal.show();
-        }
-    });
-
-    confirmBtn.addEventListener('click', () => {
-        if (!targetFormId) return;
-        const form = document.getElementById(targetFormId);
-        if (form) form.submit();
-    });
-})();
-</script>
+<script>(() => { const el=document.getElementById('deleteDonorModal'); if(!el)return; const modal=new bootstrap.Modal(el), name=document.getElementById('deleteDonorName'), confirm=document.getElementById('confirmDeleteDonorBtn'); let id=null; document.addEventListener('click',e=>{const b=e.target.closest('.js-open-delete-modal');if(!b)return;id=b.dataset.formId;name.textContent=b.dataset.donorName||'Selected donor';modal.show();});confirm.addEventListener('click',()=>{if(id)document.getElementById(id)?.submit();}); })();</script>
 @endpush
 @endif

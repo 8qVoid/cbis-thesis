@@ -4,6 +4,8 @@ use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureCentralControl;
 use App\Http\Middleware\EnsureFacilityAccess;
 use App\Http\Middleware\EnsureFacilityOperator;
+use App\Http\Middleware\EnsurePasswordSession;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [EnsureActiveAccount::class]);
+        $middleware->web(append: [EnsurePasswordSession::class, EnsureActiveAccount::class]);
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, EnsurePasswordSession::class);
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,

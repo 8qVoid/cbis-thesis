@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4>Edit Event Schedule</h4>
-<form method="POST" action="{{ route('donation-schedules.update', $donationSchedule) }}" class="card card-body" enctype="multipart/form-data">
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Events & activities</div><h1 class="cbis-page-title mb-0">Edit {{ $donationSchedule->title }}</h1><p class="cbis-page-subtitle">Update schedule, venue, contact, and map information.</p></div><a href="{{ route('donation-schedules.show', $donationSchedule) }}" class="btn btn-outline-secondary">Back to event</a></div>
+<form method="POST" action="{{ route('donation-schedules.update', $donationSchedule) }}" class="card card-body cbis-compact-form cbis-legacy-form" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="row g-3">
@@ -90,8 +90,9 @@
             <label class="form-label">Longitude</label>
             <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude', $donationSchedule->longitude) }}" readonly>
         </div>
-        <div class="col-12">
-            <button class="btn btn-danger">Update Event</button>
+        <div class="col-12 cbis-form-actions">
+            <a href="{{ route('donation-schedules.show', $donationSchedule) }}" class="btn btn-outline-secondary">Cancel</a>
+            <button class="btn btn-danger">Update event</button>
         </div>
     </div>
 </form>

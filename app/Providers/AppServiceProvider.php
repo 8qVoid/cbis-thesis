@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\LoginIdentity;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,10 +25,13 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Event listeners are auto-discovered in Laravel 13.
-        RateLimiter::for('login', function (Request $request): Limit {
-            $identifier = (string) $request->input('login', 'unknown');
+        RateLimiter::for('login', function (Request $request): array {
+            $identity = LoginIdentity::throttleKey($request->input('login'));
 
-            return Limit::perMinute(5)->by($identifier.'|'.$request->ip());
+            return [
+                Limit::perMinute(5)->by('identity:'.$identity.'|'.$request->ip()),
+                Limit::perMinute(30)->by('ip:'.$request->ip()),
+            ];
         });
 
         RateLimiter::for('donor-register', fn (Request $request): Limit => Limit::perMinutes(10, 3)->by((string) $request->ip()));

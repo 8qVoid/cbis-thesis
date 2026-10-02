@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Events\DonationRecorded;
 use App\Models\BloodInventory;
+use App\Support\DonationVolumePolicy;
+use Illuminate\Support\Facades\Validator;
 
 class IncreaseInventoryFromDonation
 {
@@ -14,6 +16,10 @@ class IncreaseInventoryFromDonation
         if ($record->status !== 'verified') {
             return;
         }
+
+        Validator::make(['volume_ml' => $record->volume_ml], [
+            'volume_ml' => DonationVolumePolicy::rules(),
+        ])->validate();
 
         BloodInventory::withTrashed()->firstOrCreate(['donation_record_id' => $record->id], [
             'facility_id' => $record->facility_id,

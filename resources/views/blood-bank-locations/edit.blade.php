@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4>Edit Blood Bank Location</h4>
-<form method="POST" action="{{ route('blood-bank-locations.update',$bloodBankLocation) }}" class="card card-body" enctype="multipart/form-data">@csrf @method('PUT')
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Public map</div><h1 class="cbis-page-title mb-0">Edit blood bank location</h1><p class="cbis-page-subtitle">Update contact information, photo, or map point.</p></div><a href="{{ route('blood-bank-locations.show', $bloodBankLocation) }}" class="btn btn-outline-secondary">Back to location</a></div>
+<form method="POST" action="{{ route('blood-bank-locations.update',$bloodBankLocation) }}" class="card card-body cbis-compact-form cbis-legacy-form" enctype="multipart/form-data">@csrf @method('PUT')
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">Facility</label><input class="form-control bg-light" value="{{ $bloodBankLocation->facility?->name ?? auth()->user()?->facility?->name ?? 'Assigned facility' }}" readonly><input type="hidden" name="facility_id" value="{{ $bloodBankLocation->facility_id }}"></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address',$bloodBankLocation->address) }}" required></div>
@@ -21,7 +21,7 @@
 </div>
 <div class="col-md-3"><label class="form-label">Latitude</label><input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude',$bloodBankLocation->latitude) }}" required readonly></div>
 <div class="col-md-3"><label class="form-label">Longitude</label><input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude',$bloodBankLocation->longitude) }}" required readonly></div>
-<div class="col-md-6 d-flex align-items-end"><button class="btn btn-danger">Update</button></div>
+<div class="col-md-6 d-flex align-items-end gap-2"><a href="{{ route('blood-bank-locations.show', $bloodBankLocation) }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Update location</button></div>
 </div></form>
 @endsection
 

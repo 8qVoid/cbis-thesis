@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('content')
-<h4>Create Event Schedule</h4>
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Events & activities</div><h1 class="cbis-page-title mb-0">Create event</h1><p class="cbis-page-subtitle">Add schedule, venue, contact, and public map information.</p></div><a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Back to events</a></div>
 <p class="alert alert-info">{{ auth()->user()->isQao() ? 'QAO activities are approved automatically. Select a map location; current or upcoming planned/ongoing activities will appear publicly.' : 'Your activity and map location remain private until QAO approval.' }}</p>
-<form method="POST" action="{{ route('donation-schedules.store') }}" class="card card-body" enctype="multipart/form-data">
+<form method="POST" action="{{ route('donation-schedules.store') }}" class="card card-body cbis-compact-form cbis-legacy-form" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
         @if(auth('web')->user()?->isCentralAdmin())
@@ -85,8 +85,9 @@
             <label class="form-label">Longitude</label>
             <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" placeholder="e.g. 120.9842000" readonly>
         </div>
-        <div class="col-12">
-            <button class="btn btn-danger">Save Event</button>
+        <div class="col-12 cbis-form-actions">
+            <a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button class="btn btn-danger">Save event</button>
         </div>
     </div>
 </form>

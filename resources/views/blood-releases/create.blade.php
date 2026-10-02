@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4>Record Blood Release</h4>
-<form method="POST" action="{{ route('blood-releases.store') }}" class="card card-body">@csrf
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Inventory release</div><h1 class="cbis-page-title mb-0">Record blood release</h1><p class="cbis-page-subtitle">Select available stock and record where and when it was released.</p></div><a href="{{ route('blood-releases.index') }}" class="btn btn-outline-secondary">Back to releases</a></div>
+<form method="POST" action="{{ route('blood-releases.store') }}" class="card card-body cbis-compact-form cbis-legacy-form">@csrf
 <div class="row g-3">
 @if($reservation)
 <input type="hidden" name="blood_reservation_id" value="{{ $reservation->id }}">
@@ -17,7 +17,7 @@
 <div class="col-md-3"><label class="form-label">Released At</label><input type="datetime-local" name="released_at" class="form-control" required></div>
 <div class="col-md-6"><label class="form-label">Patient Name</label><input name="patient_name" class="form-control"></div>
 <div class="col-md-6"><label class="form-label">Requesting Unit</label><input name="requesting_unit" class="form-control"></div>
-<div class="col-12"><button class="btn btn-danger">Save</button></div>
+<div class="col-12 cbis-form-actions"><a href="{{ route('blood-releases.index') }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Record release</button></div>
 @endif
 </div></form>
 @if($inventory->isNotEmpty())

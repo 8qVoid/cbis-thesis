@@ -9,12 +9,14 @@ use App\Models\Donor;
 use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\User;
-use App\Support\DonorScope;
 use App\Support\DonationAgePolicy;
+use App\Support\DonationVolumePolicy;
+use App\Support\DonorScope;
 use App\Support\MainChapter;
 use App\Traits\LogsAudit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -169,12 +171,14 @@ class CreateDonationRecord extends Component
         }
 
         $data['recorded_by'] = $user->id;
-        $record = DonationRecord::create($data);
+        $record = DB::transaction(function () use ($data) {
+            $record = DonationRecord::create($data);
+            $this->markEventRegistrationAsAttended($record);
+            event(new DonationRecorded($record));
+            $this->logAudit('donation_record.created', $record, $data);
 
-        $this->markEventRegistrationAsAttended($record);
-
-        event(new DonationRecorded($record));
-        $this->logAudit('donation_record.created', $record, $data);
+            return $record;
+        });
 
         session()->flash('success', $record->status === 'verified' ? 'Verified donation recorded and inventory added.' : 'Donation recorded. Inventory is added only after verification.');
 
@@ -203,7 +207,7 @@ class CreateDonationRecord extends Component
             'donation_no' => ['required', 'string', 'max:50', 'unique:donation_records,donation_no'],
             'donated_at' => ['required', 'date'],
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
-            'volume_ml' => ['required', 'integer', 'min:1', 'max:5000'],
+            'volume_ml' => DonationVolumePolicy::rules(),
             'expiration_date' => ['required', 'date', 'after:donated_at'],
             'status' => ['required', 'in:pending,verified,rejected'],
         ];

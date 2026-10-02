@@ -19,11 +19,11 @@ $icon ??= match (true) {
 
 @if($href)<a href="{{ $href }}" class="cbis-kpi cbis-kpi-link h-100" aria-label="{{ $label }}: {{ $value }}. View matching records">@else<div class="cbis-kpi h-100">@endif
     <div class="card-body">
-        <span class="cbis-kpi-icon"><x-ui.icon :name="$icon" /></span>
-        <div class="label mb-2">{{ $label }}</div>
+        <span class="cbis-kpi-icon" aria-hidden="true"><x-ui.icon :name="$icon" /></span>
+        <div class="label mb-1">{{ $label }}</div>
         <div class="value {{ $statusClass }}">{{ $value }}</div>
         @if($suffix)
-            <div class="small text-muted mt-1">{{ $suffix }}</div>
+            <div class="small text-muted mt-1 lh-sm">{{ $suffix }}</div>
         @endif
     </div>
 @if($href)</a>@else</div>@endif

@@ -4,16 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBloodInventoryRequest;
 use App\Http\Requests\UpdateBloodInventoryRequest;
+use App\Models\AuditLog;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
-use App\Models\AuditLog;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use App\Models\DonationRecord;
 use App\Models\Facility;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BloodInventoryController extends Controller
@@ -39,7 +40,7 @@ class BloodInventoryController extends Controller
 
         $scopedInventory = FacilityScope::apply(BloodInventory::query(), auth()->user());
         $storageRows = (clone $scopedInventory)
-            ->selectRaw('blood_type, component, SUM(units_available) as units, MIN(expiration_date) as next_expiration')
+            ->selectRaw('blood_type, component, SUM(units_available) as units, MIN(expiration_date) as next_expiration, COUNT(*) as batch_count')
             ->where('units_available', '>', 0)->where('status', '!=', 'expired')
             ->whereDate('expiration_date', '>=', today())->groupBy('blood_type', 'component')->get()
             ->keyBy(fn ($row) => $row->blood_type.'|'.$row->component);
@@ -79,7 +80,46 @@ class BloodInventoryController extends Controller
             ]);
         $stockMovements = $recentStockIns->concat($recentStockOuts)->concat($adjustments)
             ->sortByDesc(fn ($movement) => $movement['date']?->timestamp ?? 0)->take(20)->values();
+
         return view('blood-inventory.index', compact('inventory', 'storageRows', 'totalAvailableUnits', 'lowStockGroups', 'expiringStorageGroups', 'stockMovements'));
+    }
+
+    public function storage(Request $request): View
+    {
+        $filters = $request->validate([
+            'blood_type' => ['required', 'string', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
+            'component' => ['required', 'string', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))],
+            'expiration_date' => ['nullable', 'date_format:Y-m-d'],
+        ]);
+        $bloodType = $filters['blood_type'];
+        $componentKey = $filters['component'];
+        $componentLabel = BloodInventory::COMPONENTS[$componentKey];
+        $selectedExpiry = $filters['expiration_date'] ?? null;
+
+        $stockQuery = FacilityScope::apply(BloodInventory::query(), auth()->user())
+            ->where('blood_type', $bloodType)->where('component', $componentKey)
+            ->where('units_available', '>', 0)->where('status', '!=', 'expired')
+            ->whereDate('expiration_date', '>=', today());
+
+        $expiryGroups = (clone $stockQuery)
+            ->selectRaw('expiration_date, SUM(units_available) as units, COUNT(*) as batch_count')
+            ->groupBy('expiration_date')->orderBy('expiration_date')->get();
+        $totalUnits = (int) $expiryGroups->sum('units');
+        $batchCount = (int) $expiryGroups->sum('batch_count');
+        $filteredUnits = $selectedExpiry === null
+            ? $totalUnits
+            : (int) ($expiryGroups->first(fn ($group) => $group->expiration_date->toDateString() === $selectedExpiry)?->units ?? 0);
+
+        $batches = (clone $stockQuery)
+            ->with(['donationRecord:id,donation_no', 'facility'])
+            ->when($selectedExpiry, fn ($query, $date) => $query->whereDate('expiration_date', $date))
+            ->orderBy('expiration_date')->orderBy('id')
+            ->paginate(20)->withQueryString();
+
+        return view('blood-inventory.storage', compact(
+            'bloodType', 'componentKey', 'componentLabel', 'totalUnits', 'batchCount',
+            'expiryGroups', 'selectedExpiry', 'batches', 'filteredUnits',
+        ));
     }
 
     public function create(): View

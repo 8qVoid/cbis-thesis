@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4>Add Blood Bank Location</h4>
-<form method="POST" action="{{ route('blood-bank-locations.store') }}" class="card card-body" enctype="multipart/form-data">@csrf
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Public map</div><h1 class="cbis-page-title mb-0">Add blood bank location</h1><p class="cbis-page-subtitle">Add contact information, a photo, and a precise map point.</p></div><a href="{{ route('blood-bank-locations.index') }}" class="btn btn-outline-secondary">Back to locations</a></div>
+<form method="POST" action="{{ route('blood-bank-locations.store') }}" class="card card-body cbis-compact-form cbis-legacy-form" enctype="multipart/form-data">@csrf
 <div class="row g-3">
 @if(auth()->user()?->isQao())
 <div class="col-md-6"><label class="form-label">Facility</label><select name="facility_id" class="form-select" required><option value="">Select facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected((string) old('facility_id') === (string) $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>
@@ -18,7 +18,7 @@
 </div>
 <div class="col-md-3"><label class="form-label">Latitude</label><input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude') }}" required readonly></div>
 <div class="col-md-3"><label class="form-label">Longitude</label><input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" required readonly></div>
-<div class="col-md-6 d-flex align-items-end"><button class="btn btn-danger">Save</button></div>
+<div class="col-md-6 d-flex align-items-end gap-2"><a href="{{ route('blood-bank-locations.index') }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Save location</button></div>
 </div></form>
 @endsection
 

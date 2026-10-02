@@ -1,4 +1,4 @@
-@props(['status'])
+@props(['status', 'compact' => false])
 @php
     $help = [
         'submitted' => 'Received. Blood Bank Staff will review the request and documents.',
@@ -10,5 +10,5 @@
     ];
     $tone = in_array($status, ['approved', 'fulfilled']) ? 'success' : (in_array($status, ['rejected', 'cancelled']) ? 'danger' : 'warning');
 @endphp
-<span class="cbis-inline-status cbis-tone-{{ $tone }}">{{ str($status)->headline() }}</span>
-@if(isset($help[$status]))<small class="d-block text-muted mt-2">{{ $help[$status] }}</small>@endif
+<span class="cbis-inline-status cbis-tone-{{ $tone }}" @if($compact && isset($help[$status])) title="{{ $help[$status] }}" @endif>{{ str($status)->headline() }}</span>
+@if(! $compact && isset($help[$status]))<small class="d-block text-muted mt-2">{{ $help[$status] }}</small>@endif

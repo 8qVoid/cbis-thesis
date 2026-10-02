@@ -10,7 +10,7 @@
     $statusLabel = fn (int $units): string => $units === 0 ? 'No stock' : ($units <= 5 ? 'Low stock' : 'In storage');
 @endphp
 
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+<div class="cbis-page-heading">
     <div>
         <h1 class="cbis-page-title mb-0">Blood Inventory</h1>
         <p class="cbis-page-subtitle">Monitor stored blood, review batches, and track stock movements.</p>
@@ -47,10 +47,10 @@
     </section>
 </div>
 
-<section id="current-storage" class="card mb-4" data-live-region="inventory-storage">
+<section id="current-storage" class="card mb-3" data-live-region="inventory-storage">
     <div class="card-header cbis-card-title">
         <span>Current Storage</span>
-        <small class="text-muted">Grouped by blood type and component</small>
+        <small class="text-muted">Select a total to view stock batches by expiry date</small>
     </div>
     <div class="card-body">
         <div class="cbis-storage-grid" role="table" aria-label="Current blood storage by blood type and component">
@@ -67,15 +67,17 @@
                         @php($stock = $storageRows->get($bloodType.'|'.$componentKey))
                         @php($units = (int) ($stock?->units ?? 0))
                         <a
-                            href="{{ route('blood-inventory.index', ['blood_type' => $bloodType, 'component' => $componentKey]).'#stock-batches' }}"
+                            href="{{ route('blood-inventory.storage', ['blood_type' => $bloodType, 'component' => $componentKey]) }}"
                             class="cbis-storage-cell"
                             role="cell"
-                            aria-label="{{ $bloodType }} {{ $componentLabel }}: {{ $units }} units"
+                            aria-label="{{ $bloodType }} {{ $componentLabel }}: {{ $units }} units. View stock batches by expiry date"
                         >
-                            <span class="cbis-storage-units">{{ $units }}</span>
-                            <span class="cbis-inline-status {{ $statusClass($units) }}">{{ $statusLabel($units) }}</span>
+                            <span class="cbis-storage-cell-top">
+                                <span class="cbis-storage-units">{{ $units }}</span>
+                                <span class="cbis-inline-status {{ $statusClass($units) }}">{{ $statusLabel($units) }}</span>
+                            </span>
                             @if($stock?->next_expiration)
-                                <small>Next expiry {{ \Illuminate\Support\Carbon::parse($stock->next_expiration)->format('M d, Y') }}</small>
+                                <small>{{ (int) $stock->batch_count }} batch{{ (int) $stock->batch_count === 1 ? '' : 'es' }} · Next expiry {{ \Illuminate\Support\Carbon::parse($stock->next_expiration)->format('M d, Y') }}</small>
                             @else
                                 <small>No available stock</small>
                             @endif
@@ -147,7 +149,7 @@
     </div>
 </section>
 
-<section id="stock-movements" class="card mb-4" data-live-region="inventory-movements">
+<section id="stock-movements" class="card mb-3" data-live-region="inventory-movements">
     <div class="card-header cbis-card-title">
         <span>Recent Stock In / Out</span>
         <small class="text-muted">Latest 20 donations, releases, and recorded manual adjustments</small>

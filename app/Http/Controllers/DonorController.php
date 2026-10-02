@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDonorRequest;
 use App\Http\Requests\UpdateDonorRequest;
+use App\Models\BloodInventory;
 use App\Models\Donor;
 use App\Models\Facility;
 use App\Notifications\DonorScreeningUpdated;
@@ -50,13 +51,30 @@ class DonorController extends Controller
 
     public function index(): View
     {
-        $filters = request()->validate(['eligibility' => ['nullable', 'in:awaiting']]);
-        $donors = DonorScope::apply(Donor::query()->with('facility'), auth()->user())
-            ->when($filters['eligibility'] ?? null, fn ($query) => $query->where(fn ($donors) => $donors->whereDoesntHave('latestScreening')->orWhereHas('latestScreening', fn ($screening) => $screening->whereNotIn('status', ['eligible', 'deferred']))))
+        $filters = request()->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'blood_type' => ['nullable', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
+            'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
+            'eligibility' => ['nullable', 'in:awaiting,eligible,deferred'],
+        ]);
+        $donors = DonorScope::apply(Donor::query()->with(['facility', 'latestScreening']), auth()->user())
+            ->when($filters['q'] ?? null, function ($query, $search): void {
+                $term = '%'.addcslashes(trim($search), '%_\\').'%';
+                $query->where(fn ($donor) => $donor
+                    ->where('first_name', 'like', $term)->orWhere('middle_name', 'like', $term)
+                    ->orWhere('last_name', 'like', $term)->orWhere('email', 'like', $term)
+                    ->orWhere('contact_number', 'like', $term));
+            })
+            ->when($filters['blood_type'] ?? null, fn ($query, $type) => $query->where('blood_type', $type))
+            ->when($filters['facility_id'] ?? null, fn ($query, $facility) => $query->where('facility_id', $facility))
+            ->when(($filters['eligibility'] ?? null) === 'awaiting', fn ($query) => $query->where(fn ($donor) => $donor->whereDoesntHave('latestScreening')->orWhereHas('latestScreening', fn ($screening) => $screening->whereNotIn('status', ['eligible', 'deferred']))))
+            ->when(in_array($filters['eligibility'] ?? null, ['eligible', 'deferred'], true), fn ($query) => $query->whereHas('latestScreening', fn ($screening) => $screening->where('status', $filters['eligibility'])))
             ->latest()
             ->paginate(15)->withQueryString();
 
-        return view('donors.index', compact('donors'));
+        $facilities = Facility::query()->orderBy('name')->get(['id', 'name']);
+
+        return view('donors.index', compact('donors', 'facilities', 'filters'));
     }
 
     public function create(): View

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4>Add Donor</h4>
-<form method="POST" action="{{ route('donors.store') }}" class="card card-body">
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Donor records</div><h1 class="cbis-page-title mb-0">Add donor</h1><p class="cbis-page-subtitle">Create a donor identity and contact record for screening.</p></div><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary">Back to donors</a></div>
+<form method="POST" action="{{ route('donors.store') }}" class="card card-body cbis-compact-form cbis-legacy-form">
 @csrf
 <div class="row g-3">
 @if(auth('web')->user()?->isCentralAdmin())<div class="col-md-4"><label class="form-label">Home Facility (Optional)</label><select name="facility_id" class="form-select"><option value="">No default facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}">{{ $facility->name }}</option>@endforeach</select></div>@endif
@@ -14,7 +14,7 @@
 <div class="col-md-6"><label class="form-label">Mobile Number</label><input name="contact_number" class="form-control js-mobile-local" value="{{ \App\Support\PhilippinePhone::mobileLocal(old('contact_number')) }}" inputmode="numeric" minlength="11" maxlength="11" pattern="09\d{9}" title="Enter exactly 11 digits starting with 09" placeholder="09171234567"><small class="text-muted">Enter all 11 digits, starting with 09.</small></div>
 <div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control"></div>
 <div class="col-12"><label class="form-label">Address</label><x-negros-occidental-address-fields :address="old('address')" :required="false" /></div>
-<div class="col-12"><button class="btn btn-danger">Save</button></div>
+<div class="col-12 cbis-form-actions"><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Save donor</button></div>
 </div>
 </form>
 @endsection

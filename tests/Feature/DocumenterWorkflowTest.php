@@ -15,6 +15,7 @@ use App\Notifications\LowStockAlert;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -195,12 +196,17 @@ class DocumenterWorkflowTest extends TestCase
         Notification::assertSentTo($bbs, BloodReservationSubmitted::class);
 
         $document = $reservation->documents->first();
-        $this->actingAs($qao)->get(route('reservations.documents.show', [$reservation, $document]))->assertForbidden();
-        $preview = $this->actingAs($patient)->get(route('reservations.documents.show', [$reservation, $document]));
+        // Switch the persisted login as well as its password fingerprint when
+        // exercising different accounts in the same simulated browser.
+        Auth::guard('web')->login($qao);
+        $this->get(route('reservations.documents.show', [$reservation, $document]))->assertForbidden();
+        Auth::guard('web')->login($patient);
+        $preview = $this->get(route('reservations.documents.show', [$reservation, $document]));
         $preview->assertOk()->assertHeader('Content-Type', 'application/pdf')->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertStringStartsWith('inline;', $preview->headers->get('Content-Disposition'));
         $this->assertStringContainsString('no-store', $preview->headers->get('Cache-Control'));
-        $download = $this->actingAs($bbs)->get(route('reservations.documents.show', [$reservation, $document]).'?download=1');
+        Auth::guard('web')->login($bbs);
+        $download = $this->get(route('reservations.documents.show', [$reservation, $document]).'?download=1');
         $download->assertOk();
         $this->assertStringStartsWith('attachment;', $download->headers->get('Content-Disposition'));
         $this->actingAs($bbs)->get(route('reservations.show', $reservation))->assertOk()->assertSee('View document')->assertSee('documentViewer', false);
@@ -278,10 +284,14 @@ class DocumenterWorkflowTest extends TestCase
     {
         Storage::fake('local');
         $facility = $this->facility();
-        $patient = User::factory()->create(); $patient->assignRole('Patient');
-        $other = User::factory()->create(); $other->assignRole('Patient');
-        $bbs = User::factory()->create(['facility_id' => $facility->id]); $bbs->assignRole('Blood Bank Staff');
-        $outside = User::factory()->create(['facility_id' => $this->facility('OTHER')->id]); $outside->assignRole('Blood Bank Staff');
+        $patient = User::factory()->create();
+        $patient->assignRole('Patient');
+        $other = User::factory()->create();
+        $other->assignRole('Patient');
+        $bbs = User::factory()->create(['facility_id' => $facility->id]);
+        $bbs->assignRole('Blood Bank Staff');
+        $outside = User::factory()->create(['facility_id' => $this->facility('OTHER')->id]);
+        $outside->assignRole('Blood Bank Staff');
         $reservation = BloodReservation::create([
             'reference' => 'BR-PREVIEW', 'patient_user_id' => $patient->id, 'facility_id' => $facility->id,
             'blood_type' => 'O+', 'component' => 'whole_blood', 'units_requested' => 1, 'needed_on' => now()->addDay(),

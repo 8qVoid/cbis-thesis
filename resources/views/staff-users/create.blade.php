@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-<p class="alert alert-info">Blood Bank Staff must be assigned to the Bacolod main chapter. Branches have Event Facilitators for activity coordination.</p>
 @php
     $roleDescriptions = [
         'Event Facilitator' => 'Creates and manages donation activities. A QAO must approve a location before it becomes public.',
         'Blood Bank Staff' => 'Processes patient reservations, manages the facility inventory, and views detailed donor records.',
     ];
 @endphp
-<h4>Create Staff Account</h4>
-<form method="POST" action="{{ route('staff-users.store') }}" class="card card-body">
+<div class="cbis-page-heading"><div><div class="cbis-eyebrow">Staff access</div><h1 class="cbis-page-title mb-0">Create staff account</h1><p class="cbis-page-subtitle">Assign a facility role and temporary login password.</p></div><a href="{{ route('staff-users.index') }}" class="btn btn-outline-secondary">Back to staff</a></div>
+<p class="alert alert-info">Blood Bank Staff must be assigned to the Bacolod main chapter. Branches have Event Facilitators for activity coordination.</p>
+<form method="POST" action="{{ route('staff-users.store') }}" class="card card-body cbis-compact-form cbis-legacy-form">
     @csrf
     <div class="row g-3">
         <div class="col-md-4"><label class="form-label">Name</label><input name="name" class="form-control js-person-name" maxlength="255" pattern="[\p{L}\s.'-]+" value="{{ old('name') }}" required></div>
@@ -45,7 +45,7 @@
         </div>
         <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
         <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
-        <div class="col-12"><button class="btn btn-danger">Create Staff User</button></div>
+        <div class="col-12 cbis-form-actions"><a href="{{ route('staff-users.index') }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Create staff user</button></div>
     </div>
 </form>
 @endsection
