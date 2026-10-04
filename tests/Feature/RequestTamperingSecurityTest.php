@@ -50,7 +50,7 @@ class RequestTamperingSecurityTest extends TestCase
     public function test_newly_registered_public_account_cannot_call_staff_actions_directly(): void
     {
         $this->post(route('donor.register.store'), $this->registration())
-            ->assertRedirect(route('account.dashboard'));
+            ->assertRedirect(route('verification.notice'));
         $user = User::where('email', 'tamper.public@example.test')->sole();
         $this->assertSame(['Patient'], $user->getRoleNames()->all());
         $this->assertNull($user->facility_id);
@@ -225,7 +225,7 @@ class RequestTamperingSecurityTest extends TestCase
             'services' => ['patient'], 'first_name' => 'Public', 'last_name' => 'Tester',
             'birth_date' => '1995-01-01', 'sex' => 'female', 'contact_number' => '+639177770001',
             'email' => 'tamper.public@example.test', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
-            'password' => 'password123', 'password_confirmation' => 'password123',
+            'password' => 'StrongPass123!', 'password_confirmation' => 'StrongPass123!',
         ];
     }
 

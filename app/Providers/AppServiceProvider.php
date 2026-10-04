@@ -53,5 +53,10 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinutes(10, 6)->by(($identifier !== '' ? $identifier : 'guest').'|'.$request->ip());
         });
+        RateLimiter::for('verification-email', function (Request $request): Limit {
+            $identifier = (string) optional($request->user())->getAuthIdentifier();
+
+            return Limit::perMinutes(10, 3)->by(($identifier !== '' ? $identifier : 'guest').'|'.$request->ip());
+        });
     }
 }

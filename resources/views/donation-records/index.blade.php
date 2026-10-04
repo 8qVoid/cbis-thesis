@@ -16,7 +16,7 @@
 <div class="card cbis-record-table"><div class="table-responsive">
 <table class="table table-hover align-middle mb-0"><thead><tr><th>Donation reference</th><th>Donor</th><th>Blood type</th><th>Volume</th><th>Date</th><th>Action</th></tr></thead><tbody>
 @forelse($records as $record)
-<tr><td>{{ $record->donation_no }}</td><td>{{ $record->donor->full_name ?? '-' }}</td><td>{{ $record->blood_type }}</td><td>{{ $record->volume_ml }} ml</td><td>{{ $record->donated_at?->format('M j, Y · g:i A') }}</td><td class="cbis-table-actions"><a href="{{ route('donation-records.show',$record) }}" class="btn btn-sm btn-outline-secondary">View</a> @if($canManageDonationRecords)<a href="{{ route('donation-records.edit',$record) }}" class="btn btn-sm btn-outline-primary">Edit</a>@endif</td></tr>
+<tr><td>{{ $record->donation_no }}</td><td>{{ $record->donor->full_name ?? '-' }}</td><td>{{ $record->blood_type }}</td><td>{{ $record->volume_ml }} ml</td><td>{{ $record->donated_at?->format('M d, Y · g:i A') }}</td><td class="cbis-table-actions"><a href="{{ route('donation-records.show',$record) }}" class="btn btn-sm btn-outline-secondary">View</a> @if($canManageDonationRecords)<a href="{{ route('donation-records.edit',$record) }}" class="btn btn-sm btn-outline-primary">Edit</a>@endif</td></tr>
 @empty
 <tr><td colspan="6"><div class="cbis-empty-state"><strong>No donation records yet</strong><span>Verified donations will appear here and add stock to inventory.</span></div></td></tr>
 @endforelse

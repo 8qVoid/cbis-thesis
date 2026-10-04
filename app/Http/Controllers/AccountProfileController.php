@@ -42,8 +42,12 @@ class AccountProfileController extends Controller
             'phone' => ['required', 'regex:/^\+639\d{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
             'identity_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
-        DB::transaction(function () use ($request, $user, $data): void {
+        $emailChanged = $user->email !== $data['email'];
+        DB::transaction(function () use ($request, $user, $data, $emailChanged): void {
             unset($data['identity_document']);
+            if ($emailChanged) {
+                $user->forceFill(['email_verified_at' => null]);
+            }
             $user->update([...$data, 'name' => trim(implode(' ', array_filter([$data['first_name'], $data['middle_name'] ?? null, $data['last_name']])))]);
             $user->donorProfile()->update([
                 'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
@@ -52,6 +56,13 @@ class AccountProfileController extends Controller
             ]);
             self::storeIdentityDocument($user, $request);
         });
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('verification.notice')
+                ->with('success', 'Profile updated. Verify your new email address using the link we sent before continuing.');
+        }
 
         return redirect()->route('account.details.edit')->with('success', 'Profile updated.');
     }

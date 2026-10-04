@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<h4 class="mb-3">Add Facility</h4>
-<form method="POST" action="{{ route('facilities.store') }}" class="card card-body">
+<div class="cbis-page-heading"><div><h1 class="cbis-page-title mb-0">Add Facility</h1></div></div>
+<form method="POST" action="{{ route('facilities.store') }}" class="card card-body cbis-compact-form">
 @csrf
 <div class="row g-3">
 <div class="col-md-4"><label class="form-label">Code</label><input name="code" class="form-control" value="{{ old('code') }}" required></div>
@@ -11,7 +11,7 @@
 <div class="col-md-4"><label class="form-label">Contact Number</label><input name="contact_number" class="form-control js-contact-number" value="{{ old('contact_number') }}" inputmode="numeric" pattern="\d*" maxlength="30" placeholder="09171234567"><small class="text-muted">Numbers only. Mobile or landline accepted.</small></div>
 <div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="{{ old('email') }}"></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address') }}"></div>
-<div class="col-12"><button class="btn btn-danger">Save</button></div>
+<div class="col-12 cbis-form-actions"><button class="btn btn-danger">Save</button></div>
 </div>
 </form>
 @endsection

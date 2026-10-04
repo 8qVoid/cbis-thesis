@@ -3,25 +3,32 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-danger text-white">Change Password</div>
+        <div class="cbis-page-heading">
+            <div>
+                <h1 class="cbis-page-title mb-0">Change Password</h1>
+                <p class="cbis-page-subtitle">Confirm your current password to update your account security.</p>
+            </div>
+        </div>
+        <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('password.update') }}">
+                <form method="POST" action="{{ route('password.update') }}" class="cbis-compact-form">
                     @csrf
                     @method('PUT')
                     <div class="mb-3">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" name="current_password" class="form-control" required>
+                        <label for="current-password" class="form-label">Current Password</label>
+                        <input id="current-password" type="password" name="current_password" class="form-control" autocomplete="current-password" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">New Password</label>
-                        <input type="password" name="password" class="form-control" required>
+                        <label for="new-password" class="form-label">New Password</label>
+                        <input id="new-password" type="password" name="password" class="form-control" autocomplete="new-password" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Confirm New Password</label>
-                        <input type="password" name="password_confirmation" class="form-control" required>
+                        <label for="confirm-new-password" class="form-label">Confirm New Password</label>
+                        <input id="confirm-new-password" type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required>
                     </div>
-                    <button class="btn btn-danger w-100" type="submit">Update Password</button>
+                    <div class="cbis-form-actions">
+                        <button class="btn btn-danger" type="submit">Update Password</button>
+                    </div>
                 </form>
             </div>
         </div>

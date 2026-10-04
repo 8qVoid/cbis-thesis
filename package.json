@@ -3,7 +3,9 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "npm run build:password-estimator && vite build",
+        "build:password-estimator": "node scripts/build-password-estimator.mjs",
+        "test:password-strength": "node tests/JavaScript/password-strength.test.cjs",
         "dev": "vite"
     },
     "devDependencies": {
@@ -13,5 +15,8 @@
         "laravel-vite-plugin": "^3.0.0",
         "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
+    },
+    "dependencies": {
+        "zxcvbn": "4.4.2"
     }
 }

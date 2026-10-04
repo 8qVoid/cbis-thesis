@@ -34,15 +34,16 @@ class DocumenterWorkflowTest extends TestCase
     {
         $facility = $this->facility();
         $response = $this->post(route('donor.register.store'), [
-            'services' => ['donor', 'patient'], 'facility_id' => $facility->id,
+            'services' => ['donor', 'patient'],
             'first_name' => 'Maria', 'middle_name' => '', 'last_name' => 'Santos',
             'birth_date' => '1995-01-01', 'sex' => 'female', 'blood_type' => 'O+',
             'contact_number' => '09171234567', 'email' => 'maria@example.test',
-            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'password123', 'password_confirmation' => 'password123',
+            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'StrongPass123!', 'password_confirmation' => 'StrongPass123!',
         ]);
 
         $user = User::where('email', 'maria@example.test')->firstOrFail();
-        $response->assertRedirect(route('account.dashboard'));
+        $response->assertRedirect(route('verification.notice'));
+        $user->markEmailAsVerified();
         $this->assertTrue($user->hasAllRoles(['Donor', 'Patient']));
         $this->assertNotNull($user->donorProfile);
         $this->assertNotNull($user->patientProfile);
@@ -61,12 +62,12 @@ class DocumenterWorkflowTest extends TestCase
         $underageBirthDate = today()->subYears(17)->toDateString();
 
         $this->post(route('donor.register.store'), [
-            'services' => ['donor'], 'facility_id' => $facility->id,
+            'services' => ['donor'],
             'first_name' => 'Young', 'last_name' => 'Donor', 'birth_date' => $underageBirthDate,
             'sex' => 'male', 'blood_type' => 'O+', 'contact_number' => '09170000001',
             'email' => 'young-donor@example.test', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
-            'password' => 'password123', 'password_confirmation' => 'password123',
-        ])->assertRedirect(route('account.dashboard'));
+            'password' => 'StrongPass123!', 'password_confirmation' => 'StrongPass123!',
+        ])->assertRedirect(route('verification.notice'));
 
         $donorUser = User::where('email', 'young-donor@example.test')->firstOrFail();
         $this->assertTrue($donorUser->hasRole('Donor'));
@@ -74,14 +75,15 @@ class DocumenterWorkflowTest extends TestCase
         $this->post(route('logout'))->assertRedirect(route('login'));
 
         $this->post(route('donor.register.store'), [
-            'services' => ['patient'], 'facility_id' => $facility->id,
+            'services' => ['patient'],
             'first_name' => 'Young', 'last_name' => 'Patient', 'birth_date' => $underageBirthDate,
             'sex' => 'male', 'contact_number' => '09170000002',
             'email' => 'young-patient@example.test', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
-            'password' => 'password123', 'password_confirmation' => 'password123',
-        ])->assertRedirect(route('account.dashboard'));
+            'password' => 'StrongPass123!', 'password_confirmation' => 'StrongPass123!',
+        ])->assertRedirect(route('verification.notice'));
 
         $patient = User::where('email', 'young-patient@example.test')->firstOrFail();
+        $patient->markEmailAsVerified();
         $this->assertTrue($patient->hasRole('Patient'));
         $this->assertFalse($patient->hasRole('Donor'));
 
@@ -172,12 +174,13 @@ class DocumenterWorkflowTest extends TestCase
         $bbs->assignRole('Blood Bank Staff');
 
         $this->post(route('donor.register.store'), [
-            'services' => ['patient'], 'facility_id' => $facility->id,
+            'services' => ['patient'],
             'first_name' => 'Paolo', 'last_name' => 'Patient', 'birth_date' => '1990-05-05',
             'sex' => 'male', 'contact_number' => '09181234567', 'email' => 'paolo@example.test',
-            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'password123', 'password_confirmation' => 'password123',
-        ])->assertRedirect(route('account.dashboard'));
+            'address' => 'Barangay I (Pob.), Manapla, Negros Occidental', 'password' => 'StrongPass123!', 'password_confirmation' => 'StrongPass123!',
+        ])->assertRedirect(route('verification.notice'));
         $patient = User::where('email', 'paolo@example.test')->firstOrFail();
+        $patient->markEmailAsVerified();
         $this->assertTrue($patient->hasRole('Patient'));
         $this->assertFalse($patient->hasRole('Donor'));
 

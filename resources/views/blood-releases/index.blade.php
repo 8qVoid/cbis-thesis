@@ -16,7 +16,7 @@
 <div class="card cbis-record-table"><div class="table-responsive">
 <table class="table table-hover align-middle mb-0"><thead><tr><th>Blood Type</th><th>Units</th><th>Date</th><th>Patient</th><th>Action</th></tr></thead><tbody>
 @forelse($releases as $release)
-<tr><td><strong>{{ $release->inventory->blood_type ?? 'Not recorded' }}</strong><small class="d-block text-muted">{{ $release->inventory?->component_label }}</small></td><td>{{ $release->units_released }}</td><td>{{ $release->released_at?->format('M j, Y · g:i A') }}</td><td>{{ $release->patient_name }}</td><td><a href="{{ route('blood-releases.show',$release) }}" class="btn btn-sm btn-outline-secondary">View</a></td></tr>
+<tr><td><strong>{{ $release->inventory->blood_type ?? 'Not recorded' }}</strong><small class="d-block text-muted">{{ $release->inventory?->component_label }}</small></td><td>{{ $release->units_released }}</td><td>{{ $release->released_at?->format('M d, Y · g:i A') }}</td><td>{{ $release->patient_name }}</td><td class="cbis-table-actions"><a href="{{ route('blood-releases.show',$release) }}" class="btn btn-sm btn-outline-secondary">View</a></td></tr>
 @empty
 <tr><td colspan="5"><div class="cbis-empty-state"><strong>No blood releases yet</strong><span>Recorded releases will appear here with the patient, quantity, and date.</span></div></td></tr>
 @endforelse

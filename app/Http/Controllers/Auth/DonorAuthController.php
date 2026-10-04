@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\AccountProfileController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\DonorSelfRegisterRequest;
 use App\Models\DonationSchedule;
 use App\Models\Donor;
-use App\Models\EventRegistration;
-use App\Models\Facility;
 use App\Models\PatientProfile;
 use App\Models\User;
-use App\Support\DonationAgePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,11 +29,8 @@ class DonorAuthController extends Controller
 
     public function showRegister(): View
     {
-        $facilities = Facility::query()->where('is_active', true)->orderBy('name')->get();
         $selectedService = request()->string('service')->value();
         $selectedService = in_array($selectedService, ['donor', 'patient'], true) ? $selectedService : 'donor';
-        $requestedFacilityId = request()->integer('facility_id');
-        $selectedFacilityId = $facilities->contains('id', $requestedFacilityId) ? $requestedFacilityId : null;
         $selectedEvent = null;
         $eventId = request()->integer('event_id');
 
@@ -50,12 +44,9 @@ class DonorAuthController extends Controller
             if ($selectedEvent && ! $selectedEvent->isRegistrationOpen()) {
                 $selectedEvent = null;
             }
-            if ($selectedEvent) {
-                $selectedFacilityId = $selectedEvent->facility_id;
-            }
         }
 
-        return view('donor-auth.register', compact('facilities', 'selectedFacilityId', 'selectedEvent', 'selectedService'));
+        return view('donor-auth.register', compact('selectedEvent', 'selectedService'));
     }
 
     public function register(DonorSelfRegisterRequest $request): RedirectResponse
@@ -69,7 +60,7 @@ class DonorAuthController extends Controller
         }
         unset($data['event_id'], $data['services'], $data['password_confirmation']);
 
-        [$user, $donor] = DB::transaction(function () use ($request, $data, $services): array {
+        [$user, $donor] = DB::transaction(function () use ($request, $data, $eventId, $services): array {
             $user = User::create([
                 'name' => trim($data['first_name'].' '.($data['middle_name'] ?? '').' '.$data['last_name']),
                 'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
@@ -83,7 +74,7 @@ class DonorAuthController extends Controller
             if (in_array('donor', $services, true)) {
                 $roles[] = 'Donor';
                 $donor = Donor::create([
-                    'user_id' => $user->id, 'facility_id' => $data['facility_id'] ?? null,
+                    'user_id' => $user->id, 'facility_id' => null,
                     'first_name' => $data['first_name'], 'middle_name' => $data['middle_name'] ?? null,
                     'last_name' => $data['last_name'], 'birth_date' => $data['birth_date'], 'sex' => $data['sex'],
                     'blood_type' => $data['blood_type'], 'contact_number' => $data['contact_number'],
@@ -95,6 +86,7 @@ class DonorAuthController extends Controller
                 PatientProfile::create(['user_id' => $user->id]);
             }
             $user->syncRoles($roles);
+            $user->forceFill(['pending_event_id' => $eventId])->save();
             AccountProfileController::storeIdentityDocument($user, $request);
 
             return [$user, $donor];
@@ -102,40 +94,10 @@ class DonorAuthController extends Controller
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
-        $registeredForEvent = false;
+        $user->sendEmailVerificationNotification();
 
-        if ($eventId && $donor && DonationAgePolicy::isOldEnough($donor->birth_date)) {
-            $event = DonationSchedule::query()
-                ->where('is_public', true)->where('approval_status', 'approved')
-                ->whereDate('event_date', '>=', now()->toDateString())
-                ->find($eventId);
-
-            if ($event?->isRegistrationOpen()) {
-                EventRegistration::query()->updateOrCreate(
-                    [
-                        'donation_schedule_id' => $event->id,
-                        'donor_id' => $donor->id,
-                    ],
-                    [
-                        'facility_id' => $event->facility_id,
-                        'status' => 'registered',
-                        'registered_at' => now(),
-                    ]
-                );
-                $registeredForEvent = true;
-            }
-        }
-
-        $message = $registeredForEvent
-            ? 'Donor registration successful. You are now registered for the selected event.'
-            : 'Donor registration successful.';
-        if ($eventId && ! $registeredForEvent) {
-            $message .= DonationAgePolicy::isOldEnough($donor?->birth_date)
-                ? ' The selected activity is no longer open. Please choose another event from the map.'
-                : ' You can keep your donor account, but event registration opens when you are at least '.DonationAgePolicy::MINIMUM_AGE.'.';
-        }
-
-        return redirect()->route('account.dashboard')->with('success', str_replace('Donor registration', 'Account registration', $message));
+        return redirect()->route('verification.notice')
+            ->with('success', 'Account created. Open the verification link sent to your email to activate your account.');
     }
 
     public function logout(Request $request): RedirectResponse

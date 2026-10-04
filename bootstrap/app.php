@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureCentralControl;
 use App\Http\Middleware\EnsureFacilityAccess;
 use App\Http\Middleware\EnsureFacilityOperator;
 use App\Http\Middleware\EnsurePasswordSession;
+use App\Http\Middleware\EnsurePublicAccountEmailVerified;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'facility.access' => EnsureFacilityAccess::class,
             'central.control' => EnsureCentralControl::class,
             'facility.operator' => EnsureFacilityOperator::class,
+            'public.verified' => EnsurePublicAccountEmailVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

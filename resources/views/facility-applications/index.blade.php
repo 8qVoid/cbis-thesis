@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="cbis-page-heading">
     <div>
         <h1 class="cbis-page-title mb-0">Facility Applications</h1>
         <p class="cbis-page-subtitle">Review legitimacy and DOH accreditation submissions.</p>
@@ -21,8 +21,8 @@
     </div>
 </form>
 
-<div class="table-responsive">
-    <table class="table table-striped bg-white">
+<div class="card cbis-record-table table-responsive">
+    <table class="table table-striped mb-0">
         <thead>
             <tr>
                 <th>Organization</th>

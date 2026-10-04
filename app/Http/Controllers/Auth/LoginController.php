@@ -42,6 +42,16 @@ class LoginController extends Controller
         if (Auth::guard('web')->attempt($webCredentials, $remember)) {
             $request->session()->regenerate();
             $user = Auth::guard('web')->user();
+
+            if ($user->hasAnyRole(['Donor', 'Patient']) && ! $user->hasVerifiedEmail()) {
+                $intended = (string) $request->session()->get('url.intended', '');
+                if (str_starts_with((string) parse_url($intended, PHP_URL_PATH), '/email/verify/')) {
+                    return redirect()->intended(route('verification.notice'));
+                }
+                $request->session()->forget('url.intended');
+
+                return redirect()->route('verification.notice');
+            }
             $request->session()->forget('url.intended');
 
             return redirect()->route($user->hasAnyRole(['Donor', 'Patient']) ? 'account.dashboard' : 'dashboard');

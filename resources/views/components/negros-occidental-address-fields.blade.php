@@ -24,13 +24,13 @@
     <input type="hidden" name="address" value="{{ $addressValue }}" @required($required)>
 
     <div class="{{ $provinceClass }}">
-        <label class="form-label">Province</label>
-        <input class="form-control" value="{{ \App\Support\NegrosOccidentalAddress::PROVINCE }}" disabled>
+        <label class="form-label" for="{{ $fieldId }}-province">Province</label>
+        <input id="{{ $fieldId }}-province" class="form-control" value="{{ \App\Support\NegrosOccidentalAddress::PROVINCE }}" disabled>
     </div>
 
     <div class="{{ $cityClass }}">
-        <label class="form-label">City / Municipality</label>
-        <select class="form-select js-negros-city" @required($required)>
+        <label class="form-label" for="{{ $fieldId }}-city">City / Municipality @if($required)<span class="cbis-required-marker" aria-hidden="true">*</span>@endif</label>
+        <select id="{{ $fieldId }}-city" class="form-select js-negros-city @error('address') is-invalid @enderror" @required($required) @error('address') aria-invalid="true" aria-describedby="{{ $fieldId }}-error" @enderror>
             <option value="">Select city / municipality</option>
             @foreach($cities as $city)
                 <option value="{{ $city }}" @selected($selectedAddress['city'] === $city)>{{ \App\Support\NegrosOccidentalAddress::cityLabel($city) }}</option>
@@ -39,15 +39,15 @@
     </div>
 
     <div class="{{ $barangayClass }}">
-        <label class="form-label">Barangay</label>
-        <select class="form-select js-negros-barangay" @required($required) disabled>
+        <label class="form-label" for="{{ $fieldId }}-barangay">Barangay @if($required)<span class="cbis-required-marker" aria-hidden="true">*</span>@endif</label>
+        <select id="{{ $fieldId }}-barangay" class="form-select js-negros-barangay @error('address') is-invalid @enderror" @required($required) disabled @error('address') aria-invalid="true" aria-describedby="{{ $fieldId }}-error" @enderror>
             <option value="">Select barangay</option>
         </select>
     </div>
 
     @error('address')
         <div class="col-12">
-            <div class="text-danger small">{{ $message }}</div>
+            <div id="{{ $fieldId }}-error" class="cbis-field-error invalid-feedback d-block" role="alert">{{ $message }}</div>
         </div>
     @enderror
 </div>

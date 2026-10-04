@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<h4 class="mb-3">Facility Application Review</h4>
+<div class="cbis-page-heading"><div><h1 class="cbis-page-title mb-0">Facility Application Review</h1></div></div>
 
 <div class="card card-body mb-3">
     <p><strong>Organization:</strong> {{ $application->organization_name }}</p>
@@ -21,7 +21,7 @@
 <form
     method="POST"
     action="{{ route('facility-applications.review', $application) }}"
-    class="card card-body js-confirm-action js-facility-review-form"
+    class="card card-body cbis-compact-form js-confirm-action js-facility-review-form"
     data-current-status="{{ $application->status }}"
     data-has-facility="{{ $application->facility_id ? '1' : '0' }}"
 >
@@ -40,7 +40,7 @@
             <label class="form-label">Review Notes</label>
             <textarea name="review_notes" rows="4" class="form-control">{{ old('review_notes', $application->review_notes) }}</textarea>
         </div>
-        <div class="col-12">
+        <div class="col-12 cbis-form-actions">
             <button class="btn btn-danger">Save Review</button>
         </div>
     </div>

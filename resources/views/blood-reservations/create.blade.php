@@ -89,7 +89,7 @@
             </div>
         </fieldset>
 
-        <div class="cbis-form-actions">
+        <div class="cbis-form-actions cbis-mobile-form-actions">
             <button class="btn btn-danger">Submit Reservation</button>
         </div>
     </div>

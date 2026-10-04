@@ -1,11 +1,15 @@
 @extends('layouts.app')
 @section('content')
-<div class="mb-3">
-    <h1 class="cbis-page-title mb-0">Events, Facilities and Map</h1>
-    <p class="cbis-page-subtitle">Upcoming public activities and blood service facilities in Negros.</p>
+<div class="cbis-page-heading">
+    <div>
+        <h1 class="cbis-page-title mb-0">Events, Facilities and Map</h1>
+        <p class="cbis-page-subtitle">Upcoming public activities and blood service facilities in Negros.</p>
+    </div>
 </div>
 
-@include('public-portal.partials.nav')
+@if(! auth('web')->check() && ! auth('donor')->check())
+    @include('public-portal.partials.nav')
+@endif
 
 <form method="GET" class="card card-body mb-3 cbis-filter-card" data-auto-filter="true">
     <div class="row g-2">

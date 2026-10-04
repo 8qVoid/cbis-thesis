@@ -6,6 +6,7 @@ use App\Http\Requests\BaseFormRequest;
 use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class DonorSelfRegisterRequest extends BaseFormRequest
 {
@@ -29,7 +30,6 @@ class DonorSelfRegisterRequest extends BaseFormRequest
         return [
             'services' => ['required', 'array', 'min:1'],
             'services.*' => ['required', 'distinct', Rule::in(['donor', 'patient'])],
-            'facility_id' => ['nullable', 'integer', 'exists:facilities,id'],
             'event_id' => ['nullable', 'integer', 'exists:donation_schedules,id'],
             'first_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
             'last_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
@@ -41,8 +41,18 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
             'identity_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->mixedCase()->letters()->numbers()->symbols()],
             'password_confirmation' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'services.required' => 'Select at least one service to continue.',
+            'services.min' => 'Select at least one service to continue.',
+            'birth_date.before' => 'Birth date must be before today.',
+            'blood_type.required' => 'Select your blood type to register as a donor.',
         ];
     }
 }

@@ -119,7 +119,7 @@ class DashboardPresentationTest extends TestCase
             'first_name' => 'Updated', 'middle_name' => null, 'last_name' => 'User', 'address' => 'Barangay I (Pob.), Manapla, Negros Occidental',
             'email' => 'updated@example.test', 'phone' => '09917987654',
             'services' => ['patient'], 'is_eligible' => true,
-        ])->assertRedirect(route('account.details.edit'));
+        ])->assertRedirect(route('verification.notice'));
         $this->assertSame('Updated User', $user->fresh()->name);
         $this->assertSame('updated@example.test', $user->fresh()->email);
         $this->assertSame('+639917987654', $user->fresh()->phone);
@@ -128,6 +128,9 @@ class DashboardPresentationTest extends TestCase
         $this->assertFalse($donor->fresh()->is_eligible);
         $this->assertTrue($user->fresh()->hasRole('Donor'));
         $this->assertFalse($user->fresh()->hasRole('Patient'));
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+
+        $user->refresh()->markEmailAsVerified();
 
         $this->put(route('account.details.update'), [
             'first_name' => 'Updated2', 'middle_name' => null, 'last_name' => 'User',

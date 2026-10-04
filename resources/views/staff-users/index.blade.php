@@ -6,7 +6,7 @@
     $canCreateStaff = ($currentUser?->isCentralAdmin() ?? false) || ($currentUser?->can('manage users') ?? false);
     $canEditStaff = $currentUser?->can('manage users') ?? false;
 @endphp
-<div class="d-flex flex-wrap gap-3 justify-content-between align-items-start mb-3">
+<div class="cbis-page-heading">
     <div>
         <h1 class="cbis-page-title mb-0">User Management</h1>
         <p class="cbis-page-subtitle">Manage staff and public accounts. Donors and patients are public users.</p>
@@ -37,7 +37,7 @@
     </div>
 </form>
 <p class="small text-muted">{{ $users->total() }} matching {{ str('account')->plural($users->total()) }} · Showing {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}</p>
-<div class="table-responsive cbis-users-table">
+<div class="table-responsive cbis-users-table cbis-record-table">
 <table class="table bg-white align-middle">
     <thead><tr><th>Account</th><th>Contact</th><th>Facility</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
     <tbody>
@@ -52,7 +52,7 @@
                     {{ $user->is_active ? 'Active' : 'Inactive' }}
                 </span>
             </td>
-            <td class="cbis-account-actions">
+            <td class="cbis-account-actions cbis-table-actions">
                 @if($canEditStaff && ! $user->is($currentUser))
                     <div class="dropdown">
                         <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle js-account-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $user->name }}">Actions</button>

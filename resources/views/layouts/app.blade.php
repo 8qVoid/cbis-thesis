@@ -84,11 +84,11 @@
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 @if($webAuthenticated)
-                    <li class="nav-item"><a class="nav-link" href="{{ $webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard') }}">Home</a></li>
-                    @if($webUser?->hasPatientAccess())<li class="nav-item"><a class="nav-link" href="{{ route('reservations.index') }}">Blood Requests</a></li>@endif
+                    <li class="nav-item"><a @class(['nav-link', 'active' => request()->routeIs('account.dashboard', 'dashboard')]) @if(request()->routeIs('account.dashboard', 'dashboard')) aria-current="page" @endif href="{{ $webUser?->hasAnyRole(['Donor','Patient']) ? route('account.dashboard') : route('dashboard') }}">Home</a></li>
+                    @if($webUser?->hasPatientAccess())<li class="nav-item"><a @class(['nav-link', 'active' => request()->routeIs('reservations.*')]) @if(request()->routeIs('reservations.*')) aria-current="page" @endif href="{{ route('reservations.index') }}">Blood Requests</a></li>@endif
                     @if($webUser?->hasDonorAccess())
-                        <li class="nav-item"><a class="nav-link" href="{{ route('public.map') }}">Events & Map</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('donor.events.index') }}">My Registrations</a></li>
+                        <li class="nav-item"><a @class(['nav-link', 'active' => request()->routeIs('public.map')]) @if(request()->routeIs('public.map')) aria-current="page" @endif href="{{ route('public.map') }}">Events & Map</a></li>
+                        <li class="nav-item"><a @class(['nav-link', 'active' => request()->routeIs('donor.events.*')]) @if(request()->routeIs('donor.events.*')) aria-current="page" @endif href="{{ route('donor.events.index') }}">My Registrations</a></li>
                     @endif
                 @else
                     @if(! $donorAuthenticated)
@@ -123,7 +123,7 @@
                                 @endif
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-0 cbis-notification-menu">
-                                <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                <div class="cbis-notification-header px-3 py-2 border-bottom">
                                     <strong>{{ $notificationTitle }}</strong>
                                     <form method="POST" action="{{ route('notifications.read-all') }}">
                                         @csrf
@@ -181,10 +181,9 @@
                             <span aria-hidden="true">⌄</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end cbis-account-menu">
-                            <div class="px-3 py-2 border-bottom mb-2"><strong class="d-block text-break">{{ $webUser->name }}</strong><small class="text-muted">{{ $roleLabel }}</small></div>
-                            @if($webUser->hasAnyRole(['Donor','Patient']))<a class="dropdown-item" href="{{ route('account.details.edit') }}">My Profile</a>@endif
-                            @if($webUser->hasRole('Blood Bank Staff'))<a class="dropdown-item" href="{{ route('staff-profile.edit') }}">My Profile</a>@endif
-                            <a class="dropdown-item" href="{{ route('password.change') }}">Change Password</a>
+                            @if($webUser->hasAnyRole(['Donor','Patient']))<a @class(['dropdown-item', 'active' => request()->routeIs('account.details.*', 'account.profile.*')]) @if(request()->routeIs('account.details.*', 'account.profile.*')) aria-current="page" @endif href="{{ route('account.details.edit') }}">Profile</a>@endif
+                            @if($webUser->hasRole('Blood Bank Staff'))<a @class(['dropdown-item', 'active' => request()->routeIs('staff-profile.*')]) @if(request()->routeIs('staff-profile.*')) aria-current="page" @endif href="{{ route('staff-profile.edit') }}">Profile</a>@endif
+                            <a @class(['dropdown-item', 'active' => request()->routeIs('password.change')]) @if(request()->routeIs('password.change')) aria-current="page" @endif href="{{ route('password.change') }}">Change Password</a>
                             <div class="dropdown-divider"></div>
                             <form method="POST" action="{{ route('logout') }}" class="js-logout-form">@csrf<button class="dropdown-item text-danger" type="submit">Logout</button></form>
                         </div>
@@ -200,7 +199,7 @@
     <div class="cbis-staff-shell">
         @include('partials.section-tabs')
 @endif
-<main id="main-content" class="{{ $webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-staff-content' : 'container cbis-main' }} py-4">
+<main id="main-content" class="{{ $webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-staff-content' : 'container cbis-main' }} {{ $webUser?->hasAnyRole(['Donor','Patient']) ? 'cbis-member-content' : '' }} py-4">
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show js-flash-message" role="status" data-dismiss-after="5000">
             {{ session('success') }}
@@ -273,6 +272,7 @@
 <script src="{{ asset('js/cbis-maps.js') }}?v={{ filemtime(public_path('js/cbis-maps.js')) }}"></script>
 <script>
 let cbisPendingConfirmForm = null;
+let cbisPendingConfirmSubmitter = null;
 const cbisConfirmModalElement = document.getElementById('cbisConfirmModal');
 const cbisConfirmModal = cbisConfirmModalElement ? new bootstrap.Modal(cbisConfirmModalElement) : null;
 const cbisConfirmTitle = document.getElementById('cbisConfirmTitle');
@@ -282,12 +282,23 @@ const cbisConfirmButton = document.getElementById('cbisConfirmButton');
 document.addEventListener('submit', (event) => {
     const form = event.target.closest('.js-confirm-action');
     if (form) {
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            form.reportValidity();
+            return;
+        }
+
         if (form.dataset.confirmed === 'true' || !cbisConfirmModal) {
             return;
         }
 
         event.preventDefault();
         cbisPendingConfirmForm = form;
+        cbisPendingConfirmSubmitter = event.submitter;
 
         cbisConfirmTitle.textContent = form.dataset.confirmTitle || 'Confirm action?';
         cbisConfirmMessage.textContent = form.dataset.confirmMessage || 'Please confirm this action.';
@@ -302,14 +313,33 @@ cbisConfirmButton?.addEventListener('click', () => {
         return;
     }
 
-    cbisPendingConfirmForm.dataset.confirmed = 'true';
+    const form = cbisPendingConfirmForm;
+    if (!form.reportValidity()) {
+        cbisConfirmModal.hide();
+        return;
+    }
+
+    form.dataset.confirmed = 'true';
     cbisConfirmButton.disabled = true;
     cbisConfirmButton.textContent = 'Working...';
-    cbisPendingConfirmForm.submit();
+    cbisConfirmModal.hide();
+    try {
+        if (typeof form.requestSubmit === 'function') {
+            const submitter = cbisPendingConfirmSubmitter?.form === form ? cbisPendingConfirmSubmitter : undefined;
+            form.requestSubmit(submitter);
+        } else {
+            form.submit();
+        }
+    } finally {
+        delete form.dataset.confirmed;
+        cbisConfirmButton.disabled = false;
+        cbisConfirmButton.textContent = form.dataset.confirmButton || 'Confirm';
+    }
 });
 
 cbisConfirmModalElement?.addEventListener('hidden.bs.modal', () => {
     cbisPendingConfirmForm = null;
+    cbisPendingConfirmSubmitter = null;
     cbisConfirmButton.disabled = false;
 });
 
@@ -402,6 +432,8 @@ window.addEventListener('storage', (event) => {
 @if($webAuthenticated || request()->routeIs('public.map', 'public.events'))
 <script src="{{ asset('js/cbis-live.js') }}?v={{ filemtime(public_path('js/cbis-live.js')) }}"></script>
 @endif
+<script type="application/json" id="cbis-validation-errors">@json($errors->messages())</script>
+<script src="{{ asset('js/form-ui.js') }}?v={{ filemtime(public_path('js/form-ui.js')) }}"></script>
 @livewireScripts
 @stack('scripts')
 </body>

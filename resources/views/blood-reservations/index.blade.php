@@ -16,7 +16,7 @@
     @endif
 </div>
 
-<div class="card cbis-reservation-directory" data-live-region="reservation-list">
+<div class="card cbis-record-table cbis-reservation-directory" data-live-region="reservation-list">
     <div class="table-responsive cbis-mobile-table-wrap">
         <table class="table cbis-reservation-table cbis-mobile-card-table">
             <caption class="caption-top px-3 py-2 small text-muted">{{ $isPatient ? 'Open a request to view documents, status, and next steps.' : 'Open a request to review documents, approve or reject, and record releases.' }}</caption>
@@ -50,7 +50,7 @@
                         <td data-label="Units">{{ $reservation->units_requested }} unit{{ $reservation->units_requested == 1 ? '' : 's' }}</td>
                         <td data-label="Needed date">{{ $reservation->needed_on?->format('M d, Y') }}</td>
                         <td data-label="Status"><x-ui.request-status :status="$reservation->status" compact /></td>
-                        <td data-label="View" class="cbis-record-actions">
+                        <td data-label="View" class="cbis-record-actions cbis-table-actions">
                             <a href="{{ route('reservations.show',$reservation) }}" class="btn btn-sm btn-outline-secondary">View request</a>
                         </td>
                     </tr>

@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('content')
-<h4 class="mb-3">Edit Facility</h4>
+<div class="cbis-page-heading"><div><h1 class="cbis-page-title mb-0">Edit Facility</h1></div></div>
 <form
     method="POST"
     action="{{ route('facilities.update',$facility) }}"
-    class="card card-body js-confirm-action"
+    class="card card-body cbis-compact-form js-confirm-action"
     data-confirm-title="Update facility?"
     data-confirm-message="Please review this facility's details and active status before saving. Setting Active to No will prevent assigned staff from accessing facility modules."
     data-confirm-button="Update Facility"
@@ -20,7 +20,7 @@
 <div class="col-md-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" value="{{ old('email',$facility->email) }}"></div>
 <div class="col-md-6"><label class="form-label">Address</label><input name="address" class="form-control" value="{{ old('address',$facility->address) }}"></div>
 <div class="col-md-2"><label class="form-label">Active</label><select name="is_active" class="form-select"><option value="1" @selected($facility->is_active)>Yes</option><option value="0" @selected(!$facility->is_active)>No</option></select></div>
-<div class="col-12"><button class="btn btn-danger">Update</button></div>
+<div class="col-12 cbis-form-actions"><button class="btn btn-danger">Update</button></div>
 </div>
 </form>
 @endsection

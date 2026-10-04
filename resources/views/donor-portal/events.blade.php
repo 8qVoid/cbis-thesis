@@ -1,18 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">My Event Registrations</h4>
-    <div class="d-flex gap-2">
-        <a href="{{ route('public.map') }}" class="btn btn-danger btn-sm">Find Events on Map</a>
-        <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-secondary btn-sm">Back to Profile</a>
+<div class="cbis-page-heading">
+    <div>
+        <h1 class="cbis-page-title mb-0">My Event Registrations</h1>
+        <p class="cbis-page-subtitle">Track your upcoming activities and attendance.</p>
+    </div>
+    <div class="cbis-heading-actions">
+        <a href="{{ route('public.map') }}" class="btn btn-danger">Find Events on Map</a>
+        @if(auth('donor')->check() && ! auth('web')->check())
+            <a href="{{ route('donor.portal.profile') }}" class="btn btn-outline-secondary">Back to Profile</a>
+        @endif
     </div>
 </div>
 
-<div class="card" data-live-region="registrations-list">
+<div class="card cbis-record-table cbis-reservation-directory" data-live-region="registrations-list">
     <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped mb-0">
+        <div class="table-responsive cbis-mobile-table-wrap">
+            <table class="table table-hover align-middle mb-0 cbis-mobile-card-table">
                 <thead>
                     <tr>
                         <th>Event</th>
@@ -26,14 +31,14 @@
                 </thead>
                 <tbody>
                     @forelse($registrations as $registration)
-                        <tr>
-                            <td>{{ $registration->event?->title ?? '-' }}</td>
-                            <td>{{ $registration->event?->event_type_label ?? '-' }}</td>
-                            <td>{{ $registration->event?->facility?->name ?? '-' }}</td>
-                            <td>{{ $registration->event?->event_date?->toDateString() ?? '-' }}</td>
-                            <td>{{ $registration->event?->time_range_label ?? '-' }}</td>
-                            <td>{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</td>
-                            <td>
+                        <tr class="cbis-reservation-row">
+                            <td data-label="Event"><strong>{{ $registration->event?->title ?? '-' }}</strong></td>
+                            <td data-label="Type"><span>{{ $registration->event?->event_type_label ?? '-' }}</span></td>
+                            <td data-label="Facility"><span>{{ $registration->event?->facility?->name ?? '-' }}</span></td>
+                            <td data-label="Date"><span>{{ $registration->event?->event_date?->format('M d, Y') ?? '-' }}</span></td>
+                            <td data-label="Time"><span>{{ $registration->event?->time_range_label ?? '-' }}</span></td>
+                            <td data-label="Status"><span class="badge text-bg-light">{{ $registration->status === 'no_show' ? 'No-show' : ucfirst($registration->status) }}</span></td>
+                            <td data-label="Action" class="cbis-record-actions cbis-table-actions">
                                 @if($registration->status === 'registered' && $registration->event?->isRegistrationOpen())
                                     <form
                                         method="POST"
@@ -52,8 +57,8 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="text-center">No event registrations yet.</td>
+                        <tr class="cbis-table-empty">
+                            <td colspan="7"><div class="cbis-empty-state"><strong>No event registrations yet.</strong><span>Use Find Events on Map to register and track your attendance here.</span></div></td>
                         </tr>
                     @endforelse
                 </tbody>

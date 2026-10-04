@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountDashboardController;
 use App\Http\Controllers\AccountProfileController;
 use App\Http\Controllers\Auth\DonorAuthController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -50,22 +51,30 @@ Route::middleware('guest:web,donor')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/account', AccountDashboardController::class)->name('account.dashboard');
-    Route::middleware('role:Blood Bank Staff')->group(function () {
-        Route::get('/staff/profile', [StaffProfileController::class, 'edit'])->name('staff-profile.edit');
-        Route::put('/staff/profile', [StaffProfileController::class, 'update'])->name('staff-profile.update');
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:verification-email')->name('verification.send');
+
+    Route::middleware('public.verified')->group(function () {
+        Route::get('/account', AccountDashboardController::class)->name('account.dashboard');
+        Route::middleware('role:Blood Bank Staff')->group(function () {
+            Route::get('/staff/profile', [StaffProfileController::class, 'edit'])->name('staff-profile.edit');
+            Route::put('/staff/profile', [StaffProfileController::class, 'update'])->name('staff-profile.update');
+        });
+        Route::get('/account/profile', [AccountProfileController::class, 'details'])->name('account.details.edit');
+        Route::put('/account/profile', [AccountProfileController::class, 'saveDetails'])->name('account.details.update');
+        Route::get('/account/profile/identity-document', [AccountProfileController::class, 'identityDocument'])->name('account.identity-document.show');
+        Route::get('/account/services', [AccountProfileController::class, 'edit'])->name('account.profile.edit');
+        Route::put('/account/services', [AccountProfileController::class, 'update'])->name('account.profile.update');
+        Route::get('/reservations', [BloodReservationController::class, 'index'])->name('reservations.index');
+        Route::get('/reservations/create', [BloodReservationController::class, 'create'])->name('reservations.create');
+        Route::post('/reservations', [BloodReservationController::class, 'store'])->name('reservations.store');
+        Route::get('/reservations/{reservation}', [BloodReservationController::class, 'show'])->name('reservations.show');
+        Route::get('/reservations/{reservation}/documents/{document}', [BloodReservationController::class, 'document'])->name('reservations.documents.show');
+        Route::patch('/reservations/{reservation}/review', [BloodReservationController::class, 'review'])->name('reservations.review');
     });
-    Route::get('/account/profile', [AccountProfileController::class, 'details'])->name('account.details.edit');
-    Route::put('/account/profile', [AccountProfileController::class, 'saveDetails'])->name('account.details.update');
-    Route::get('/account/profile/identity-document', [AccountProfileController::class, 'identityDocument'])->name('account.identity-document.show');
-    Route::get('/account/services', [AccountProfileController::class, 'edit'])->name('account.profile.edit');
-    Route::put('/account/services', [AccountProfileController::class, 'update'])->name('account.profile.update');
-    Route::get('/reservations', [BloodReservationController::class, 'index'])->name('reservations.index');
-    Route::get('/reservations/create', [BloodReservationController::class, 'create'])->name('reservations.create');
-    Route::post('/reservations', [BloodReservationController::class, 'store'])->name('reservations.store');
-    Route::get('/reservations/{reservation}', [BloodReservationController::class, 'show'])->name('reservations.show');
-    Route::get('/reservations/{reservation}/documents/{document}', [BloodReservationController::class, 'document'])->name('reservations.documents.show');
-    Route::patch('/reservations/{reservation}/review', [BloodReservationController::class, 'review'])->name('reservations.review');
 });
 
 Route::prefix('donor')->group(function () {
@@ -78,7 +87,7 @@ Route::prefix('donor')->group(function () {
             ->name('donor.register.store');
     });
 
-    Route::middleware(['auth', 'role:Donor'])->group(function () {
+    Route::middleware(['auth', 'public.verified', 'role:Donor'])->group(function () {
         Route::get('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile');
         Route::put('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile.update');
         Route::get('/events', [DonorEventRegistrationController::class, 'index'])->name('donor.events.index');

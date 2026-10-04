@@ -9,7 +9,7 @@
     $reportSubmittedType = \App\Notifications\ReportRequestSubmitted::class;
     $reportReviewedType = \App\Notifications\ReportRequestReviewed::class;
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="cbis-page-heading">
     <div>
         <h1 class="cbis-page-title mb-0">Notifications</h1>
         <p class="cbis-page-subtitle">Your reservation, inventory, activity, and event updates.</p>
