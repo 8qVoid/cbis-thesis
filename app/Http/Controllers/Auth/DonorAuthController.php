@@ -9,6 +9,7 @@ use App\Models\DonationSchedule;
 use App\Models\Donor;
 use App\Models\PatientProfile;
 use App\Models\User;
+use App\Support\VerificationEmailDelivery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +50,7 @@ class DonorAuthController extends Controller
         return view('donor-auth.register', compact('selectedEvent', 'selectedService'));
     }
 
-    public function register(DonorSelfRegisterRequest $request): RedirectResponse
+    public function register(DonorSelfRegisterRequest $request, VerificationEmailDelivery $verificationEmail): RedirectResponse
     {
         $data = $request->validated();
         $eventId = $data['event_id'] ?? null;
@@ -94,7 +95,10 @@ class DonorAuthController extends Controller
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
-        $user->sendEmailVerificationNotification();
+        if (! $verificationEmail->send($user)) {
+            return redirect()->route('verification.notice')
+                ->with('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+        }
 
         return redirect()->route('verification.notice')
             ->with('success', 'Account created. Open the verification link sent to your email to activate your account.');

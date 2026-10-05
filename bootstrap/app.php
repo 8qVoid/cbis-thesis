@@ -10,6 +10,8 @@ use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -40,5 +42,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (InvalidSignatureException $exception, Request $request) {
+            $user = $request->user();
+            if (! $request->expectsJson() && $request->routeIs('verification.verify')
+                && $user && ! $user->hasVerifiedEmail()
+                && (string) $request->route('id') === (string) $user->getKey()
+                && hash_equals(sha1($user->getEmailForVerification()), (string) $request->route('hash'))) {
+                return redirect()->route('verification.notice')->with('verification_warning',
+                    'This verification link has expired or is invalid. Your account is still awaiting verification. Request a new email below.');
+            }
+
+            return null;
+        });
     })->create();

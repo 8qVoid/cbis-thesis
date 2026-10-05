@@ -63,7 +63,17 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('verification-email', function (Request $request): Limit {
             $identifier = (string) optional($request->user())->getAuthIdentifier();
 
-            return Limit::perMinutes(10, 3)->by(($identifier !== '' ? $identifier : 'guest').'|'.$request->ip());
+            return Limit::perMinutes(10, 3)->by(($identifier !== '' ? $identifier : 'guest').'|'.$request->ip())
+                ->response(function (Request $request, array $headers) {
+                    $minutes = max(1, (int) ceil(((int) ($headers['Retry-After'] ?? 600)) / 60));
+                    $message = "Too many resend requests. Please wait {$minutes} minute(s) before requesting another verification email. Your account is still saved.";
+
+                    if ($request->expectsJson()) {
+                        return response()->json(['message' => $message], 429, $headers);
+                    }
+
+                    return redirect()->route('verification.notice')->with('verification_warning', $message)->withHeaders($headers);
+                });
         });
     }
 }

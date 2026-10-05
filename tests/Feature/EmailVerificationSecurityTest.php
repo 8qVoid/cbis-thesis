@@ -2,15 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\Auth\DonorSelfRegisterRequest;
 use App\Models\DonationSchedule;
 use App\Models\Facility;
 use App\Models\User;
+use App\Support\VerificationEmailDelivery;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class EmailVerificationSecurityTest extends TestCase
@@ -92,6 +95,137 @@ class EmailVerificationSecurityTest extends TestCase
         $this->get(route('verification.notice'))->assertOk()->assertSee('unverified@example.test');
         $this->post(route('verification.send'))->assertRedirect();
         Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    public function test_registration_delivery_failure_keeps_the_account_and_offers_resend(): void
+    {
+        Notification::shouldReceive('send')->once()->andThrow(new TransportException('Private SMTP connection details'));
+
+        $this->post(route('donor.register.store'), $this->registration())
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+
+        $user = User::where('email', 'verify@example.test')->sole();
+        $this->assertAuthenticatedAs($user);
+        $this->assertFalse($user->hasVerifiedEmail());
+        $this->get(route('verification.notice'))->assertOk()
+            ->assertSee('Awaiting email verification')
+            ->assertSee('verify@example.test')
+            ->assertSee(VerificationEmailDelivery::FAILURE_MESSAGE)
+            ->assertDontSee('Private SMTP connection details');
+        $this->get(route('account.dashboard'))->assertRedirect(route('verification.notice'));
+
+        Notification::fake();
+        $this->post(route('verification.send'))->assertRedirect(route('verification.notice'))->assertSessionHas('success');
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    public function test_resend_delivery_failure_stays_on_the_pending_verification_screen(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $user->assignRole('Patient');
+        Notification::shouldReceive('send')->once()->andThrow(new TransportException('Private SMTP connection details'));
+
+        $this->actingAs($user)->post(route('verification.send'))
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_pending_duplicate_registration_offers_sign_in_without_replacing_the_account(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'verify@example.test', 'phone' => '+639171230000', 'name' => 'Original Account',
+        ]);
+        $user->assignRole('Patient');
+        $password = $user->password;
+
+        $this->from(route('donor.register'))->post(route('donor.register.store'), $this->registration())
+            ->assertRedirect(route('donor.register'));
+
+        $this->get(route('donor.register'))->assertOk()
+            ->assertSee(DonorSelfRegisterRequest::EMAIL_ALREADY_REGISTERED)
+            ->assertSee(DonorSelfRegisterRequest::PHONE_ALREADY_REGISTERED)
+            ->assertSee('Continue with your existing account')
+            ->assertSee(route('login'), false)
+            ->assertSee(route('password.request'), false);
+        $this->assertGuest();
+        $this->assertSame(1, User::where('email', 'verify@example.test')->count());
+        $this->assertSame($password, $user->fresh()->password);
+        $this->assertSame('Original Account', $user->fresh()->name);
+        Notification::assertNothingSent();
+    }
+
+    public function test_expired_link_keeps_pending_account_and_a_fresh_link_can_verify_it(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $user->assignRole('Patient');
+        $expiredUrl = URL::temporarySignedRoute('verification.verify', now()->addHour(), [
+            'id' => $user->id, 'hash' => sha1($user->getEmailForVerification()),
+        ]);
+
+        $this->travel(61)->minutes();
+        $this->actingAs($user)->get($expiredUrl)->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('verification_warning', fn ($message) => str_contains($message, 'expired'));
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'deleted_at' => null]);
+        $this->post(route('verification.send'))->assertRedirect(route('verification.notice'));
+        Notification::assertSentTo($user, VerifyEmail::class);
+
+        $freshUrl = URL::temporarySignedRoute('verification.verify', now()->addHour(), [
+            'id' => $user->id, 'hash' => sha1($user->getEmailForVerification()),
+        ]);
+        $this->get($freshUrl)->assertRedirect(route('account.dashboard'));
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_invalid_signature_for_another_account_remains_forbidden(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $other = User::factory()->unverified()->create();
+        $user->assignRole('Patient');
+        $url = URL::temporarySignedRoute('verification.verify', now()->subMinute(), [
+            'id' => $other->id, 'hash' => sha1($other->getEmailForVerification()),
+        ]);
+
+        $this->actingAs($user)->get($url)->assertForbidden();
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        $this->assertFalse($other->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_resend_limit_offers_a_wait_message_and_does_not_send_an_extra_email(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $user->assignRole('Patient');
+        $this->actingAs($user);
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->post(route('verification.send'))->assertRedirect(route('verification.notice'));
+        }
+
+        $this->post(route('verification.send'))->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('verification_warning', fn ($message) => str_contains($message, 'Too many resend requests'));
+        Notification::assertSentToTimes($user, VerifyEmail::class, 3);
+        $this->postJson(route('verification.send'))->assertStatus(429);
+    }
+
+    public function test_profile_email_delivery_failure_preserves_changes_and_requires_verification(): void
+    {
+        $user = User::factory()->create(['email' => 'original.profile@example.test']);
+        $user->assignRole('Patient');
+        $password = $user->password;
+        Notification::shouldReceive('send')->once()->andThrow(new TransportException('Private SMTP connection details'));
+
+        $this->actingAs($user)->put(route('account.details.update'), $this->profile([
+            'email' => 'changed.profile@example.test',
+        ]))->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+
+        $this->assertSame('changed.profile@example.test', $user->fresh()->email);
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        $this->assertSame($password, $user->fresh()->password);
+        $this->get(route('account.dashboard'))->assertRedirect(route('verification.notice'));
     }
 
     #[DataProvider('publicRoles')]

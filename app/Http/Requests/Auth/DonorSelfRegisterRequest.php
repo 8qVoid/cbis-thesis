@@ -10,6 +10,10 @@ use Illuminate\Validation\Rules\Password;
 
 class DonorSelfRegisterRequest extends BaseFormRequest
 {
+    public const EMAIL_ALREADY_REGISTERED = 'An account already uses this email. Sign in to finish email verification, or reset your password.';
+
+    public const PHONE_ALREADY_REGISTERED = 'An account already uses this mobile number. Sign in to finish email verification, or reset your password.';
+
     public function authorize(): bool
     {
         return true;
@@ -53,6 +57,8 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'services.min' => 'Select at least one service to continue.',
             'birth_date.before' => 'Birth date must be before today.',
             'blood_type.required' => 'Select your blood type to register as a donor.',
+            'email.unique' => self::EMAIL_ALREADY_REGISTERED,
+            'contact_number.unique' => self::PHONE_ALREADY_REGISTERED,
         ];
     }
 }

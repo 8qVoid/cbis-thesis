@@ -44,7 +44,7 @@
     </section>
 </div>
 
-<p class="small text-muted">A stock batch can contain several units with the same expiry date.</p>
+<p class="small text-muted">One unit is one blood bag. A stock batch may contain several bags only when they share the same expiration date; bags with different dates belong in separate batches.</p>
 
 <form method="GET" action="{{ route('blood-inventory.storage') }}" class="card card-body cbis-storage-filter mb-3" data-auto-filter="true" aria-label="Filter stored batches by expiry date">
     <input type="hidden" name="blood_type" value="{{ $bloodType }}">

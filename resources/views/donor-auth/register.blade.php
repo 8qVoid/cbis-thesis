@@ -4,12 +4,29 @@
 @php
     $registrationServices = (array) old('services', session()->has('_old_input') ? [] : [$selectedService]);
     $registrationServicesError = $errors->first('services') ?: $errors->first('services.0') ?: $errors->first('services.1');
+    $registrationRecovery = in_array(\App\Http\Requests\Auth\DonorSelfRegisterRequest::EMAIL_ALREADY_REGISTERED, $errors->get('email'), true)
+        || in_array(\App\Http\Requests\Auth\DonorSelfRegisterRequest::PHONE_ALREADY_REGISTERED, $errors->get('contact_number'), true);
 @endphp
 <div class="cbis-registration-shell">
     <div class="cbis-registration-heading">
         <div><span class="cbis-registration-kicker">New account</span><h1>Create your account</h1><p>Enter your details once, then verify your email to activate your account.</p></div>
         <a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm">Sign in instead</a>
     </div>
+
+    @if($registrationRecovery)
+        <section class="alert alert-info mb-3" aria-labelledby="registration-recovery-title" role="status">
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                <div>
+                    <strong id="registration-recovery-title">Continue with your existing account</strong>
+                    <p class="small mb-0 mt-1">Sign in to check your verification status and request a new email link.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                    <a href="{{ route('login') }}" class="btn btn-danger btn-sm">Sign in</a>
+                    <a href="{{ route('password.request') }}" class="btn btn-outline-secondary btn-sm">Forgot password?</a>
+                </div>
+            </div>
+        </section>
+    @endif
 
     <form id="registrationForm" method="POST" action="{{ route('donor.register.store') }}" enctype="multipart/form-data" class="card shadow-sm cbis-registration-form js-confirm-action" data-confirm-title="Check your information" data-confirm-message="Please make sure your name, birth date, blood type, email, mobile number, and address are correct before continuing." data-confirm-button="Continue Registration" data-confirm-variant="danger">
         @csrf

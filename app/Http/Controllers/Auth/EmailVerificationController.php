@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DonationSchedule;
 use App\Models\EventRegistration;
 use App\Support\DonationAgePolicy;
+use App\Support\VerificationEmailDelivery;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,15 +32,20 @@ class EmailVerificationController extends Controller
             ->with('success', 'Email verified. Your account is now active.'.$eventMessage);
     }
 
-    public function resend(Request $request): RedirectResponse
+    public function resend(Request $request, VerificationEmailDelivery $verificationEmail): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->route('account.dashboard');
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        if (! $verificationEmail->send($request->user())) {
+            return redirect()->route('verification.notice')
+                ->with('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+        }
 
-        return back()->with('success', 'A new verification link has been sent to your email.');
+        return redirect()->route('verification.notice')
+            ->with('verification_warning', null)
+            ->with('success', 'A new verification link has been sent to your email. Check your inbox and spam or junk folder.');
     }
 
     private function registerPendingEvent(Request $request): string

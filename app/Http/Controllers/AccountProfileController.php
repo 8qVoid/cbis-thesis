@@ -8,6 +8,7 @@ use App\Models\PatientProfile;
 use App\Models\User;
 use App\Rules\NegrosOccidentalAddressRule;
 use App\Support\PhilippinePhone;
+use App\Support\VerificationEmailDelivery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,7 @@ class AccountProfileController extends Controller
         return view('account.details', compact('user'));
     }
 
-    public function saveDetails(Request $request): RedirectResponse
+    public function saveDetails(Request $request, VerificationEmailDelivery $verificationEmail): RedirectResponse
     {
         $user = auth()->user();
         abort_unless($user->hasAnyRole(['Donor', 'Patient']), 403);
@@ -58,7 +59,10 @@ class AccountProfileController extends Controller
         });
 
         if ($emailChanged) {
-            $user->sendEmailVerificationNotification();
+            if (! $verificationEmail->send($user)) {
+                return redirect()->route('verification.notice')
+                    ->with('verification_warning', VerificationEmailDelivery::FAILURE_MESSAGE);
+            }
 
             return redirect()->route('verification.notice')
                 ->with('success', 'Profile updated. Verify your new email address using the link we sent before continuing.');
