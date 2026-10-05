@@ -21,6 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Render terminates TLS at its proxy. Trust its forwarded HTTPS details so
+        // Laravel validates signed verification URLs against the public URL.
+        if (env('APP_ENV') === 'production') {
+            $middleware->trustProxies(at: '*');
+        }
+
         $middleware->web(append: [EnsurePasswordSession::class, EnsureActiveAccount::class]);
         $middleware->prependToPriorityList(AuthenticatesRequests::class, EnsurePasswordSession::class);
         $middleware->alias([

@@ -39,6 +39,8 @@ Keep `APP_URL` set to the HTTPS Render URL so verification and password-reset
 links point to the testing copy. The Google script owner's Gmail address is the
 actual sender; changing `MAIL_FROM_ADDRESS` cannot impersonate a different Gmail
 account. Select `google_script` only after deploying and authorizing the relay.
+In production, the application trusts Render's reverse-proxy headers so signed
+verification URLs are validated using their public HTTPS scheme.
 
 The Render Docker service starts Apache without a queue worker. Use `sync` on
 that testing service so queued notifications, including low-stock alerts, send
