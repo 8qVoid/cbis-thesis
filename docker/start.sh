@@ -3,6 +3,12 @@ set -eu
 
 mkdir -p database
 touch database/database.sqlite
+# A one-time Render reset can be requested with RESET_RENDER_DATABASE=true.
+# The marker prevents an automatic restart from wiping the fresh database again.
+if [ "${RESET_RENDER_DATABASE:-false}" = "true" ] && [ ! -f database/.render-reset-complete ]; then
+    rm -f database/database.sqlite
+    touch database/database.sqlite database/.render-reset-complete
+fi
 # Apache runs as www-data; make the SQLite file and containing directory
 # writable at runtime as well as during image build.
 chown -R www-data:www-data database
