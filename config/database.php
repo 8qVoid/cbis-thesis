@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'default' => app()->environment('production') ? 'sqlite' : env('DB_CONNECTION', 'mysql'),
+    'default' => 'sqlite',
 
     /*
     |--------------------------------------------------------------------------
@@ -34,9 +34,7 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => app()->environment('production')
-                ? database_path('database.sqlite')
-                : env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => database_path('database.sqlite'),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,
