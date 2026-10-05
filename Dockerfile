@@ -17,6 +17,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY resources ./resources
 COPY vite.config.js ./
+COPY scripts ./scripts
 RUN npm run build
 
 FROM php:8.3-apache
