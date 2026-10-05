@@ -18,6 +18,9 @@ unset DB_URL
 php artisan config:clear
 php artisan migrate --force
 php artisan db:seed --force
+if [ "${DEMO_DATA_ENABLED:-false}" = "true" ]; then
+    php artisan demo:populate --no-interaction
+fi
 php artisan storage:link --force
 
 exec apache2-foreground
