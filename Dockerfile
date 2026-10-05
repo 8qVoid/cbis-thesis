@@ -38,7 +38,7 @@ COPY docker/start.sh /usr/local/bin/cbis-start
 
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chmod +x /usr/local/bin/cbis-start \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache database
 
 EXPOSE 80
 CMD ["/usr/local/bin/cbis-start"]
