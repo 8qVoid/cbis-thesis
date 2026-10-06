@@ -237,6 +237,38 @@ class DemoDataScenario
                 'last_low_stock_alert_at' => $units <= 10 ? now() : null,
             ]);
         }
+
+        // Give the showcase storage view several dated records for the same
+        // blood type/component so expiry filtering and stock ordering are
+        // meaningful. These are separate records because each date is a
+        // separate stock batch.
+        foreach ([14 => 3, 45 => 2, 90 => 4] as $days => $units) {
+            BloodInventory::withTrashed()->firstOrCreate([
+                'facility_id' => $facility->id, 'donation_record_id' => null,
+                'blood_type' => 'A+', 'component' => 'packed_red_blood_cells',
+                'expiration_date' => today()->addDays($days),
+            ], [
+                'units_available' => $units, 'status' => $units <= 5 ? 'low_stock' : 'active',
+                'last_low_stock_alert_at' => now(),
+            ]);
+        }
+
+        $donor = $accounts['jose-villanueva']['donor'];
+        if ($donor && ! $donor->trashed()) {
+            $donation = DonationRecord::firstOrCreate(['donation_no' => 'DON-2026-101'], [
+                'facility_id' => $facility->id, 'donor_id' => $donor->id, 'recorded_by' => $staff->id,
+                'donated_at' => today()->subDays(3)->setTime(9, 30), 'blood_type' => 'A+', 'volume_ml' => 450,
+                'expiration_date' => today()->addDays(60), 'status' => 'verified',
+                'remarks' => 'Verified donation from a community blood activity.',
+            ]);
+            BloodInventory::withTrashed()->firstOrCreate([
+                'facility_id' => $facility->id, 'donation_record_id' => $donation->id,
+                'blood_type' => 'A+', 'component' => 'packed_red_blood_cells',
+            ], [
+                'expiration_date' => today()->addDays(60), 'units_available' => 1,
+                'status' => 'active', 'last_low_stock_alert_at' => null,
+            ]);
+        }
     }
 
     /** @return array<int, BloodReservation> */
