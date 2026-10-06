@@ -45,13 +45,13 @@ class DemoDataScenario
             $this->createNotifications($accounts, $events, $reservations, $qao, $staff);
 
             return [
-                'Demo accounts' => count($accounts),
-                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('email', 'like', 'demo.%@example.test'))->count(),
+                'Showcase accounts' => count($accounts),
+                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('email', 'like', '%.@example.test'))->count(),
                 'Activities' => DonationSchedule::query()->where('title', 'like', '[DEMO]%')->count(),
                 'Event registrations' => EventRegistration::query()->whereHas('event', fn ($query) => $query->where('title', 'like', '[DEMO]%'))->count(),
-                'Donation records' => DonationRecord::query()->where('donation_no', 'like', 'DEMO-DON-%')->count(),
-                'Donation inventory batches' => BloodInventory::query()->whereHas('donationRecord', fn ($query) => $query->where('donation_no', 'like', 'DEMO-DON-%'))->count(),
-                'Blood requests' => BloodReservation::query()->where('reference', 'like', 'DEMO-BR-%')->count(),
+                'Donation records' => DonationRecord::query()->where('donation_no', 'like', 'DON-2026-%')->count(),
+                'Donation inventory batches' => BloodInventory::query()->whereHas('donationRecord', fn ($query) => $query->where('donation_no', 'like', 'DON-2026-%'))->count(),
+                'Blood requests' => BloodReservation::query()->where('reference', 'like', 'REQ-2026-%')->count(),
                 'Blood releases' => BloodRelease::query()->where('purpose', 'like', '[DEMO]%')->count(),
             ];
         });
@@ -79,7 +79,7 @@ class DemoDataScenario
 
         $accounts = [];
         foreach ($people as $person) {
-            $email = 'demo.'.$person['key'].'@example.test';
+            $email = $person['key'].'@example.test';
             $user = User::withTrashed()->firstOrNew(['email' => $email]);
             $attributes = [
                 'name' => implode(' ', [$person['first'], $person['middle'], $person['last']]),
@@ -118,18 +118,17 @@ class DemoDataScenario
     {
         $today = Carbon::today();
         $definitions = [
-            'capitol-completed' => ['[DEMO] Negros Occidental Capitol Blood Drive', $today->copy()->subDays(24), 'Negros Occidental Provincial Capitol Lagoon, Bacolod City', 10.6765, 122.9509, 'completed'],
-            'silay-completed' => ['[DEMO] Silay Heritage Community Bloodletting', $today->copy()->subDays(11), 'Silay City Public Plaza, Silay City', 10.7991, 122.9772, 'completed'],
-            'government-center-upcoming' => ['[DEMO] Bacolod Government Center Blood Donation Day', $today->copy()->addDays(7), 'Bacolod City Government Center, Bacolod City', 10.6589, 122.9780, 'planned'],
-            'talisay-upcoming' => ['[DEMO] Talisay Community Lifeline Drive', $today->copy()->addDays(15), 'Talisay City Public Plaza, Talisay City', 10.7372, 122.9663, 'planned'],
-            'kabankalan-pending' => ['[DEMO] Kabankalan South Negros Blood Drive', $today->copy()->addDays(22), 'Kabankalan City Public Plaza, Kabankalan City', 9.9889, 122.8122, 'planned'],
+            'bacolod-plaza' => ['Bacolod Public Plaza Blood Drive', $today->copy()->addDays(5), 'Bacolod Public Plaza, Bacolod City', 10.6712, 122.9448, 'planned'],
+            'victorias-plaza' => ['Victorias City Public Plaza Blood Drive', $today->copy()->addDays(12), 'Victorias City Public Plaza, Victorias City', 10.9010, 123.0775, 'planned'],
+            'manapla-plaza' => ['Manapla Public Plaza Blood Drive', $today->copy()->addDays(19), 'Manapla Public Plaza, Manapla', 10.9490, 123.1230, 'planned'],
+            'sagay-plaza' => ['Sagay City Public Plaza Blood Drive', $today->copy()->addDays(26), 'Sagay City Public Plaza, Sagay City', 10.9447, 123.4240, 'planned'],
         ];
 
         $events = [];
         foreach ($definitions as $key => [$title, $date, $venue, $latitude, $longitude, $status]) {
-            $pending = $key === 'kabankalan-pending';
+            $pending = false;
             $events[$key] = DonationSchedule::withTrashed()->firstOrCreate(['title' => $title], [
-                'facility_id' => $facility->id, 'event_type' => str_contains($key, 'silay') ? 'bloodletting' : 'blood_donation',
+                'facility_id' => $facility->id, 'event_type' => false ? 'bloodletting' : 'blood_donation',
                 'event_date' => $date, 'start_time' => '08:00', 'end_time' => '16:00',
                 'start_at' => $date->copy()->setTime(8, 0), 'end_at' => $date->copy()->setTime(16, 0),
                 'venue' => $venue, 'latitude' => $latitude, 'longitude' => $longitude,
@@ -137,7 +136,7 @@ class DemoDataScenario
                 'contact_person' => 'PRC Negros Occidental Demo Desk', 'contact_number' => '09170000999',
                 'is_public' => ! $pending, 'approval_status' => $pending ? 'pending' : 'approved',
                 'reviewed_by' => $pending ? null : $qao->id, 'reviewed_at' => $pending ? null : now(),
-                'review_notes' => $pending ? null : 'Approved demonstration activity.', 'status' => $status,
+                'review_notes' => $pending ? null : 'Approved community blood activity.', 'status' => $status,
             ]);
         }
 
@@ -153,7 +152,7 @@ class DemoDataScenario
             }
             $isEligible = in_array($key, $eligible, true);
             $screening = DonorScreening::firstOrCreate(
-                ['donor_id' => $account['donor']->id, 'donor_message' => '[DEMO] Initial screening'],
+                ['donor_id' => $account['donor']->id, 'donor_message' => 'Initial screening'],
                 ['reviewed_by' => $staff->id, 'status' => $isEligible ? 'eligible' : 'deferred',
                     'review_on' => $isEligible ? null : today()->addDays(30)]
             );
@@ -168,7 +167,7 @@ class DemoDataScenario
         $donorAccounts = array_values(array_filter($accounts, fn ($account) => $account['donor'] !== null));
         foreach ($donorAccounts as $index => $account) {
             $donor = $account['donor'];
-            $event = $index < 5 ? $events['capitol-completed'] : ($index < 8 ? $events['silay-completed'] : $events['government-center-upcoming']);
+            $event = $index < 5 ? $events['bacolod-plaza'] : ($index < 8 ? $events['victorias-plaza'] : $events['bacolod-plaza']);
             if ($account['user']->trashed() || $donor->trashed() || $event->trashed()) {
                 continue;
             }
@@ -195,11 +194,11 @@ class DemoDataScenario
                 : today()->subDays(24)->setTime(9 + $index, 10);
             $expiration = $index === 0 ? today()->subDay() : today()->addDays(7 + ($index * 4));
             $status = $index === 7 ? 'pending' : 'verified';
-            $record = DonationRecord::withTrashed()->firstOrCreate(['donation_no' => sprintf('DEMO-DON-%03d', $index + 1)], [
+            $record = DonationRecord::withTrashed()->firstOrCreate(['donation_no' => sprintf('DON-2026-%03d', $index + 1)], [
                 'facility_id' => $facility->id, 'donor_id' => $donor->id, 'recorded_by' => $staff->id,
                 'donated_at' => $donatedAt, 'blood_type' => $donor->blood_type, 'volume_ml' => 450,
                 'expiration_date' => $expiration, 'status' => $status,
-                'remarks' => '[DEMO] Donation recorded from an attended demonstration activity.',
+                'remarks' => 'Donation recorded from an attended community blood activity.',
             ]);
             if (! $record->wasRecentlyCreated) {
                 continue;
@@ -247,7 +246,7 @@ class DemoDataScenario
             ['sofia-martinez', 'O+', 'whole_blood', 2, 'submitted', null],
             ['antonio-sy', 'A+', 'packed_red_blood_cells', 2, 'under_review', 'Documents are being reviewed.'],
             ['lourdes-alcantara', 'B+', 'fresh_frozen_plasma', 2, 'approved', 'Stock reserved for scheduled procedure.'],
-            ['renato-mercado', 'O-', 'packed_red_blood_cells', 1, 'rejected', 'Requested component is not indicated on the demonstration referral.'],
+            ['renato-mercado', 'O-', 'packed_red_blood_cells', 1, 'rejected', 'Requested component is not indicated on the referral.'],
             ['angela-dela-cruz', 'B+', 'fresh_frozen_plasma', 1, 'fulfilled', 'Released to the requesting unit.'],
         ];
 
@@ -256,11 +255,11 @@ class DemoDataScenario
             if ($accounts[$accountKey]['user']->trashed()) {
                 continue;
             }
-            $reservations[] = BloodReservation::firstOrCreate(['reference' => sprintf('DEMO-BR-%03d', $index + 1)], [
+            $reservations[] = BloodReservation::firstOrCreate(['reference' => sprintf('REQ-2026-%03d', $index + 1)], [
                 'patient_user_id' => $accounts[$accountKey]['user']->id, 'facility_id' => $facility->id,
                 'blood_type' => $bloodType, 'component' => $component, 'units_requested' => $units,
                 'needed_on' => today()->addDays($index + 1),
-                'clinical_purpose' => '[DEMO] Example hospital request for thesis workflow presentation.',
+                'clinical_purpose' => 'Example hospital request for thesis workflow presentation.',
                 'status' => $status, 'reviewed_by' => $status === 'submitted' ? null : $staff->id,
                 'reviewed_at' => $status === 'submitted' ? null : now()->subHours(8 - $index), 'review_notes' => $notes,
             ]);
@@ -271,7 +270,7 @@ class DemoDataScenario
 
     private function createRelease(array $reservations, Facility $facility, User $staff): void
     {
-        $fulfilled = collect($reservations)->firstWhere('reference', 'DEMO-BR-005');
+        $fulfilled = collect($reservations)->firstWhere('reference', 'REQ-2026-005');
         if (! $fulfilled || ! $fulfilled->wasRecentlyCreated || $fulfilled->status !== 'fulfilled'
             || BloodRelease::withTrashed()->where('blood_reservation_id', $fulfilled->id)->exists()) {
             return;
@@ -284,9 +283,9 @@ class DemoDataScenario
             'blood_reservation_id' => $fulfilled->id,
         ], [
             'facility_id' => $facility->id, 'blood_inventory_id' => $inventory->id, 'released_by' => $staff->id,
-            'patient_name' => $fulfilled->patient->name, 'requesting_unit' => 'Demo Medical Ward',
+            'patient_name' => $fulfilled->patient->name, 'requesting_unit' => 'Bacolod City Medical Center',
             'released_at' => now()->subHours(2), 'units_released' => 1,
-            'purpose' => '[DEMO] Fulfilled blood reservation.',
+            'purpose' => 'Fulfilled blood reservation.',
         ]);
         if ($release->wasRecentlyCreated) {
             event(new BloodReleased($release));
@@ -300,14 +299,14 @@ class DemoDataScenario
                 continue;
             }
             if ($account['donor'] && ! $account['donor']->trashed()) {
-                if (! $events['government-center-upcoming']->trashed()) {
+                if (! $events['bacolod-plaza']->trashed()) {
                     $this->notification($account['user'], 'event-'.$key, EventPostedNotification::class, [
-                        'title' => 'New donation activity', 'event_id' => $events['government-center-upcoming']->id,
-                        'event_title' => $events['government-center-upcoming']->title,
-                        'event_type' => $events['government-center-upcoming']->event_type,
-                        'event_date' => $events['government-center-upcoming']->event_date->toDateString(),
-                        'facility_id' => $events['government-center-upcoming']->facility_id,
-                        'facility_name' => $events['government-center-upcoming']->facility->name,
+                        'title' => 'New donation activity', 'event_id' => $events['bacolod-plaza']->id,
+                        'event_title' => $events['bacolod-plaza']->title,
+                        'event_type' => $events['bacolod-plaza']->event_type,
+                        'event_date' => $events['bacolod-plaza']->event_date->toDateString(),
+                        'facility_id' => $events['bacolod-plaza']->facility_id,
+                        'facility_name' => $events['bacolod-plaza']->facility->name,
                     ]);
                 }
                 $latestScreening = $account['donor']->screenings()->latest()->first();
@@ -337,7 +336,7 @@ class DemoDataScenario
                 'component' => 'Packed Red Blood Cells', 'units_available' => 2,
                 'expiration_date' => today()->addDays(18)->toDateString(),
             ]);
-            $submitted = collect($reservations)->firstWhere('reference', 'DEMO-BR-001');
+            $submitted = collect($reservations)->firstWhere('reference', 'REQ-2026-001');
             if ($submitted) {
                 $this->notification($recipient, 'new-reservation-'.$recipient->id, BloodReservationSubmitted::class, [
                     'title' => 'New blood reservation', 'reservation_id' => $submitted->id,
@@ -351,7 +350,7 @@ class DemoDataScenario
     /** @param class-string $type */
     private function notification(User $user, string $key, string $type, array $data, bool $read = false): void
     {
-        $id = substr(hash('sha256', 'cbis-demo-'.$key.'-'.$user->id), 0, 32);
+        $id = substr(hash('sha256', 'cbis-showcase-'.$key.'-'.$user->id), 0, 32);
         $user->notifications()->firstOrCreate(['id' => $id], [
             'type' => $type, 'data' => $data,
             'read_at' => $read ? now() : null,
