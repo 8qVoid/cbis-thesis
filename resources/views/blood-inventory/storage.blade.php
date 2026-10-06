@@ -100,12 +100,8 @@
                                     <strong class="cbis-storage-batch-units">1 <small>unit</small></strong>
                                     <dl class="cbis-storage-batch-details">
                                         <div><dt>Expires</dt><dd><time datetime="{{ $expiryDate }}">{{ $batch->expiration_date->format('M d, Y') }}</time></dd></div>
-                                        <div><dt>Stock record</dt><dd>#{{ $batch->id }}</dd></div>
                                         <div><dt>Source</dt><dd class="cbis-storage-batch-source">{{ $batch->donationRecord ? 'Donation '.$batch->donationRecord->donation_no : 'Manual stock entry' }}</dd></div>
                                     </dl>
-                                </div>
-                                <div class="cbis-storage-batch-footer">
-                                    <a href="{{ route('blood-inventory.show', $batch) }}" class="btn btn-sm btn-outline-secondary">View record</a>
                                 </div>
                             </article>
                         @endfor
