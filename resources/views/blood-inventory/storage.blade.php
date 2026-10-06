@@ -87,7 +87,7 @@
             @endphp
             <section class="cbis-storage-expiry-group" data-expiration-date="{{ $expiryDate }}" aria-labelledby="storage-expiry-{{ $expiryDate }}">
                 <div class="cbis-storage-expiry-heading">
-                    <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time>@if(today()->diffInDays(\Illuminate\Support\Carbon::parse($expiryDate), false) >= 0 && today()->diffInDays(\Illuminate\Support\Carbon::parse($expiryDate), false) <= 14) <span class="badge cbis-status-low ms-1">Near expiry</span>@endif</h2>
+                    <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time>@if($dateUnits > 0 && $dateUnits <= 5) <span class="badge cbis-status-low ms-1">Low stock group</span>@endif</h2>
                     <p>{{ $dateUnits }} unit{{ $dateUnits === 1 ? '' : 's' }} · {{ $dateBatchCount }} stock batch{{ $dateBatchCount === 1 ? '' : 'es' }} total</p>
                 </div>
                 <div class="cbis-storage-batch-grid" aria-label="Blood bags expiring {{ $expiryDate }}">
