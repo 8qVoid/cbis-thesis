@@ -71,7 +71,7 @@
 
 <div data-live-region="storage-batches">
     @if($batches->count())
-        <p class="small text-muted cbis-storage-results-note">Showing {{ $batches->firstItem() }}–{{ $batches->lastItem() }} of {{ $batches->total() }} stock batch{{ $batches->total() === 1 ? '' : 'es' }}. Matching stock: {{ $filteredUnits }} unit{{ $filteredUnits === 1 ? '' : 's' }}.</p>
+        <p class="small text-muted cbis-storage-results-note">Showing {{ $batches->firstItem() }}–{{ $batches->lastItem() }} of {{ $batches->total() }} stock batch{{ $batches->total() === 1 ? '' : 'es' }}. Displaying {{ $filteredUnits }} individual blood bag{{ $filteredUnits === 1 ? '' : 's' }}.</p>
         @foreach($pageExpiryGroups as $expiryDate => $dateBatches)
             @php
                 $expirySummary = $expirySummaries->get($expiryDate);
@@ -83,30 +83,32 @@
                     <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time></h2>
                     <p>{{ $dateUnits }} unit{{ $dateUnits === 1 ? '' : 's' }} · {{ $dateBatchCount }} stock batch{{ $dateBatchCount === 1 ? '' : 'es' }} total</p>
                 </div>
-                <div class="cbis-storage-batch-grid">
+                <div class="cbis-storage-batch-grid" aria-label="Blood bags expiring {{ $expiryDate }}">
                     @foreach($dateBatches as $batch)
                         @php
                             $units = (int) $batch->units_available;
                             $displayStatus = $batch->status === 'expired' || $batch->expiration_date?->lt(today()) ? 'Expired' : ($units === 0 ? 'Depleted' : ($units <= 5 ? 'Low stock' : 'In storage'));
                             $statusClass = in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : ($displayStatus === 'Low stock' ? 'cbis-status-low' : 'cbis-status-active');
                         @endphp
-                        <article class="card cbis-storage-batch-card" data-stock-record-id="{{ $batch->id }}">
-                            <div class="card-body">
-                                <div class="cbis-storage-batch-header">
-                                    <h3 class="cbis-eyebrow mb-0">Stock record #{{ $batch->id }}</h3>
-                                    <span class="badge {{ $statusClass }}">{{ $displayStatus }}</span>
+                        @for($unitNumber = 1; $unitNumber <= $units; $unitNumber++)
+                            <article class="card cbis-storage-batch-card cbis-storage-unit-card" data-stock-record-id="{{ $batch->id }}" data-unit-number="{{ $unitNumber }}">
+                                <div class="card-body">
+                                    <div class="cbis-storage-batch-header">
+                                        <h3 class="cbis-eyebrow mb-0">Blood bag #{{ $unitNumber }}</h3>
+                                        <span class="badge {{ $statusClass }}">{{ $displayStatus }}</span>
+                                    </div>
+                                    <strong class="cbis-storage-batch-units">1 <small>unit</small></strong>
+                                    <dl class="cbis-storage-batch-details">
+                                        <div><dt>Expires</dt><dd><time datetime="{{ $expiryDate }}">{{ $batch->expiration_date->format('M d, Y') }}</time></dd></div>
+                                        <div><dt>Stock record</dt><dd>#{{ $batch->id }}</dd></div>
+                                        <div><dt>Source</dt><dd class="cbis-storage-batch-source">{{ $batch->donationRecord ? 'Donation '.$batch->donationRecord->donation_no : 'Manual stock entry' }}</dd></div>
+                                    </dl>
                                 </div>
-                                <strong class="cbis-storage-batch-units">{{ $units }} <small>unit{{ $units === 1 ? '' : 's' }}</small></strong>
-                                <dl class="cbis-storage-batch-details">
-                                    <div><dt>Expires</dt><dd><time datetime="{{ $expiryDate }}">{{ $batch->expiration_date->format('M d, Y') }}</time></dd></div>
-                                    <div><dt>Source</dt><dd class="cbis-storage-batch-source">{{ $batch->donationRecord ? 'Donation '.$batch->donationRecord->donation_no : 'Manual stock entry' }}</dd></div>
-                                    <div><dt>Facility</dt><dd>{{ $batch->facility?->name ?? 'No facility name' }}</dd></div>
-                                </dl>
-                            </div>
-                            <div class="cbis-storage-batch-footer">
-                                <a href="{{ route('blood-inventory.show', $batch) }}" class="btn btn-sm btn-outline-secondary">View batch</a>
-                            </div>
-                        </article>
+                                <div class="cbis-storage-batch-footer">
+                                    <a href="{{ route('blood-inventory.show', $batch) }}" class="btn btn-sm btn-outline-secondary">View record</a>
+                                </div>
+                            </article>
+                        @endfor
                     @endforeach
                 </div>
             </section>
