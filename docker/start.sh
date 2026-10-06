@@ -27,8 +27,10 @@ unset DB_URL
 php artisan config:clear
 php artisan migrate --force
 php artisan db:seed --force
-if [ "${DEMO_DATA_ENABLED:-false}" = "true" ]; then
-    php artisan demo:populate --no-interaction
+if [ "${DEMO_DATA_ENABLED:-false}" = "true" ] || echo "${APP_URL:-}" | grep -q "onrender.com"; then
+    # Render's showcase environment is identified by its public URL. The
+    # scenario is idempotent and is never enabled by a local APP_URL.
+    DEMO_DATA_ENABLED=true php artisan demo:populate --no-interaction
 fi
 php artisan storage:link --force
 
