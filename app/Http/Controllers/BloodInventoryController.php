@@ -90,11 +90,13 @@ class BloodInventoryController extends Controller
             'blood_type' => ['required', 'string', 'in:'.implode(',', BloodInventory::BLOOD_TYPES)],
             'component' => ['required', 'string', 'in:'.implode(',', array_keys(BloodInventory::COMPONENTS))],
             'expiration_date' => ['nullable', 'date_format:Y-m-d'],
+            'sort' => ['nullable', 'in:oldest,latest'],
         ]);
         $bloodType = $filters['blood_type'];
         $componentKey = $filters['component'];
         $componentLabel = BloodInventory::COMPONENTS[$componentKey];
         $selectedExpiry = $filters['expiration_date'] ?? null;
+        $sort = $filters['sort'] ?? 'oldest';
 
         $stockQuery = FacilityScope::apply(BloodInventory::query(), auth()->user())
             ->where('blood_type', $bloodType)->where('component', $componentKey)
@@ -113,12 +115,12 @@ class BloodInventoryController extends Controller
         $batches = (clone $stockQuery)
             ->with(['donationRecord:id,donation_no', 'facility'])
             ->when($selectedExpiry, fn ($query, $date) => $query->whereDate('expiration_date', $date))
-            ->orderBy('expiration_date')->orderBy('id')
+            ->orderBy('expiration_date', $sort === 'latest' ? 'desc' : 'asc')->orderBy('id')
             ->paginate(20)->withQueryString();
 
         return view('blood-inventory.storage', compact(
             'bloodType', 'componentKey', 'componentLabel', 'totalUnits', 'batchCount',
-            'expiryGroups', 'selectedExpiry', 'batches', 'filteredUnits',
+            'expiryGroups', 'selectedExpiry', 'sort', 'batches', 'filteredUnits',
         ));
     }
 

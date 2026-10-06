@@ -46,11 +46,11 @@
 
 <p class="small text-muted">One unit is one blood bag. A stock batch may contain several bags only when they share the same expiration date; bags with different dates belong in separate batches.</p>
 
-<form method="GET" action="{{ route('blood-inventory.storage') }}" class="card card-body cbis-storage-filter mb-3" data-auto-filter="true" aria-label="Filter stored batches by expiry date">
+<form method="GET" action="{{ route('blood-inventory.storage') }}" class="card card-body cbis-storage-filter mb-3" data-auto-filter="true" aria-label="Filter stored blood bags">
     <input type="hidden" name="blood_type" value="{{ $bloodType }}">
     <input type="hidden" name="component" value="{{ $componentKey }}">
     <div class="row g-2 align-items-end">
-    <div class="col-md-7 col-lg-6 cbis-storage-filter-field">
+    <div class="col-md-6 col-lg-5 cbis-storage-filter-field">
         <label for="storage-expiration-date" class="form-label">Expiry date</label>
         <select id="storage-expiration-date" name="expiration_date" class="form-select">
             <option value="">All expiry dates</option>
@@ -62,7 +62,14 @@
             @endif
         </select>
     </div>
-    <div class="col-md-5 col-lg-6 cbis-storage-filter-actions">
+    <div class="col-md-6 col-lg-4 cbis-storage-filter-field">
+        <label for="storage-sort" class="form-label">Stock order</label>
+        <select id="storage-sort" name="sort" class="form-select">
+            <option value="oldest" @selected($sort === 'oldest')>Oldest expiry first</option>
+            <option value="latest" @selected($sort === 'latest')>Latest expiry first</option>
+        </select>
+    </div>
+    <div class="col-md-12 col-lg-3 cbis-storage-filter-actions">
         <button class="btn btn-danger js-auto-filter-submit">Filter</button>
         <a href="{{ route('blood-inventory.storage', $storageParameters) }}" class="btn btn-outline-secondary">All expiry dates</a>
     </div>
