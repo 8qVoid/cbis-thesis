@@ -87,15 +87,15 @@
             @endphp
             <section class="cbis-storage-expiry-group" data-expiration-date="{{ $expiryDate }}" aria-labelledby="storage-expiry-{{ $expiryDate }}">
                 <div class="cbis-storage-expiry-heading">
-                    <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time></h2>
+                    <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time>@if($dateUnits > 0 && $dateUnits <= 5) <span class="badge cbis-status-low ms-1">Low stock group</span>@endif</h2>
                     <p>{{ $dateUnits }} unit{{ $dateUnits === 1 ? '' : 's' }} · {{ $dateBatchCount }} stock batch{{ $dateBatchCount === 1 ? '' : 'es' }} total</p>
                 </div>
                 <div class="cbis-storage-batch-grid" aria-label="Blood bags expiring {{ $expiryDate }}">
                     @foreach($dateBatches as $batch)
                         @php
                             $units = (int) $batch->units_available;
-                            $displayStatus = $batch->status === 'expired' || $batch->expiration_date?->lt(today()) ? 'Expired' : ($units === 0 ? 'Depleted' : ($units <= 5 ? 'Low stock' : 'In storage'));
-                            $statusClass = in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : ($displayStatus === 'Low stock' ? 'cbis-status-low' : 'cbis-status-active');
+                            $displayStatus = $batch->status === 'expired' || $batch->expiration_date?->lt(today()) ? 'Expired' : ($units === 0 ? 'Depleted' : 'In storage');
+                            $statusClass = in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : 'cbis-status-active';
                         @endphp
                         @for($unitNumber = 1; $unitNumber <= $units; $unitNumber++)
                             <article class="card cbis-storage-batch-card cbis-storage-unit-card" data-stock-record-id="{{ $batch->id }}" data-unit-number="{{ $unitNumber }}">
