@@ -26,6 +26,29 @@ class FacilitySeeder extends Seeder
 
         $facility->update(['is_main_chapter' => true]);
 
+        $silay = Facility::firstOrCreate(
+            ['code' => 'FAC-002'],
+            [
+                'name' => 'PHILIPPINE RED CROSS Silay City Branch',
+                'type' => 'blood_bank',
+                'contact_person' => 'Silay Branch Facilitator',
+                'contact_number' => '09170000002',
+                'email' => 'silay.facilitator@gmail.com',
+                'address' => 'Silay City, Negros Occidental',
+                'is_active' => true,
+            ]
+        );
+
+        $silayFacilitator = User::withTrashed()->where('email', 'silay.facilitator@gmail.com')->first()
+            ?? new User(['password' => Hash::make('password')]);
+        $silayFacilitator->forceFill([
+            'email' => 'silay.facilitator@gmail.com',
+            'name' => 'Silay Branch Facilitator',
+            'facility_id' => $silay->id,
+            'is_active' => $silayFacilitator->exists ? $silayFacilitator->is_active : true,
+        ])->save();
+        $silayFacilitator->syncRoles(['Event Facilitator']);
+
         // Rename legacy demo addresses on existing local databases rather
         // than creating duplicate staff accounts when the seeder is rerun.
         $facilitator = User::withTrashed()->where('email', 'facilitator@gmail.com')->first()

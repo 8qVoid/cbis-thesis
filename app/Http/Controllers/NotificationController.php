@@ -6,6 +6,7 @@ use App\Http\Requests\FilterNotificationsRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\ActivityReviewStatusChanged;
+use App\Notifications\ActivitySubmittedForReview;
 use App\Notifications\BloodReservationStatusChanged;
 use App\Notifications\BloodReservationSubmitted;
 use App\Notifications\DonorScreeningUpdated;
@@ -131,7 +132,7 @@ class NotificationController extends Controller
             ]).'#stock-batches';
         }
 
-        if ($notification->type === ActivityReviewStatusChanged::class) {
+        if (in_array($notification->type, [ActivityReviewStatusChanged::class, ActivitySubmittedForReview::class], true)) {
             if (! empty($data['activity_id']) && Route::has('donation-schedules.show')) {
                 return route('donation-schedules.show', $data['activity_id']);
             }
@@ -164,7 +165,7 @@ class NotificationController extends Controller
     private function notificationTypesFor(User $user): array
     {
         if ($user->isQao()) {
-            return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestSubmitted::class];
+            return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestSubmitted::class, ActivitySubmittedForReview::class];
         }
         if ($user->isBloodBankStaff()) {
             return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestReviewed::class];
@@ -210,6 +211,7 @@ class NotificationController extends Controller
             'reservation' => BloodReservationSubmitted::class,
             'reservation_status' => BloodReservationStatusChanged::class,
             'activity' => ActivityReviewStatusChanged::class,
+            'activity_submitted' => ActivitySubmittedForReview::class,
             'event' => EventPostedNotification::class,
             'screening' => DonorScreeningUpdated::class,
             default => null,

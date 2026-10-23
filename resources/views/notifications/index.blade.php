@@ -5,6 +5,7 @@
     $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
     $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
+    $activitySubmittedType = \App\Notifications\ActivitySubmittedForReview::class;
     $eventPostedType = \App\Notifications\EventPostedNotification::class;
     $reportSubmittedType = \App\Notifications\ReportRequestSubmitted::class;
     $reportReviewedType = \App\Notifications\ReportRequestReviewed::class;
@@ -37,6 +38,7 @@
                     <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
                     <option value="reservation" @selected(($alertType ?? 'all') === 'reservation')>Blood reservations</option>
                     <option value="report" @selected(($alertType ?? 'all') === 'report')>Inventory reports</option>
+                    <option value="activity_submitted" @selected(($alertType ?? 'all') === 'activity_submitted')>Activities pending review</option>
                 </select>
             </div>
         @endif
@@ -89,6 +91,9 @@
                                 @elseif($notification->type === $activityReviewType)
                                     <div>{{ $data['activity_title'] ?? 'Activity' }}</div>
                                     <div class="text-muted small">Status: {{ str($data['approval_status'] ?? 'updated')->title() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>
+                                @elseif($notification->type === $activitySubmittedType)
+                                    <div>{{ $data['activity_title'] ?? 'Activity' }}</div>
+                                    <div class="text-muted small">{{ $data['facility_name'] ?? 'Facility' }} · {{ $data['event_date'] ?? 'Date pending' }} · Submitted by {{ $data['submitted_by'] ?? 'facilitator' }}</div>
                                 @elseif($notification->type === $reservationStatusType)
                                     <div>Reservation {{ $data['reference'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">Status: {{ str($data['status'] ?? 'updated')->headline() }}{{ !empty($data['review_notes']) ? ' · '.$data['review_notes'] : '' }}</div>

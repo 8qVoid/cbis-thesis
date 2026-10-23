@@ -9,6 +9,7 @@ use App\Models\DonationSchedule;
 use App\Models\Facility;
 use App\Models\User;
 use App\Notifications\ActivityReviewStatusChanged;
+use App\Notifications\ActivitySubmittedForReview;
 use App\Notifications\EventPostedNotification;
 use App\Support\FacilityScope;
 use App\Traits\LogsAudit;
@@ -99,6 +100,9 @@ class DonationScheduleController extends Controller
         $schedule = DonationSchedule::create($data);
         $this->logAudit('donation_schedule.created', $schedule, $data, $request);
 
+        if (auth()->user()->isEventFacilitator()) {
+            $this->notifyQaoOfSubmission($schedule, auth()->user()->name);
+        }
         $this->notifyVerifiedDonors($schedule);
 
         return redirect()->route('donation-schedules.index')->with('success', auth()->user()->isQao()
@@ -155,6 +159,10 @@ class DonationScheduleController extends Controller
 
         $donationSchedule->update($data);
         $this->logAudit('donation_schedule.updated', $donationSchedule, $data, $request);
+
+        if (auth()->user()->isEventFacilitator()) {
+            $this->notifyQaoOfSubmission($donationSchedule->fresh(), auth()->user()->name);
+        }
 
         return redirect()->route('donation-schedules.index')->with('success', auth()->user()->isQao()
             ? 'Activity updated. Check its latest details in the event schedule.'
@@ -236,5 +244,17 @@ class DonationScheduleController extends Controller
                     }
                 }
             });
+    }
+
+    private function notifyQaoOfSubmission(DonationSchedule $schedule, ?string $submittedBy): void
+    {
+        $schedule->loadMissing('facility');
+
+        User::role('Quality Assurance Officer')
+            ->where('is_active', true)
+            ->where(fn ($query) => $query
+                ->whereNull('facility_id')
+                ->orWhere('facility_id', $schedule->facility_id))
+            ->each(fn (User $user) => $user->notify(new ActivitySubmittedForReview($schedule, $submittedBy)));
     }
 }
