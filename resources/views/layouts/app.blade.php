@@ -27,6 +27,7 @@
     $reservationSubmittedType = \App\Notifications\BloodReservationSubmitted::class;
     $reservationStatusType = \App\Notifications\BloodReservationStatusChanged::class;
     $activityReviewType = \App\Notifications\ActivityReviewStatusChanged::class;
+    $activitySubmittedType = \App\Notifications\ActivitySubmittedForReview::class;
     $eventPostedType = \App\Notifications\EventPostedNotification::class;
     $reportSubmittedType = \App\Notifications\ReportRequestSubmitted::class;
     $reportReviewedType = \App\Notifications\ReportRequestReviewed::class;
@@ -34,7 +35,14 @@
     $notificationTitle = 'Notifications';
 
     if ($webAuthenticated && $webUser?->isQao()) {
-        $notificationTypes = [$lowStockType, $reservationSubmittedType, $reportSubmittedType];
+        $notificationTypes = [
+            $lowStockType,
+            $reservationSubmittedType,
+            $reservationStatusType,
+            $reportSubmittedType,
+            $activitySubmittedType,
+            $eventPostedType,
+        ];
         $notificationTitle = 'QAO Alerts';
     } elseif ($webAuthenticated && $webUser?->isBloodBankStaff()) {
         $notificationTypes = [$lowStockType, $reservationSubmittedType, $reportReviewedType];
@@ -131,10 +139,14 @@
                                     </form>
                                 </div>
                                 @if($webUser?->isQao() || $webUser?->isBloodBankStaff())
-                                    <div class="d-flex gap-2 px-3 py-2 border-bottom">
+                                    <div class="d-flex flex-wrap gap-2 px-3 py-2 border-bottom">
                                         <a href="{{ route('notifications.index', ['type' => 'low_stock']) }}" class="btn btn-sm btn-outline-danger flex-fill">Low stock</a>
                                         <a href="{{ route('notifications.index', ['type' => 'reservation']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reservations</a>
                                         <a href="{{ route('notifications.index', ['type' => 'report']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reports</a>
+                                        @if($webUser?->isQao())
+                                            <a href="{{ route('notifications.index', ['type' => 'reservation_status']) }}" class="btn btn-sm btn-outline-danger flex-fill">Reservation updates</a>
+                                            <a href="{{ route('notifications.index', ['type' => 'event']) }}" class="btn btn-sm btn-outline-danger flex-fill">Donation events</a>
+                                        @endif
                                     </div>
                                 @endif
                                 @if($recentNotifications->count() > 5)
@@ -151,6 +163,8 @@
                                                 <div class="cbis-notification-summary">{{ $data['reference'] ?? 'Blood request' }} · {{ $data['blood_type'] ?? 'N/A' }}</div>
                                             @elseif($notification->type === $activityReviewType)
                                                 <div class="cbis-notification-summary">{{ $data['activity_title'] ?? 'Activity' }} · {{ str($data['approval_status'] ?? 'updated')->title() }}</div>
+                                            @elseif($notification->type === $activitySubmittedType)
+                                                <div class="cbis-notification-summary">{{ $data['activity_title'] ?? 'Activity' }} · {{ $data['facility_name'] ?? 'Facility' }} · {{ $data['event_date'] ?? 'Date pending' }}</div>
                                             @elseif($notification->type === $reservationStatusType)
                                                 <div class="cbis-notification-summary">{{ $data['reference'] ?? 'Blood request' }} · {{ str($data['status'] ?? 'updated')->headline() }}</div>
                                             @elseif(in_array($notification->type, [$reportSubmittedType, $reportReviewedType], true))
