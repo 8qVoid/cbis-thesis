@@ -37,8 +37,10 @@
                     <option value="all" @selected(($alertType ?? 'all') === 'all')>All alerts</option>
                     <option value="low_stock" @selected(($alertType ?? 'all') === 'low_stock')>Low blood stock</option>
                     <option value="reservation" @selected(($alertType ?? 'all') === 'reservation')>Blood reservations</option>
+                    @if(auth()->user()->isQao())<option value="reservation_status" @selected(($alertType ?? 'all') === 'reservation_status')>Reservation updates</option>@endif
                     <option value="report" @selected(($alertType ?? 'all') === 'report')>Inventory reports</option>
                     <option value="activity_submitted" @selected(($alertType ?? 'all') === 'activity_submitted')>Activities pending review</option>
+                    @if(auth()->user()->isQao())<option value="event" @selected(($alertType ?? 'all') === 'event')>Donation events</option>@endif
                 </select>
             </div>
         @endif

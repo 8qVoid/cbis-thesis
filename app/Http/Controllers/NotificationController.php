@@ -165,7 +165,14 @@ class NotificationController extends Controller
     private function notificationTypesFor(User $user): array
     {
         if ($user->isQao()) {
-            return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestSubmitted::class, ActivitySubmittedForReview::class];
+            return [
+                LowStockAlert::class,
+                BloodReservationSubmitted::class,
+                BloodReservationStatusChanged::class,
+                ReportRequestSubmitted::class,
+                ActivitySubmittedForReview::class,
+                EventPostedNotification::class,
+            ];
         }
         if ($user->isBloodBankStaff()) {
             return [LowStockAlert::class, BloodReservationSubmitted::class, ReportRequestReviewed::class];

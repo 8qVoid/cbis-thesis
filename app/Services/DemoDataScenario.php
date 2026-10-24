@@ -361,6 +361,38 @@ class DemoDataScenario
                 'review_notes' => $reservation->review_notes,
             ], in_array($reservation->status, ['fulfilled', 'rejected'], true));
         }
+
+        // Keep the QAO inbox useful in the Render showcase by surfacing the
+        // linked reservation outcomes and approved public donation events.
+        foreach ($reservations as $reservation) {
+            $this->notification($qao, 'reservation-update-'.$reservation->reference, BloodReservationStatusChanged::class, [
+                'title' => 'Reservation status updated', 'reservation_id' => $reservation->id,
+                'reference' => $reservation->reference, 'status' => $reservation->status,
+                'review_notes' => $reservation->review_notes,
+            ], in_array($reservation->status, ['fulfilled', 'rejected'], true));
+        }
+
+        foreach ($events as $key => $event) {
+            if ($event->trashed() || ! $event->is_public) {
+                continue;
+            }
+
+            $this->notification($qao, 'donation-event-'.$key, EventPostedNotification::class, [
+                'title' => 'Donation event published', 'event_id' => $event->id,
+                'event_title' => $event->title, 'event_type' => $event->event_type,
+                'event_date' => $event->event_date?->toDateString(),
+                'facility_id' => $event->facility_id,
+                'facility_name' => $event->facility->name,
+            ]);
+        }
+
+        $this->notification($qao, 'low-stock-ab-positive-platelets', LowStockAlert::class, [
+            'title' => 'Low blood stock detected', 'facility_id' => $staff->facility_id,
+            'facility_name' => $staff->facility->name, 'blood_type' => 'AB+',
+            'component' => 'Platelet Concentrate', 'units_available' => 3,
+            'expiration_date' => today()->addDays(4)->toDateString(),
+        ]);
+
         foreach ([$qao, $staff] as $recipient) {
             $this->notification($recipient, 'low-stock-'.$recipient->id, LowStockAlert::class, [
                 'title' => 'Low blood stock detected', 'facility_id' => $staff->facility_id,
