@@ -12,6 +12,14 @@ use Spatie\Permission\Models\Role;
 
 class StaffUserController extends Controller
 {
+    public function show(Request $request, User $staffUser): View
+    {
+        $this->authorizeStaffAccess($request->user(), $staffUser);
+        $staffUser->load(['facility', 'roles']);
+
+        return view('staff-users.show', compact('staffUser'));
+    }
+
     public function index(Request $request): View
     {
         $filters = $request->validate([

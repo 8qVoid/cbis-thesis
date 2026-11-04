@@ -117,6 +117,10 @@ Route::middleware(['auth', 'facility.access'])->group(function () {
     Route::get('/staff-users', [StaffUserController::class, 'index'])
         ->middleware('role_or_permission:Super Administrator|manage users')
         ->name('staff-users.index');
+    Route::get('/staff-users/{staffUser}', [StaffUserController::class, 'show'])
+        ->whereNumber('staffUser')
+        ->middleware('role_or_permission:Super Administrator|manage users')
+        ->name('staff-users.show');
     Route::get('/staff-users/create', [StaffUserController::class, 'create'])
         ->middleware(['role_or_permission:Super Administrator|manage users', 'facility.operator'])
         ->name('staff-users.create');

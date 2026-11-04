@@ -266,13 +266,16 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; } }
 
 /* Account directory and event schedule overview */
-.cbis-users-table table { table-layout: fixed; min-width: 760px; }
-.cbis-users-table th:nth-child(1) { width: 19%; }
-.cbis-users-table th:nth-child(2) { width: 25%; }
+.cbis-users-table table { table-layout: fixed; min-width: 1120px; width: 100%; }
+.cbis-users-table th:nth-child(1) { width: 18%; }
+.cbis-users-table th:nth-child(2) { width: 22%; }
 .cbis-users-table th:nth-child(3) { width: 20%; }
 .cbis-users-table th:nth-child(4) { width: 15%; }
 .cbis-users-table th:nth-child(5) { width: 8%; }
-.cbis-users-table th:nth-child(6) { width: 13%; }
+.cbis-users-table.cbis-record-table th:last-child { width: 190px; }
+.cbis-users-table .cbis-user-action-buttons { display:flex; justify-content:flex-end; align-items:center; gap:8px; flex-wrap:nowrap; }
+.cbis-users-table .cbis-user-action-buttons form { margin:0; flex-shrink:0; }
+.cbis-users-table .cbis-user-action-buttons .btn { flex-shrink:0; white-space:nowrap; }
 .cbis-users-table td { overflow-wrap: anywhere; padding-top: 16px; padding-bottom: 16px; font-style: normal; }
 .cbis-users-table .cbis-account-actions .btn { margin: 3px 0; }
 .cbis-event-overview { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(220px, 1fr); gap: 24px; padding: 22px; }

@@ -39,7 +39,7 @@
 <p class="small text-muted">{{ $users->total() }} matching {{ str('account')->plural($users->total()) }} · Showing {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }}</p>
 <div class="table-responsive cbis-users-table cbis-record-table">
 <table class="table bg-white align-middle">
-    <thead><tr><th>Account</th><th>Contact</th><th>Facility</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+    <thead><tr><th>Account</th><th>Contact</th><th>Facility</th><th>Role</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
     <tbody>
     @forelse($users as $user)
         <tr>
@@ -52,35 +52,22 @@
                     {{ $user->is_active ? 'Active' : 'Inactive' }}
                 </span>
             </td>
-            <td class="cbis-account-actions cbis-table-actions">
-                @if($canEditStaff && ! $user->is($currentUser))
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle js-account-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $user->name }}">Actions</button>
-                        <ul class="dropdown-menu dropdown-menu-end cbis-account-menu">
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                        <form
-                            method="POST"
-                            action="{{ route('staff-users.status', $user) }}"
-                            class="js-confirm-action"
-                            data-confirm-title="{{ $user->is_active ? 'Deactivate account?' : 'Reactivate account?' }}"
-                            data-confirm-message="{{ $user->is_active ? 'This will prevent '.$user->name.' from logging in, but their old records will stay in the system.' : 'This will allow '.$user->name.' to log in again using their existing account.' }}"
-                            data-confirm-button="{{ $user->is_active ? 'Deactivate Account' : 'Reactivate Account' }}"
-                            data-confirm-variant="{{ $user->is_active ? 'danger' : 'success' }}"
-                        >
+
+            <td class="cbis-account-actions text-end">
+                <div class="cbis-user-action-buttons">
+                    <a href="{{ route('staff-users.show', $user) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                    @if($canEditStaff && ! $user->is($currentUser))
+                        <form method="POST" action="{{ route('staff-users.status', $user) }}" class="js-confirm-action"
+                              data-confirm-title="{{ $user->is_active ? 'Deactivate account?' : 'Activate account?' }}"
+                              data-confirm-message="{{ $user->is_active ? 'This will prevent '.$user->name.' from logging in, but their old records will stay in the system.' : 'This will allow '.$user->name.' to log in again using their existing account.' }}"
+                              data-confirm-button="{{ $user->is_active ? 'Deactivate Account' : 'Activate Account' }}" data-confirm-variant="{{ $user->is_active ? 'danger' : 'success' }}">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="is_active" value="{{ $user->is_active ? 0 : 1 }}">
-                            <button class="dropdown-item {{ $user->is_active ? 'text-danger' : 'text-success' }}">
-                                {{ $user->is_active ? 'Deactivate' : 'Reactivate' }}
-                            </button>
+                            <button class="btn btn-sm {{ $user->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}">{{ $user->is_active ? 'Deactivate' : 'Activate' }}</button>
                         </form>
-                        </li>
-                        </ul>
-                    </div>
-                @else
-                    <span class="text-muted small">View only</span>
-                @endif
+                    @endif
+                </div>
             </td>
         </tr>
     @empty
@@ -91,11 +78,3 @@
 </div>
 {{ $users->links() }}
 @endsection
-
-@push('scripts')
-<script>
-document.querySelectorAll('.js-account-menu').forEach(button => {
-    new bootstrap.Dropdown(button, { popperConfig: { strategy: 'fixed' } });
-});
-</script>
-@endpush
