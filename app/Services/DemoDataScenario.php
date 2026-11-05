@@ -46,7 +46,7 @@ class DemoDataScenario
 
             return [
                 'Showcase accounts' => count($accounts),
-                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('email', 'like', '%.@example.test'))->count(),
+                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('email', 'like', 'cbis.notifications.ph+%@gmail.com'))->count(),
                 'Activities' => DonationSchedule::query()->where('title', 'like', '[DEMO]%')->count(),
                 'Event registrations' => EventRegistration::query()->whereHas('event', fn ($query) => $query->where('title', 'like', '[DEMO]%'))->count(),
                 'Donation records' => DonationRecord::query()->where('donation_no', 'like', 'DON-2026-%')->count(),
@@ -79,7 +79,8 @@ class DemoDataScenario
 
         $accounts = [];
         foreach ($people as $person) {
-            $email = $person['key'].'@example.test';
+            // Gmail plus aliases keep seeded mail within the CBIS mailbox.
+            $email = 'cbis.notifications.ph+'.$person['key'].'@gmail.com';
             $user = User::withTrashed()->firstOrNew(['email' => $email]);
             $attributes = [
                 'name' => implode(' ', [$person['first'], $person['middle'], $person['last']]),

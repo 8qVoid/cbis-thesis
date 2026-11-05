@@ -22,7 +22,7 @@
                             type="text"
                             value="{{ old('login') }}"
                             class="form-control"
-                            placeholder="name@example.com or +63 917 123 4567"
+                            placeholder="yourname@gmail.com or +63 917 123 4567"
                             required
                         >
                     </div>
