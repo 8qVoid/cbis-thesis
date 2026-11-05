@@ -2,7 +2,9 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
+    $canManageSchedules = $currentUser?->isQao() || $currentUser?->isBranchFacilitator();
+    $canReviewActivities = $currentUser?->isQao();
+    $canViewSchedules = $currentUser?->isCentralAdmin() || $canManageSchedules;
 @endphp
 <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center mb-3">
     <div>
@@ -61,7 +63,13 @@
         <div class="card-body cbis-event-overview">
             <div>
                 <div class="small text-muted mb-2">{{ $schedule->event_type_label }}</div>
-                <h2 class="h5 cbis-event-name"><a href="{{ route('donation-schedules.show', $schedule) }}">{{ $schedule->title }}</a></h2>
+                <h2 class="h5 cbis-event-name">
+                    @if($canViewSchedules)
+                        <a href="{{ route('donation-schedules.show', $schedule) }}">{{ $schedule->title }}</a>
+                    @else
+                        {{ $schedule->title }}
+                    @endif
+                </h2>
                 <p class="mb-1 fw-semibold">{{ $schedule->venue ?: 'Venue to be announced' }}</p>
                 <p class="small text-muted mb-0">{{ $schedule->facility?->name ?? 'No facility assigned' }}</p>
             </div>
@@ -84,12 +92,14 @@
             </div>
         </div>
         <div class="card-footer bg-white cbis-event-footer">
-            <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
-            @if($canManageSchedules || $currentUser?->can('review activities'))
+            @if($canViewSchedules)
+                <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
+            @endif
+            @if($canManageSchedules || $canReviewActivities)
             <details class="cbis-event-actions">
                 <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
                 <div class="cbis-event-action-buttons">
-                        @can('review activities')
+                        @if($canReviewActivities)
                             <form
                                 method="POST"
                                 action="{{ route('donation-schedules.review',$schedule) }}"
@@ -118,7 +128,7 @@
                                 <input type="hidden" name="approval_status" value="rejected">
                                 <button class="btn btn-sm btn-outline-danger">Reject</button>
                             </form>
-                        @endcan
+                        @endif
                         @if($canManageSchedules)
                             <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                             @if(in_array($schedule->status, ['planned', 'ongoing'], true))

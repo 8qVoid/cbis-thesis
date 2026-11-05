@@ -17,7 +17,7 @@
             ['label' => 'Reservations', 'route' => 'reservations.index', 'icon' => 'report', 'show' => $user?->can('process reservations') || $user?->can('monitor reservations')],
         ],
         'Activities & Reports' => [
-            ['label' => 'Events & Activities', 'route' => 'donation-schedules.index', 'icon' => 'calendar', 'show' => $user?->can('review activities') || $user?->can('manage schedules')],
+            ['label' => 'Events & Activities', 'route' => 'donation-schedules.index', 'icon' => 'calendar', 'show' => $user?->isQao() || $user?->isBranchFacilitator()],
             ['label' => 'Locations', 'route' => 'blood-bank-locations.index', 'icon' => 'pin', 'show' => $user?->can('manage locations')],
             ['label' => $user?->can('export reports') ? 'Reports & Exports' : 'System Summary', 'route' => 'reports.index', 'icon' => 'report', 'show' => $user?->can('view reports') || $user?->can('request summaries')],
         ],

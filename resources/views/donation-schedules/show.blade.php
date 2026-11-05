@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageSchedules = ($currentUser?->can('manage schedules') ?? false);
+    $canManageSchedules = $currentUser?->isQao() || $currentUser?->isBranchFacilitator();
 @endphp
 <div class="cbis-page-heading" data-live-region="event-detail-actions">
     <div><div class="cbis-eyebrow">{{ $donationSchedule->event_type_label }}</div><h1 class="cbis-page-title mb-0">{{ $donationSchedule->title }}</h1><p class="cbis-page-subtitle">Schedule, venue, publication status, and registrations.</p></div><div class="d-flex flex-wrap gap-2"><a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Back to events</a>
