@@ -46,7 +46,7 @@ class DemoDataScenario
 
             return [
                 'Showcase accounts' => count($accounts),
-                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('email', 'like', 'cbis.notifications.ph+%@gmail.com'))->count(),
+                'Donor profiles' => Donor::query()->whereHas('user', fn ($query) => $query->where('is_showcase', true))->count(),
                 'Activities' => DonationSchedule::query()->where('title', 'like', '[DEMO]%')->count(),
                 'Event registrations' => EventRegistration::query()->whereHas('event', fn ($query) => $query->where('title', 'like', '[DEMO]%'))->count(),
                 'Donation records' => DonationRecord::query()->where('donation_no', 'like', 'DON-2026-%')->count(),
@@ -79,15 +79,17 @@ class DemoDataScenario
 
         $accounts = [];
         foreach ($people as $person) {
-            // Gmail plus aliases keep seeded mail within the CBIS mailbox.
-            $email = 'cbis.notifications.ph+'.$person['key'].'@gmail.com';
-            $user = User::withTrashed()->firstOrNew(['email' => $email]);
+            $email = Str::slug(implode(' ', [$person['first'], $person['middle'], $person['last']])).'@gmail.com';
+            $user = User::withTrashed()->where('email', $email)->first()
+                ?? User::withTrashed()->where('email', 'cbis.notifications.ph+'.$person['key'].'@gmail.com')->first()
+                ?? new User;
             $attributes = [
+                'email' => $email,
                 'name' => implode(' ', [$person['first'], $person['middle'], $person['last']]),
                 'first_name' => $person['first'], 'middle_name' => $person['middle'], 'last_name' => $person['last'],
                 'birth_date' => $person['birth'], 'sex' => $person['sex'], 'phone' => $person['phone'],
                 'address' => $person['address'],
-                'is_active' => true, 'email_verified_at' => now(),
+                'is_active' => true, 'is_showcase' => true, 'email_verified_at' => now(),
             ];
             if (! $user->exists) {
                 // Angela is the public donor/patient testing account. Keep the
@@ -97,6 +99,8 @@ class DemoDataScenario
                     : Hash::make(Str::random(64));
                 $user->forceFill($attributes)->save();
                 $user->syncRoles($person['roles']);
+            } elseif ($user->email !== $email || ! $user->is_showcase) {
+                $user->forceFill(['email' => $email, 'is_showcase' => true])->save();
             }
 
             $donor = Donor::withTrashed()->where('user_id', $user->id)->first();

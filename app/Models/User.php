@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notification;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -29,6 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'facility_id',
         'password',
         'is_active',
+        'is_showcase',
     ];
 
     protected $hidden = [
@@ -43,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'birth_date' => 'date',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_showcase' => 'boolean',
         ];
     }
 
@@ -71,5 +74,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new AccountResetPasswordNotification($token, 'staff'));
+    }
+
+    public function routeNotificationForMail(?Notification $notification = null): ?string
+    {
+        // The Render showcase uses fictional Gmail addresses that may belong
+        // to real people. Keep notifications in the app for these accounts.
+        return $this->is_showcase ? null : $this->email;
     }
 }
