@@ -89,7 +89,11 @@ class DemoDataScenario
                 'is_active' => true, 'email_verified_at' => now(),
             ];
             if (! $user->exists) {
-                $attributes['password'] = Hash::make(Str::random(64));
+                // Angela is the public donor/patient testing account. Keep the
+                // credential out of source; only its bcrypt hash is stored here.
+                $attributes['password'] = $person['key'] === 'angela-dela-cruz'
+                    ? '$2y$12$VP4/1//OaTALw8pp2MaXB.g9l/dP7ozyP4KXp58tWved10qdD0y6u'
+                    : Hash::make(Str::random(64));
                 $user->forceFill($attributes)->save();
                 $user->syncRoles($person['roles']);
             }
