@@ -2,7 +2,7 @@
 @section('content')
 @php
     $currentUser = auth('web')->user();
-    $canManageSchedules = $currentUser?->isQao() || $currentUser?->isBranchFacilitator();
+    $canManageSchedules = $currentUser?->isQao() || $currentUser?->isEventFacilitator();
     $canReviewActivities = $currentUser?->isQao();
     $canViewSchedules = $currentUser?->isCentralAdmin() || $canManageSchedules;
 @endphp
