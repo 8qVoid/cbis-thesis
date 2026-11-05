@@ -125,7 +125,8 @@ class DemoDataScenario
             'bacolod-plaza' => ['Bacolod Public Plaza Blood Drive', $today->copy()->addDays(5), 'Bacolod Public Plaza, Bacolod City', 10.6712, 122.9448, 'planned'],
             'victorias-plaza' => ['Victorias City Public Plaza Blood Drive', $today->copy()->addDays(12), 'Victorias City Public Plaza, Victorias City', 10.9010, 123.0775, 'planned'],
             'manapla-plaza' => ['Manapla Public Plaza Blood Drive', $today->copy()->addDays(19), 'Manapla Public Plaza, Manapla', 10.9490, 123.1230, 'planned'],
-            'sagay-plaza' => ['Sagay City Public Plaza Blood Drive', $today->copy()->addDays(26), 'Sagay City Public Plaza, Sagay City', 10.9447, 123.4240, 'planned'],
+            'silay-plaza' => ['Silay City Public Plaza Blood Drive', $today->copy()->addDays(26), 'Silay City Public Plaza, Silay City, Negros Occidental', 10.7989092, 122.9754639, 'planned'],
+            'cadiz-plaza' => ['Cadiz City Public Plaza Blood Drive', $today->copy()->addDays(33), 'Cadiz City Public Plaza / City Park, Mabini-Abelarde Street, Cadiz City, Negros Occidental', 10.9553489, 123.3105469, 'planned'],
         ];
 
         $events = [];
@@ -136,6 +137,7 @@ class DemoDataScenario
                 'event_date' => $date, 'start_time' => '08:00', 'end_time' => '16:00',
                 'start_at' => $date->copy()->setTime(8, 0), 'end_at' => $date->copy()->setTime(16, 0),
                 'venue' => $venue, 'latitude' => $latitude, 'longitude' => $longitude,
+                'photo_path' => 'event-photos/community-blood-drive.jpg',
                 'description' => 'Demonstration activity using a real Negros Occidental venue. This is fictional test data and not a public event announcement.',
                 'contact_person' => 'PRC Negros Occidental Demo Desk', 'contact_number' => '09170000999',
                 'is_public' => ! $pending, 'approval_status' => $pending ? 'pending' : 'approved',
