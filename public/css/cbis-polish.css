@@ -266,14 +266,14 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; animation:none !important; } }
 
 /* Account directory and event schedule overview */
-.cbis-users-table table { table-layout: fixed; min-width: 1120px; width: 100%; }
+.cbis-users-table table { table-layout: fixed; min-width: 0; width: 100%; }
 .cbis-users-table th:nth-child(1) { width: 18%; }
-.cbis-users-table th:nth-child(2) { width: 22%; }
-.cbis-users-table th:nth-child(3) { width: 20%; }
-.cbis-users-table th:nth-child(4) { width: 15%; }
+.cbis-users-table th:nth-child(2) { width: 21%; }
+.cbis-users-table th:nth-child(3) { width: 19%; }
+.cbis-users-table th:nth-child(4) { width: 14%; }
 .cbis-users-table th:nth-child(5) { width: 8%; }
-.cbis-users-table.cbis-record-table th:last-child { width: 190px; }
-.cbis-users-table .cbis-user-action-buttons { display:flex; justify-content:flex-end; align-items:center; gap:8px; flex-wrap:nowrap; }
+.cbis-users-table.cbis-record-table th:last-child { width: 20%; }
+.cbis-users-table .cbis-user-action-buttons { display:flex; justify-content:flex-end; align-items:center; gap:8px; flex-wrap:wrap; }
 .cbis-users-table .cbis-user-action-buttons form { margin:0; flex-shrink:0; }
 .cbis-users-table .cbis-user-action-buttons .btn { flex-shrink:0; white-space:nowrap; }
 .cbis-users-table td { overflow-wrap: anywhere; padding-top: 16px; padding-bottom: 16px; font-style: normal; }
@@ -652,4 +652,42 @@ html.cbis-public-landing-page body { overflow-x: clip; }
  .cbis-registration-optional summary span { align-items:flex-start; flex-direction:column; gap:1px; }
  .cbis-registration-footer { align-items:stretch; flex-direction:column; }
  .cbis-registration-footer .btn { width:100%; min-height:44px; }
+}
+
+/* Keep navigation available while the page content scrolls. */
+@media (min-width: 768px) {
+    .cbis-staff-sidebar {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        max-height: 100dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
+.cbis-staff-content { min-width: 0; }
+@media (max-width: 1100px) {
+    .cbis-users-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+    .cbis-users-table table,
+    .cbis-users-table tbody,
+    .cbis-users-table tr { display: block; width: 100%; }
+    .cbis-users-table tr { border-bottom: 1px solid var(--cbis-border); padding: 12px; }
+    .cbis-users-table td {
+        display: grid;
+        grid-template-columns: 85px minmax(0, 1fr);
+        gap: 12px;
+        border: 0;
+        text-align: left !important;
+    }
+    .cbis-users-table td::before { content: attr(data-label); font-weight: 600; }
+    .cbis-users-table td > small { grid-column: 2; }
+    .cbis-users-table td[colspan] { display: block; }
+    .cbis-users-table td[colspan]::before { content: none; }
+    .cbis-users-table .cbis-user-action-buttons { justify-content: flex-start; }
 }

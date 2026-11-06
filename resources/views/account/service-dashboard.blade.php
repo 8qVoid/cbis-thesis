@@ -48,7 +48,7 @@
             @php($decided = $latest && in_array($latest->status, ['approved', 'rejected', 'fulfilled', 'cancelled']))
             <ol>
                 <li class="{{ $latest ? 'complete' : '' }}"><span class="cbis-reference-icon"><x-ui.icon name="report" /></span><strong>Submitted</strong><small>{{ $latest?->created_at?->format('M d, Y') ?? 'Not submitted' }}</small></li>
-                <li class="{{ $latest?->status === 'under_review' ? 'current' : ($decided ? 'complete' : '') }}"><span class="cbis-reference-icon"><x-ui.icon name="search" /></span><strong>{{ $latest?->status === 'cancelled' ? 'Review' : 'Under review' }}</strong><small>{{ $latest?->status === 'under_review' ? 'In progress' : ($latest?->status === 'cancelled' ? 'Not applicable' : ($decided ? 'Completed' : 'Pending')) }}</small></li>
+                <li class="{{ $latest?->status === 'under_review' ? 'current' : ($decided && $latest->status !== 'cancelled' ? 'complete' : '') }}"><span class="cbis-reference-icon"><x-ui.icon name="search" /></span><strong>{{ $latest?->status === 'cancelled' ? 'Review' : 'Under review' }}</strong><small>{{ $latest?->status === 'under_review' ? 'In progress' : ($latest?->status === 'cancelled' ? 'Not applicable' : ($decided ? 'Completed' : 'Pending')) }}</small></li>
                 <li class="{{ $decided ? 'current' : '' }}"><span class="cbis-reference-icon"><x-ui.icon name="decision" /></span><strong>Decision</strong><small>{{ $decided ? str($latest->status)->title() : 'Pending' }}</small>@if($decided && $latest->reviewed_at)<small>{{ $latest->reviewed_at->format('M d, Y') }}</small>@endif</li>
             </ol>
         </section>

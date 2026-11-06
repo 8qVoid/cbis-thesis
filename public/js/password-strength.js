@@ -36,9 +36,8 @@
 
     const updateMatch = () => {
         const value = password.value;
-        match.textContent = confirmation.value === '' ? '' : (confirmation.value === value ? 'Passwords match.' : 'Passwords do not match.');
-        match.className = `small mt-2 ${confirmation.value === value ? 'text-success' : 'text-danger'}`;
-        confirmation.setCustomValidity(confirmation.value !== '' && confirmation.value !== value ? 'Passwords do not match.' : '');
+        match.textContent = confirmation.value !== '' && confirmation.value === value ? 'Passwords match.' : '';
+        match.className = 'small mt-2 text-success';
     };
 
     password.addEventListener('input', () => { updateStrength(); updateMatch(); });

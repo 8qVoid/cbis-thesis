@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +23,8 @@ class ForgotPasswordController extends Controller
     public function store(ForgotPasswordRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $status = Password::broker($this->brokerFor($data['account_type']))
+        $accountType = $data['account_type'] ?? (User::where('email', $data['email'])->exists() ? 'staff' : 'donor');
+        $status = Password::broker($this->brokerFor($accountType))
             ->sendResetLink(['email' => $data['email']]);
 
         return $status === Password::RESET_LINK_SENT

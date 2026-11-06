@@ -46,7 +46,7 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
 <div class="row g-3">
     <div class="col-xl-7">
         <section class="card h-100">
-            <div class="card-header cbis-card-title"><span>{{ $isQao ? 'Inventory by Component' : "Today's Reservation Queue" }}</span><a href="{{ $isQao ? route('blood-inventory.index') : route('reservations.index') }}">View all</a></div>
+            <div class="card-header cbis-card-title"><span>{{ $isQao ? 'Inventory by Component' : "Today's Reservation Queue" }}</span><a href="{{ $isQao ? route('blood-inventory.index') : route('reservations.index') }}">{{ $isQao ? 'View inventory' : 'View all blood requests' }}</a></div>
             @if($isQao)
                 <div class="card-body"><div class="cbis-component-grid">
                 @foreach($components as $key => $label)
@@ -74,7 +74,7 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
     </div>
     <div class="col-xl-5 d-flex flex-column gap-3">
         <section class="card">
-            <div class="card-header cbis-card-title"><span>{{ $isQao ? 'Reservation Notices' : 'Inventory by Component' }}</span><a href="{{ $isQao ? route('reservations.index') : route('blood-inventory.index') }}">View all</a></div>
+            <div class="card-header cbis-card-title"><span>{{ $isQao ? 'Reservation Notices' : 'Inventory by Component' }}</span><a href="{{ $isQao ? route('reservations.index') : route('blood-inventory.index') }}">{{ $isQao ? 'View all blood requests' : 'View inventory' }}</a></div>
             <div class="card-body">
             @if($isQao)
                 <div class="cbis-list-stack">@forelse($reservationNotices as $reservation)<a class="cbis-list-row" href="{{ route('reservations.show', $reservation) }}"><span class="cbis-list-icon"><x-ui.icon name="report" /></span><span><strong>{{ $reservation->reference }}</strong><small>{{ $reservation->blood_type }} · {{ $components[$reservation->component] ?? $reservation->component }} · {{ $reservation->units_requested }} unit(s)</small></span><span class="cbis-view-only">View only</span></a>@empty<div class="cbis-empty-state"><strong>No reservation notices</strong><span>New requests will appear here for monitoring.</span></div>@endforelse</div>
@@ -83,7 +83,7 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
             @endif
             </div>
         </section>
-        <section class="card flex-grow-1"><div class="card-header cbis-card-title"><span>{{ $isQao ? 'Activity Approvals' : 'Expiring Soon' }}</span><a href="{{ $isQao ? route('donation-schedules.index') : route('blood-inventory.index') }}">View all</a></div>
+        <section class="card flex-grow-1"><div class="card-header cbis-card-title"><span>{{ $isQao ? 'Activity Approvals' : 'Expiring Soon' }}</span><a href="{{ $isQao ? route('donation-schedules.index') : route('blood-inventory.index') }}">{{ $isQao ? 'View all events' : 'View inventory' }}</a></div>
         <div class="card-body p-0"><div class="cbis-list-stack cbis-list-flush">
         @if($isQao) @forelse($pendingActivities as $event)<a class="cbis-list-row" href="{{ route('donation-schedules.show', $event) }}"><span class="cbis-list-icon"><x-ui.icon name="calendar" /></span><span><strong>{{ $event->title }}</strong><small>{{ $event->facility?->name }} · {{ $event->event_date?->format('M d, Y') }}</small></span><span class="btn btn-sm btn-outline-secondary">Review</span></a>@empty<div class="cbis-empty-state"><strong>No activities waiting</strong><span>Facilitator submissions will appear here.</span></div>@endforelse
         @else @forelse($expiringInventory as $item)<a class="cbis-list-row" href="{{ route('blood-inventory.show', $item) }}"><span class="cbis-list-icon"><x-ui.icon name="drop" /></span><span><strong>{{ $item->blood_type }} · {{ $item->component_label }}</strong><small>{{ $item->units_available }} unit(s) · expires {{ $item->expiration_date?->format('M d, Y') }}</small></span><span class="cbis-inline-status cbis-tone-warning">{{ today()->diffInDays($item->expiration_date) }} days</span></a>@empty<div class="cbis-empty-state"><strong>No near-expiry stock</strong><span>Items expiring within 14 days will appear here.</span></div>@endforelse @endif

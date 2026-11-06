@@ -14,13 +14,6 @@
                 <form method="POST" action="{{ route('password.email') }}" class="cbis-compact-form">
                     @csrf
                     <div class="mb-3">
-                        <label for="reset-account-type" class="form-label">Account Type</label>
-                        <select id="reset-account-type" name="account_type" class="form-select" required>
-                            <option value="staff" @selected(old('account_type', 'staff') === 'staff')>Staff Account</option>
-                            <option value="donor" @selected(old('account_type') === 'donor')>Donor Account</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
                         <label for="reset-email" class="form-label">Email Address</label>
                         <input id="reset-email" name="email" type="email" value="{{ old('email') }}" class="form-control" autocomplete="email" required>
                     </div>

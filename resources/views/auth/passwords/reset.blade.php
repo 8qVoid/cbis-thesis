@@ -16,16 +16,12 @@
                     <input type="hidden" name="token" value="{{ $token }}">
                     <input type="hidden" name="account_type" value="{{ $accountType }}">
                     <div class="mb-3">
-                        <label for="reset-account-type" class="form-label">Account Type</label>
-                        <input id="reset-account-type" class="form-control" value="{{ $accountType === 'donor' ? 'Donor Account' : 'Staff Account' }}" readonly>
-                    </div>
-                    <div class="mb-3">
                         <label for="reset-email" class="form-label">Email Address</label>
                         <input id="reset-email" name="email" type="email" value="{{ old('email', $email) }}" class="form-control" autocomplete="email" required>
                     </div>
                     <div class="mb-3">
                         <label for="reset-password" class="form-label">New Password</label>
-                        <input id="reset-password" name="password" type="password" class="form-control" autocomplete="new-password" required>
+                        <input id="reset-password" name="password" type="password" class="form-control" autocomplete="new-password" minlength="10" maxlength="255" aria-describedby="password-policy" required><small id="password-policy" class="text-muted">Use at least 10 characters with uppercase and lowercase letters, a number, and a symbol.</small>
                     </div>
                     <div class="mb-3">
                         <label for="reset-password-confirmation" class="form-label">Confirm New Password</label>

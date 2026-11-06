@@ -79,11 +79,11 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Latitude</label>
-            <input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude') }}" placeholder="e.g. 14.5995000" readonly>
+            <input id="latitude" name="latitude" class="form-control bg-light" value="{{ old('latitude') }}" placeholder="Select a point on the map" readonly>
         </div>
         <div class="col-md-6">
             <label class="form-label">Longitude</label>
-            <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" placeholder="e.g. 120.9842000" readonly>
+            <input id="longitude" name="longitude" class="form-control bg-light" value="{{ old('longitude') }}" placeholder="Select a point on the map" readonly>
         </div>
         <div class="col-12 cbis-form-actions">
             <a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Cancel</a>

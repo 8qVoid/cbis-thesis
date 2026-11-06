@@ -85,40 +85,14 @@
         </div>
         <div class="card-footer bg-white cbis-event-footer">
             <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
-            @if($canManageSchedules || $currentUser?->can('review activities'))
+            @php($canReview = $schedule->approval_status === 'pending' && $currentUser?->can('review activities'))
+            @if($canManageSchedules || $canReview)
             <details class="cbis-event-actions">
                 <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
                 <div class="cbis-event-action-buttons">
-                        @can('review activities')
-                            <form
-                                method="POST"
-                                action="{{ route('donation-schedules.review',$schedule) }}"
-                                class="d-inline js-confirm-action"
-                                data-confirm-title="Approve event?"
-                                data-confirm-message="This will approve {{ $schedule->title }} and make it available for public listing when it has a valid map location."
-                                data-confirm-button="Approve Event"
-                                data-confirm-variant="success"
-                            >
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="approval_status" value="approved">
-                                <button class="btn btn-sm btn-outline-success">Approve</button>
-                            </form>
-                            <form
-                                method="POST"
-                                action="{{ route('donation-schedules.review',$schedule) }}"
-                                class="d-inline js-confirm-action"
-                                data-confirm-title="Reject event?"
-                                data-confirm-message="This will reject {{ $schedule->title }} and keep it hidden from the public portal until changes are made."
-                                data-confirm-button="Reject Event"
-                                data-confirm-variant="danger"
-                            >
-                                @csrf
-                                @method('PATCH')
-                                <input type="hidden" name="approval_status" value="rejected">
-                                <button class="btn btn-sm btn-outline-danger">Reject</button>
-                            </form>
-                        @endcan
+                        @if($canReview)
+                            @include('donation-schedules.review-actions')
+                        @endif
                         @if($canManageSchedules)
                             <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                             @if(in_array($schedule->status, ['planned', 'ongoing'], true))

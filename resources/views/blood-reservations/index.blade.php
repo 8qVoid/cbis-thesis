@@ -8,7 +8,7 @@
 @endif
 <div class="cbis-page-heading">
     <div>
-        <h1 class="cbis-page-title mb-0">{{ $isPatient ? 'My Blood Requests' : 'Blood Reservations' }}</h1>
+        <h1 class="cbis-page-title mb-0">{{ $isPatient ? 'My Blood Requests' : 'Blood Requests' }}</h1>
         <p class="cbis-page-subtitle">{{ $isPatient ? 'Track your submitted requests and staff decisions.' : 'Review patient requests, documents, stock readiness, and release progress.' }}</p>
     </div>
     @if($isPatient)
@@ -19,15 +19,15 @@
 <div class="card cbis-record-table cbis-reservation-directory" data-live-region="reservation-list">
     <div class="table-responsive cbis-mobile-table-wrap">
         <table class="table cbis-reservation-table cbis-mobile-card-table">
-            <caption class="caption-top px-3 py-2 small text-muted">{{ $isPatient ? 'Open a request to view documents, status, and next steps.' : 'Open a request to review documents, approve or reject, and record releases.' }}</caption>
+            <caption class="caption-top px-3 py-2 small text-muted">{{ $isPatient ? 'Open a request to view documents, status, and next steps.' : (auth()->user()->can('process reservations') ? 'Open a request to review documents, approve or reject, and record releases.' : 'Open a request to view its status and release progress.') }}</caption>
             <thead>
                 <tr>
-                    <th scope="col">{{ $isPatient ? 'Reference / Branch' : 'Reference / Patient' }}</th>
+                    <th scope="col">{{ $isPatient ? 'Reference / Facility' : 'Reference / Patient' }}</th>
                     <th scope="col">Blood request</th>
                     <th scope="col">Units</th>
                     <th scope="col">Needed date</th>
                     <th scope="col">Status</th>
-                    <th scope="col">View</th>
+                    <th scope="col">Request details</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +50,7 @@
                         <td data-label="Units">{{ $reservation->units_requested }} unit{{ $reservation->units_requested == 1 ? '' : 's' }}</td>
                         <td data-label="Needed date">{{ $reservation->needed_on?->format('M d, Y') }}</td>
                         <td data-label="Status"><x-ui.request-status :status="$reservation->status" compact /></td>
-                        <td data-label="View" class="cbis-record-actions cbis-table-actions">
+                        <td data-label="Request details" class="cbis-record-actions cbis-table-actions">
                             <a href="{{ route('reservations.show',$reservation) }}" class="btn btn-sm btn-outline-secondary">View request</a>
                         </td>
                     </tr>
@@ -60,11 +60,9 @@
                             <div class="cbis-empty-state">
                                 <strong>No blood requests found</strong>
                                 <span>{{ $isPatient ? 'Use New Request to submit your ID and doctor’s blood request for staff review.' : 'New patient submissions will appear here for review.' }}</span>
-                                @if($isPatient)
-                                    <a href="{{ route('reservations.create') }}" class="btn btn-danger mt-2">Create a blood request</a>
-                                @elseif(auth()->user()->isBloodBankStaff())
+                                @if(auth()->user()->isBloodBankStaff())
                                     <a href="{{ route('blood-inventory.index') }}" class="btn btn-outline-secondary mt-2">Check inventory</a>
-                                @else
+                                @elseif(! $isPatient)
                                     <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary mt-2">Back to dashboard</a>
                                 @endif
                             </div>

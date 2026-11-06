@@ -43,17 +43,17 @@
     <tbody>
     @forelse($users as $user)
         <tr>
-            <td><div class="fw-semibold">{{ $user->name }}</div><small class="text-muted">{{ $user->hasAnyRole(['Quality Assurance Officer', 'Event Facilitator', 'Blood Bank Staff']) ? 'Staff account' : 'Public account' }}</small></td>
-            <td><div class="text-break">{{ $user->email }}</div><small class="text-muted">{{ $user->phone ?: 'No phone recorded' }}</small></td>
-            <td>{{ $user->facility->name ?? 'Not assigned' }}</td>
-            <td>{{ $user->hasAllRoles(['Donor','Patient']) ? $user->getRoleNames()->reject(fn ($role) => in_array($role, ['Donor','Patient']))->push('Patient/Donor')->implode(', ') : $user->getRoleNames()->implode(', ') }}</td>
-            <td>
+            <td data-label="Account"><div class="fw-semibold">{{ $user->name }}</div><small class="text-muted">{{ $user->hasAnyRole(['Quality Assurance Officer', 'Event Facilitator', 'Blood Bank Staff']) ? 'Staff account' : 'Public account' }}</small></td>
+            <td data-label="Contact"><div class="text-break">{{ $user->email }}</div><small class="text-muted">{{ $user->phone ?: 'No phone recorded' }}</small></td>
+            <td data-label="Facility">{{ $user->facility->name ?? 'Not assigned' }}</td>
+            <td data-label="Role">{{ $user->hasAllRoles(['Donor','Patient']) ? $user->getRoleNames()->reject(fn ($role) => in_array($role, ['Donor','Patient']))->push('Patient/Donor')->implode(', ') : $user->getRoleNames()->implode(', ') }}</td>
+            <td data-label="Status">
                 <span class="badge {{ $user->is_active ? 'cbis-status-active' : 'cbis-status-expired' }}">
                     {{ $user->is_active ? 'Active' : 'Inactive' }}
                 </span>
             </td>
 
-            <td class="cbis-account-actions text-end">
+            <td data-label="Actions" class="cbis-account-actions text-end">
                 <div class="cbis-user-action-buttons">
                     <a href="{{ route('staff-users.show', $user) }}" class="btn btn-sm btn-outline-secondary">View</a>
                     @if($canEditStaff && ! $user->is($currentUser))

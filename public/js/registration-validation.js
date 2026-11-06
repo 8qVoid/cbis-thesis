@@ -7,6 +7,7 @@
     const donorFields = [...form.querySelectorAll('.js-donor-field')];
     const birthDate = document.getElementById('birthDate');
     const password = document.getElementById('registrationPassword');
+    const confirmation = document.getElementById('registrationPasswordConfirmation');
     const nameFields = [...form.querySelectorAll('.js-person-name')];
     const fields = [...form.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select')];
     const feedbackByField = new Map();
@@ -83,15 +84,22 @@
             ? 'Use 10 or more characters with uppercase, lowercase, a number, and a symbol.' : '');
     };
 
+    const updateConfirmation = () => {
+        confirmation.setCustomValidity(confirmation.value && confirmation.value !== password.value
+            ? 'Passwords do not match.' : '');
+    };
+
     services.forEach(field => field.addEventListener('change', () => updateServices(true)));
     fields.forEach(field => {
         const update = () => {
             if (field === birthDate) updateBirthDate();
             if (field === password) updatePassword();
+            if (field === password || field === confirmation) updateConfirmation();
             if (nameFields.includes(field)) updateName(field);
+            if ((field === password || field === confirmation) && feedbackByField.get(field)?.textContent) touchedFields.add(field);
             if (touchedFields.has(field)) showFeedback(field);
+            if (field === confirmation && feedbackByField.get(password)?.textContent) showFeedback(password);
             if (field === password) {
-                const confirmation = document.getElementById('registrationPasswordConfirmation');
                 if (touchedFields.has(confirmation)) showFeedback(confirmation);
             }
         };
@@ -115,6 +123,7 @@
         updateServices(true);
         updateBirthDate();
         updatePassword();
+        updateConfirmation();
         nameFields.forEach(updateName);
         if (!form.checkValidity()) {
             event.preventDefault();
@@ -125,5 +134,6 @@
     updateServices(!servicesError.hidden);
     updateBirthDate();
     updatePassword();
+    updateConfirmation();
     nameFields.forEach(updateName);
 })();

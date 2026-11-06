@@ -45,7 +45,7 @@ class DonorSelfRegisterRequest extends BaseFormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'address' => ['required', 'string', 'max:500', new NegrosOccidentalAddressRule],
             'identity_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->mixedCase()->letters()->numbers()->symbols()],
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::defaults()],
             'password_confirmation' => ['required', 'string', 'max:255'],
         ];
     }

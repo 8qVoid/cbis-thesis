@@ -203,7 +203,9 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Login</a>
+                    @unless(request()->routeIs('login', 'donor.register', 'password.request'))
+                        <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Login</a>
+                    @endunless
                 @endif
             </div>
         </div>
@@ -231,11 +233,16 @@
         })();
         </script>
     @endif
-    @if($errors->any())
+    @php
+        $summaryErrors = request()->routeIs('donor.register')
+            ? collect($errors->messages())->except(['password', 'password_confirmation'])->flatten()->all()
+            : $errors->all();
+    @endphp
+    @if($summaryErrors)
         <div class="alert alert-danger" role="alert">
             <strong class="d-block mb-2">Please check the following before continuing:</strong>
             <ul class="mb-0">
-                @foreach($errors->all() as $error)
+                @foreach($summaryErrors as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>

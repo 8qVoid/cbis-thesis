@@ -15,13 +15,18 @@
             <legend class="cbis-form-section-title">Request Details</legend>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label for="facility_id" class="form-label">Red Cross Branch</label>
+                    <label for="facility_id" class="form-label">Processing facility</label>
+                    @if($facilities->count() === 1)
+                        <input id="facility_id" class="form-control" value="{{ $facilities->first()->name }}" readonly>
+                        <input type="hidden" name="facility_id" value="{{ $facilities->first()->id }}">
+                    @else
                     <select id="facility_id" name="facility_id" class="form-select" required>
-                        <option value="">Select branch</option>
+                        <option value="">Select processing facility</option>
                         @foreach($facilities as $facility)
                             <option value="{{ $facility->id }}" @selected(old('facility_id')==$facility->id)>{{ $facility->name }}</option>
                         @endforeach
                     </select>
+                    @endif
                     @error('facility_id')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-3">
@@ -90,7 +95,7 @@
         </fieldset>
 
         <div class="cbis-form-actions cbis-mobile-form-actions">
-            <button class="btn btn-danger">Submit Reservation</button>
+            <button class="btn btn-danger">Submit blood request</button>
         </div>
     </div>
 </form>

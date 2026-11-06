@@ -26,7 +26,6 @@ class ForgotPasswordFlowTest extends TestCase
         ]);
 
         $this->post(route('password.email'), [
-            'account_type' => 'staff',
             'email' => $user->email,
         ])->assertSessionHas('success');
 
@@ -38,11 +37,11 @@ class ForgotPasswordFlowTest extends TestCase
             'account_type' => 'staff',
             'token' => $token,
             'email' => $user->email,
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'New-password1',
+            'password_confirmation' => 'New-password1',
         ])->assertRedirect(route('login'));
 
-        $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('New-password1', $user->fresh()->password));
     }
 
     public function test_donor_account_can_receive_reset_link_and_reset_password(): void
@@ -62,7 +61,6 @@ class ForgotPasswordFlowTest extends TestCase
         ]);
 
         $this->post(route('password.email'), [
-            'account_type' => 'donor',
             'email' => $donor->email,
         ])->assertSessionHas('success');
 
@@ -74,10 +72,10 @@ class ForgotPasswordFlowTest extends TestCase
             'account_type' => 'donor',
             'token' => $token,
             'email' => $donor->email,
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'New-password1',
+            'password_confirmation' => 'New-password1',
         ])->assertRedirect(route('login'));
 
-        $this->assertTrue(Hash::check('new-password', $donor->fresh()->password));
+        $this->assertTrue(Hash::check('New-password1', $donor->fresh()->password));
     }
 }

@@ -43,7 +43,7 @@
             <h5 class="mb-1">Login password</h5>
             <p class="text-muted small mb-0">Set the temporary password the staff member will use for their first login.</p>
         </div>
-        <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+        <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" minlength="10" maxlength="255" aria-describedby="password-policy" required><small id="password-policy" class="text-muted">Use at least 10 characters with uppercase and lowercase letters, a number, and a symbol.</small></div>
         <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" name="password_confirmation" class="form-control" required></div>
         <div class="col-12 cbis-form-actions"><a href="{{ route('staff-users.index') }}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Create staff user</button></div>
     </div>

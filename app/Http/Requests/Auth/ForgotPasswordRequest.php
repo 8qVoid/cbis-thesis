@@ -14,7 +14,7 @@ class ForgotPasswordRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'account_type' => ['required', 'in:staff,donor'],
+            'account_type' => ['sometimes', 'in:staff,donor'],
             'email' => ['required', 'email', 'max:255'],
         ];
     }

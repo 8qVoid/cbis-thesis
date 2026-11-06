@@ -51,7 +51,7 @@ class RoleSurfaceAuditTest extends TestCase
         ] as $account) {
             $this->actingAs($qao)->post(route('staff-users.store'), [
                 ...$account, 'facility_id' => $this->facility->id,
-                'password' => 'password123', 'password_confirmation' => 'password123',
+                'password' => 'Valid-Pass123', 'password_confirmation' => 'Valid-Pass123',
             ])->assertRedirect(route('staff-users.index'));
 
             $created = User::where('email', $account['email'])->firstOrFail();

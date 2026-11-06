@@ -18,8 +18,10 @@
             @php($steps = ['Draft', 'Submitted to Bacolod QAO', 'Approved', 'Public on Map'])
             @php($hasPublicPin = $nextEvent->is_public && $nextEvent->latitude !== null && $nextEvent->longitude !== null)
             @php($step = $nextEvent->approval_status === 'approved' ? ($hasPublicPin ? 4 : 3) : 2)
+            @if($nextEvent->approval_status !== 'rejected')
             <div class="cbis-approval-flow">@foreach($steps as $index => $label)<div class="{{ $index < $step ? 'is-complete' : '' }}"><span>{{ $index < $step ? '✓' : $index + 1 }}</span><strong>{{ $label }}</strong></div>@endforeach</div>
-            @if($nextEvent->approval_status === 'pending')<div class="alert alert-info mb-0 mt-3">This activity is pending review by Bacolod QAO. It remains hidden from the public map.</div>@elseif($nextEvent->approval_status === 'rejected')<div class="alert alert-danger mb-0 mt-3">QAO requested changes: {{ $nextEvent->review_notes ?: 'Review the activity details before resubmitting.' }}</div>@else<div class="alert alert-success mb-0 mt-3">{{ $hasPublicPin ? 'Approved and published with an activity location.' : 'Approved. Public map visibility also requires publication and a location.' }}</div>@endif
+            @endif
+            @if($nextEvent->approval_status === 'pending')<div class="alert alert-info mb-0 mt-3">This activity is pending review by Bacolod QAO. It remains hidden from the public map.</div>@elseif($nextEvent->approval_status === 'rejected')<div class="alert alert-danger mb-0 mt-3">Changes requested by QAO: {{ $nextEvent->review_notes ?: 'Review the activity details before resubmitting.' }}</div>@else<div class="alert alert-success mb-0 mt-3">{{ $hasPublicPin ? 'Approved and published with an activity location.' : 'Approved. Public map visibility also requires publication and a location.' }}</div>@endif
         @else<div class="cbis-empty-state"><strong>No upcoming activity</strong><span>Create an activity and send its venue and map location to QAO for approval.</span><a href="{{ route('donation-schedules.create') }}" class="btn btn-danger mt-2">Create Activity</a></div>@endif
         </div></section>
     </div>

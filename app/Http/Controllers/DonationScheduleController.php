@@ -201,10 +201,14 @@ class DonationScheduleController extends Controller
     {
         abort_unless(auth()->user()->can('review activities'), 403);
         $data = $request->validate(['approval_status' => ['required', 'in:approved,rejected'], 'review_notes' => ['nullable', 'string', 'max:1000']]);
-        $donationSchedule->update([
+        $updated = DonationSchedule::whereKey($donationSchedule->getKey())->where('approval_status', 'pending')->update([
             ...$data, 'is_public' => $data['approval_status'] === 'approved',
             'reviewed_by' => auth()->id(), 'reviewed_at' => now(),
         ]);
+        if (! $updated) {
+            return back()->withErrors(['approval_status' => 'This activity has already been reviewed.']);
+        }
+
         User::role('Event Facilitator')
             ->where('is_active', true)
             ->where('facility_id', $donationSchedule->facility_id)

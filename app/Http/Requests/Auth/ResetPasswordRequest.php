@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordRequest extends BaseFormRequest
 {
@@ -17,7 +18,7 @@ class ResetPasswordRequest extends BaseFormRequest
             'account_type' => ['required', 'in:staff,donor'],
             'token' => ['required', 'string'],
             'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', Password::defaults(), 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
         ];
     }

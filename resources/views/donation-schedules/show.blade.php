@@ -6,6 +6,9 @@
 @endphp
 <div class="cbis-page-heading" data-live-region="event-detail-actions">
     <div><div class="cbis-eyebrow">{{ $donationSchedule->event_type_label }}</div><h1 class="cbis-page-title mb-0">{{ $donationSchedule->title }}</h1><p class="cbis-page-subtitle">Schedule, venue, publication status, and registrations.</p></div><div class="d-flex flex-wrap gap-2"><a href="{{ route('donation-schedules.index') }}" class="btn btn-outline-secondary">Back to events</a>
+    @if($donationSchedule->approval_status === 'pending' && $currentUser?->can('review activities'))
+        @include('donation-schedules.review-actions', ['schedule' => $donationSchedule])
+    @endif
     @if($canManageSchedules && in_array($donationSchedule->status, ['planned', 'ongoing'], true))
         <form
             method="POST"

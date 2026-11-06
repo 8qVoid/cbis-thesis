@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Password::defaults(fn () => Password::min(10)->mixedCase()->letters()->numbers()->symbols());
+
         Mail::extend('google_script', fn (array $config) => new GoogleScriptTransport(
             (string) ($config['endpoint'] ?? ''),
             (string) ($config['secret'] ?? ''),

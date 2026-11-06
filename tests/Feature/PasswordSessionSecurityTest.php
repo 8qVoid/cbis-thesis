@@ -45,10 +45,10 @@ class PasswordSessionSecurityTest extends TestCase
         $this->post(route('password.reset.update'), [
             'account_type' => $guard === 'web' ? 'staff' : 'donor',
             'email' => $user->email, 'token' => $token,
-            'password' => 'changed-password', 'password_confirmation' => 'changed-password',
+            'password' => 'Changed-password1', 'password_confirmation' => 'Changed-password1',
         ])->assertRedirect(route('login'));
         $this->assertGuest($guard);
-        $this->assertTrue(Hash::check('changed-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('Changed-password1', $user->fresh()->password));
         $this->assertNotSame($oldRememberToken, $user->fresh()->remember_token);
         $this->get(route('password.change'))->assertRedirect(route('login'));
 
@@ -63,7 +63,7 @@ class PasswordSessionSecurityTest extends TestCase
         $this->assertGuest($guard);
 
         $this->switchBrowserSession(Str::random(40));
-        $this->login($guard, $user->fresh(), password: 'changed-password');
+        $this->login($guard, $user->fresh(), password: 'Changed-password1');
         $this->get(route('password.change'))->assertOk();
     }
 
@@ -80,7 +80,7 @@ class PasswordSessionSecurityTest extends TestCase
         $this->switchBrowserSession($currentSessionId, $guard, $currentRememberCookie);
         $changed = $this->put(route('password.update'), [
             'current_password' => 'initial-password',
-            'password' => 'changed-password', 'password_confirmation' => 'changed-password',
+            'password' => 'Changed-password1', 'password_confirmation' => 'Changed-password1',
         ])->assertSessionHasNoErrors()->assertRedirect(route($guard === 'web' ? 'account.dashboard' : 'donor.portal.profile'));
 
         $renewedSessionId = $this->app['session.store']->getId();
@@ -89,7 +89,7 @@ class PasswordSessionSecurityTest extends TestCase
         $this->assertNotEmpty($renewedRememberCookie);
         $this->assertNotSame($oldRememberCookie, $renewedRememberCookie);
         $this->assertNotSame($oldRememberToken, $user->fresh()->remember_token);
-        $this->assertTrue(Hash::check('changed-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('Changed-password1', $user->fresh()->password));
 
         $this->switchBrowserSession($renewedSessionId);
         $this->get(route('password.change'))->assertOk();
@@ -123,7 +123,7 @@ class PasswordSessionSecurityTest extends TestCase
 
         $this->put(route('password.update'), [
             'current_password' => 'incorrect-password',
-            'password' => 'changed-password', 'password_confirmation' => 'changed-password',
+            'password' => 'Changed-password1', 'password_confirmation' => 'Changed-password1',
         ])->assertSessionHasErrors('current_password');
         $this->assertSame($currentSessionId, $this->app['session.store']->getId());
         $this->assertSame($oldPasswordHash, $user->fresh()->password);

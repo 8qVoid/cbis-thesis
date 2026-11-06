@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Support\PhilippinePhone;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class StoreStaffUserRequest extends BaseFormRequest
 {
@@ -33,7 +34,7 @@ class StoreStaffUserRequest extends BaseFormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'regex:/^\+639\d{9}$/', 'unique:users,phone'],
             'facility_id' => [$isCentralAdmin ? 'required' : 'nullable', 'integer', Rule::exists('facilities', 'id')->where(fn ($q) => $q->where('is_active', true)->when($this->input('role') === 'Blood Bank Staff', fn ($q) => $q->where('is_main_chapter', true)))],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password' => ['required', 'string', Password::defaults(), 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'max:255'],
             'role' => [
                 'required',
