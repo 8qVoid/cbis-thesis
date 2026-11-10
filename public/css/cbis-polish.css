@@ -691,3 +691,24 @@ html.cbis-public-landing-page body { overflow-x: clip; }
     .cbis-users-table td[colspan]::before { content: none; }
     .cbis-users-table .cbis-user-action-buttons { justify-content: flex-start; }
 }
+
+/* Anchor staff navigation to the viewport while the document scrolls. */
+@media (min-width: 768px) {
+    body:has(.cbis-staff-shell) > .cbis-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+    }
+    .cbis-staff-shell { grid-template-columns: 230px minmax(0, 1fr); }
+    .cbis-staff-shell > .cbis-staff-sidebar {
+        position: fixed;
+        top: var(--cbis-header-height, 70px);
+        bottom: 0;
+        left: max(0px, calc((100vw - 1560px) / 2));
+        width: 230px;
+        max-height: none;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    .cbis-staff-shell > .cbis-staff-content { grid-column: 2; }
+}

@@ -457,5 +457,16 @@ window.addEventListener('storage', (event) => {
 <script src="{{ asset('js/form-ui.js') }}?v={{ filemtime(public_path('js/form-ui.js')) }}"></script>
 @livewireScripts
 @stack('scripts')
+<script>
+(() => {
+    const header = document.querySelector('.cbis-navbar');
+    if (!header || !document.querySelector('.cbis-staff-shell')) return;
+    const syncHeaderHeight = () => {
+        document.documentElement.style.setProperty('--cbis-header-height', header.getBoundingClientRect().height + 'px');
+    };
+    new ResizeObserver(syncHeaderHeight).observe(header);
+    syncHeaderHeight();
+})();
+</script>
 </body>
 </html>
