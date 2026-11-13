@@ -69,7 +69,7 @@
 <div class="card" data-live-region="notification-list">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped mb-0">
+            <table class="table table-striped mb-0 cbis-fit-table cbis-notifications-table">
                 <thead>
                     <tr>
                         <th>Title</th>

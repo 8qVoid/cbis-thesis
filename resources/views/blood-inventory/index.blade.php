@@ -70,6 +70,7 @@
                             href="{{ route('blood-inventory.storage', ['blood_type' => $bloodType, 'component' => $componentKey]) }}"
                             class="cbis-storage-cell"
                             role="cell"
+                            data-label="{{ $componentLabel }}"
                             aria-label="{{ $bloodType }} {{ $componentLabel }}: {{ $units }} units. View stock batches by expiry date"
                         >
                             <span class="cbis-storage-cell-top">
@@ -105,7 +106,7 @@
     </form>
     <div data-live-region="inventory-batches">
     <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <table class="table table-striped mb-0 cbis-fit-table cbis-inventory-table">
             <thead>
                 <tr>
                     <th>Blood Type</th>

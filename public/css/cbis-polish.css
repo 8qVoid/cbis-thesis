@@ -326,7 +326,7 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-inventory-summary-card strong { display:block; margin:6px 0; color:#14233a; font-size:34px; line-height:1; }
 .cbis-inventory-summary-card span { color:#657187; font-size:13px; }
 .cbis-storage-grid { overflow-x:auto; }
-.cbis-storage-header,.cbis-storage-row { display:grid; grid-template-columns:110px repeat(4,minmax(155px,1fr)); min-width:760px; }
+.cbis-storage-header,.cbis-storage-row { display:grid; grid-template-columns:110px repeat(4,minmax(0,1fr)); min-width:0; }
 .cbis-storage-header { color:#596477; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
 .cbis-storage-header>span { padding:10px 12px; border-bottom:1px solid #e6eaf0; }
 .cbis-storage-row>strong { display:flex; align-items:center; padding:14px 12px; border-bottom:1px solid #edf0f4; color:#172840; font-size:20px; }
@@ -335,6 +335,80 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-storage-units { font-size:28px; font-weight:850; line-height:1; }
 .cbis-storage-cell small { color:#738096; font-size:12px; }
 @media(max-width:767px) { .cbis-inventory-summary-grid { grid-template-columns:1fr; } }
+
+/* Keep common data tables inside the page width. Long values wrap before
+   forcing an extra horizontal scrollbar, while action controls stay intact. */
+.table.cbis-fit-table,
+.cbis-record-table:not(.cbis-users-table) .table { width:100%; min-width:0; table-layout:fixed; }
+.cbis-record-table:not(.cbis-users-table) th:last-child { width:17%; }
+.cbis-fit-table th,.cbis-fit-table td,
+.cbis-record-table:not(.cbis-users-table) .table th,
+.cbis-record-table:not(.cbis-users-table) .table td { overflow-wrap:anywhere; }
+.cbis-fit-table thead th { white-space:normal; }
+.cbis-fit-table .btn,.cbis-record-table:not(.cbis-users-table) .table .btn { white-space:nowrap; }
+.cbis-fit-table td:last-child.cbis-table-actions,
+.cbis-record-table:not(.cbis-users-table) .table td:last-child.cbis-table-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
+.cbis-fit-table td:last-child.cbis-table-actions form,
+.cbis-record-table:not(.cbis-users-table) .table td:last-child.cbis-table-actions form { margin:0; }
+.cbis-facilities-table th:nth-child(1) { width:13%; }
+.cbis-facilities-table th:nth-child(2) { width:34%; }
+.cbis-facilities-table th:nth-child(3) { width:20%; }
+.cbis-facilities-table th:nth-child(4) { width:14%; }
+.cbis-facilities-table th:nth-child(5) { width:19%; }
+.cbis-location-table th:nth-child(1) { width:25%; }
+.cbis-location-table th:nth-child(2) { width:35%; }
+.cbis-location-table th:nth-child(3) { width:19%; }
+.cbis-location-table th:nth-child(4) { width:21%; }
+.cbis-location-table td:last-child { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.cbis-location-table td:last-child form { margin:0; }
+.cbis-inventory-table th:nth-child(1) { width:10%; }
+.cbis-inventory-table th:nth-child(2) { width:13%; }
+.cbis-inventory-table th:nth-child(3) { width:14%; }
+.cbis-inventory-table th:nth-child(4) { width:12%; }
+.cbis-inventory-table th:nth-child(5) { width:23%; }
+.cbis-inventory-table th:nth-child(6) { width:15%; }
+.cbis-inventory-table th:nth-child(7) { width:13%; }
+.cbis-public-events-table th:nth-child(1) { width:11%; }
+.cbis-public-events-table th:nth-child(2) { width:8%; }
+.cbis-public-events-table th:nth-child(3) { width:11%; }
+.cbis-public-events-table th:nth-child(4) { width:10%; }
+.cbis-public-events-table th:nth-child(5) { width:8%; }
+.cbis-public-events-table th:nth-child(6) { width:12%; }
+.cbis-public-events-table th:nth-child(7) { width:14%; }
+.cbis-public-events-table th:nth-child(8) { width:8%; }
+.cbis-public-events-table th:nth-child(9) { width:18%; }
+.cbis-map-events-table th:nth-child(1) { width:15%; }
+.cbis-map-events-table th:nth-child(2) { width:11%; }
+.cbis-map-events-table th:nth-child(3) { width:16%; }
+.cbis-map-events-table th:nth-child(4) { width:12%; }
+.cbis-map-events-table th:nth-child(5) { width:11%; }
+.cbis-map-events-table th:nth-child(6) { width:17%; }
+.cbis-map-events-table th:nth-child(7) { width:18%; }
+.cbis-notifications-table th:nth-child(1) { width:17%; }
+.cbis-notifications-table th:nth-child(2) { width:37%; }
+.cbis-notifications-table th:nth-child(3) { width:16%; }
+.cbis-notifications-table th:nth-child(4) { width:12%; }
+.cbis-notifications-table th:nth-child(5) { width:18%; }
+.cbis-facility-applications-table th:nth-child(1) { width:20%; }
+.cbis-facility-applications-table th:nth-child(2) { width:14%; }
+.cbis-facility-applications-table th:nth-child(3) { width:25%; }
+.cbis-facility-applications-table th:nth-child(4) { width:13%; }
+.cbis-facility-applications-table th:nth-child(5) { width:16%; }
+.cbis-facility-applications-table th:nth-child(6) { width:12%; }
+.cbis-inventory-summary-grid { min-width:0; }
+.cbis-storage-grid { overflow-x:hidden; }
+.cbis-storage-cell { min-width:0; overflow-wrap:anywhere; }
+@media(max-width:767px) {
+ .table.cbis-fit-table th,.table.cbis-fit-table td,
+ .cbis-record-table:not(.cbis-users-table) .table th,
+ .cbis-record-table:not(.cbis-users-table) .table td { padding:8px 7px; font-size:.78rem; }
+ .cbis-storage-header { display:none; }
+ .cbis-storage-row { grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; padding:8px 0; }
+ .cbis-storage-row>strong { grid-column:1/-1; padding:8px 12px 2px; }
+ .cbis-storage-cell { margin:4px; padding:10px; }
+ .cbis-storage-cell::before { content:attr(data-label); color:#596477; font-size:11px; font-weight:800; }
+ .cbis-storage-units { font-size:22px; }
+}
 
 /* Notification, reservation, and stock movement polish */
 .cbis-reservation-list { display:grid; gap:14px; }
@@ -436,6 +510,23 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-record-table td { padding:12px 16px; vertical-align:middle; }
 .cbis-record-table tbody tr:last-child td { border-bottom:0; }
 .cbis-record-table th:last-child { width:1%; }
+.cbis-donor-directory .cbis-mobile-card-table { width:100%; min-width:0; table-layout:fixed; }
+.cbis-donor-directory .cbis-mobile-card-table th:nth-child(1) { width:17%; }
+.cbis-donor-directory .cbis-mobile-card-table th:nth-child(2) { width:11%; }
+.cbis-donor-directory .cbis-mobile-card-table th:nth-child(3) { width:29%; }
+.cbis-donor-directory .cbis-mobile-card-table th:nth-child(4) { width:21%; }
+.cbis-donor-directory .cbis-mobile-card-table th:nth-child(5) { width:22%; }
+.cbis-donor-directory .cbis-mobile-card-table td { overflow-wrap:anywhere; }
+.cbis-donor-directory .cbis-mobile-card-table td[data-label="Facility"] { min-width:0; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-table-actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-table-actions > .btn,
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-actions > summary { white-space:nowrap; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-actions { position:relative; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-actions > summary { cursor:pointer; list-style:none; padding:5px 8px; border:1px solid var(--cbis-border); border-radius:7px; color:var(--cbis-text); font-size:.75rem; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-actions > summary::-webkit-details-marker { display:none; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-action-list { position:absolute; z-index:5; top:calc(100% + 4px); right:0; display:grid; gap:6px; min-width:120px; padding:8px; border:1px solid var(--cbis-border); border-radius:8px; background:#fff; box-shadow:0 8px 20px #1728401a; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-action-list form { margin:0; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-action-list .btn { width:100%; }
 .cbis-table-actions { white-space:nowrap; }
 .cbis-record-details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; }
 .cbis-record-details > div { padding:12px 0; border-bottom:1px solid #edf0f4; min-width:0; }
@@ -712,3 +803,8 @@ html.cbis-public-landing-page body { overflow-x: clip; }
     }
     .cbis-staff-shell > .cbis-staff-content { grid-column: 2; }
 }
+.cbis-donor-action-buttons { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
+.cbis-record-table:not(.cbis-users-table) .table td:last-child.cbis-table-actions { display:table-cell; white-space:normal; text-align:right; }
+.cbis-record-table:not(.cbis-users-table) .table td:last-child.cbis-table-actions .btn { margin:2px; }
+.cbis-donor-directory .cbis-mobile-card-table .cbis-row-action-list { position:static; min-width:0; box-shadow:none; margin-top:6px; }
+.cbis-donor-directory .cbis-donor-action-buttons { align-items:flex-start; }

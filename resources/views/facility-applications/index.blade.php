@@ -22,7 +22,7 @@
 </form>
 
 <div class="card cbis-record-table table-responsive">
-    <table class="table table-striped mb-0">
+    <table class="table table-striped mb-0 cbis-fit-table cbis-facility-applications-table">
         <thead>
             <tr>
                 <th>Organization</th>

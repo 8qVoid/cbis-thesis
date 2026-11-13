@@ -2,7 +2,7 @@
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
     <div>
-        <h1 class="cbis-page-title">Reports</h1>
+        <h1 class="cbis-page-title">{{ auth()->user()->can('export reports') ? 'Reports & Exports' : 'System Summary' }}</h1>
         <p class="cbis-page-subtitle">Monthly demand, usage, expiration risk, and inventory status summaries.</p>
     </div>
     <span class="badge text-bg-light border px-3 py-2">Showing {{ $periodLabel }}</span>
@@ -40,7 +40,7 @@
         <div class="d-flex gap-2 flex-wrap">
             <input type="month" name="month" value="{{ $selectedMonth ?? $currentMonth }}" max="{{ $currentMonth }}" class="form-control">
             <a href="{{ route('reports.index', ['period' => 'month', 'month' => $previousMonth]) }}" class="btn btn-outline-secondary" title="Previous month">Previous</a>
-            <a href="{{ route('reports.index', ['period' => 'month', 'month' => $currentMonth]) }}" class="btn btn-outline-secondary" title="Current month">This Month</a>
+            <a href="{{ route('reports.index', ['period' => 'month', 'month' => $currentMonth]) }}" class="btn btn-outline-secondary" title="Current month">Current Month</a>
             @if($nextMonth <= $currentMonth)
                 <a href="{{ route('reports.index', ['period' => 'month', 'month' => $nextMonth]) }}" class="btn btn-outline-secondary" title="Next month">Next</a>
             @else
@@ -72,7 +72,7 @@
 
     <div class="col-12">
         <div class="cbis-report-actions">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Current Month</a>
+            
             @can('export reports')
                 <span class="text-muted small">Select export contents below.</span>
             @else
@@ -163,7 +163,7 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
+            <table class="table table-striped align-middle mb-0 cbis-fit-table cbis-report-requests-table">
                 <thead><tr><th>Report</th><th>Requested by</th><th>Requested</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                     @forelse($reportRequests as $reportRequest)
@@ -207,7 +207,7 @@
     <div class="card-header">Inventory Summary</div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="table mb-0 cbis-fit-table cbis-report-inventory-table">
                 <thead>
                     <tr>
                         <th>Blood Type</th>
@@ -243,7 +243,7 @@
     <div class="card-header">Donation Records</div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="table mb-0 cbis-fit-table cbis-report-donations-table">
                 <thead>
                     <tr>
                         <th>Donation No</th>

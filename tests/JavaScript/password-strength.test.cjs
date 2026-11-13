@@ -130,6 +130,11 @@ class Element {
     setAttribute(name, value) { this.attributes[name] = String(value); }
     getAttribute(name) { return this.attributes[name] ?? null; }
     setCustomValidity(message) { this.customValidity = message; }
+    insertAdjacentElement() {}
+    removeAttribute(name) { delete this.attributes[name]; }
+    get validity() { return { valid: !this.customValidity, valueMissing: false }; }
+    get validationMessage() { return this.customValidity; }
+    get classList() { return { toggle() {} }; }
 }
 
 function registrationUI() {
@@ -143,6 +148,9 @@ function registrationUI() {
     const confirmation = add('registrationPasswordConfirmation', { type: 'password' });
     const show = add('showRegistrationPassword', { type: 'checkbox' });
     const match = add('passwordMatch');
+    add('servicesError', { hidden: true });
+    const form = add('registrationForm');
+    form.querySelectorAll = selector => selector.startsWith('input:not(') ? [password, confirmation] : [];
     const feedback = add('passwordStrengthFeedback');
     const strength = add('passwordStrength');
     const label = new Element();
@@ -156,10 +164,12 @@ function registrationUI() {
     })[selector] || null;
     const document = {
         getElementById: id => elements[id] || null,
+        createElement: () => new Element(),
         querySelectorAll: selector => selector === '.js-negros-address select' ? address : [],
     };
     const context = browserContext(document);
     vm.runInContext(source('public/js/password-strength.js'), context, { filename: 'password-strength.js' });
+    vm.runInContext(source('public/js/registration-validation.js'), context, { filename: 'registration-validation.js' });
     return {
         elements, password, confirmation, show, match, feedback, strength, label, bar, meter, address,
         input(id, value, event = 'input') {
@@ -240,7 +250,7 @@ test('password estimates do not add a strength gate and confirmation matching re
     assert.equal(ui.match.textContent, 'Passwords match.');
     ui.input('registrationPasswordConfirmation', 'Different123!');
     assert.equal(ui.confirmation.customValidity, 'Passwords do not match.');
-    assert.equal(ui.match.textContent, 'Passwords do not match.');
+    assert.equal(ui.match.textContent, '');
     ui.input('registrationPassword', 'Different123!');
     assert.equal(ui.confirmation.customValidity, '');
     assert.equal(ui.match.textContent, 'Passwords match.');

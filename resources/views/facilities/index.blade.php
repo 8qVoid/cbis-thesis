@@ -7,7 +7,7 @@
     </div>
     <a href="{{ route('facilities.create') }}" class="btn btn-danger">Add Facility</a>
 </div>
-<div class="table-responsive"><table class="table table-bordered bg-white">
+<div class="table-responsive"><table class="table table-bordered bg-white cbis-fit-table cbis-facilities-table">
 <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
 <tbody>
 @foreach($facilities as $facility)

@@ -38,7 +38,7 @@ $statusClass = fn (int $units) => $units <= 5 ? 'cbis-tone-warning' : 'cbis-tone
     @else
         <x-ui.kpi-card label="Pending Requests" :value="$pendingRequestCount" suffix="Submitted or under review" :href="route('reservations.index', ['status' => 'pending'])" />
         <x-ui.kpi-card label="Low-stock Items" :value="$lowStockCount" suffix="Requires attention" :href="route('blood-inventory.index', ['status' => 'low_stock'])" />
-        <x-ui.kpi-card label="Expiring Stock Items" :value="$expiringStockCount" suffix="With stock, within 14 days" :href="route('blood-inventory.index', ['expiring' => 'soon'])" />
+        <x-ui.kpi-card label="Expiring Stock Items" icon="calendar" :value="$expiringStockCount" suffix="With stock, within 14 days" :href="route('blood-inventory.index', ['expiring' => 'soon'])" />
         <x-ui.kpi-card label="Awaiting Screening" :value="$awaitingScreeningCount" suffix="Donors without a screening decision" :href="route('donors.index', ['eligibility' => 'awaiting'])" />
     @endif
 </div>

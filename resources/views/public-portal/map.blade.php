@@ -254,7 +254,7 @@
     <div class="card-header">Upcoming Events</div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table mb-0">
+            <table class="table mb-0 cbis-fit-table cbis-map-events-table">
                 <thead>
                     <tr>
                         <th>Title</th>
