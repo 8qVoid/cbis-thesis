@@ -49,6 +49,7 @@ class ShowcaseSeeder extends Seeder
             [$donors, $patients] = $this->people($main, $bbs);
             $events = $this->events($facilities, $qao);
             $this->registrations($donors, $events);
+            $this->retireExtraBranches();
             $this->donations($donors, $main, $bbs);
             $stock = $this->stock($main);
             $requests = $this->requests($patients, $stock, $main, $bbs);
@@ -68,9 +69,10 @@ class ShowcaseSeeder extends Seeder
 
     private function facilities(Facility $main): array
     {
+        $silay = Facility::where('code', 'FAC-002')->firstOrFail();
         $places = [
             [$main, 'Bacolod Public Plaza, Bacolod City', 10.6712, 122.9448],
-            [Facility::where('code', 'FAC-002')->firstOrFail(), 'Silay City Public Plaza, Silay City', 10.7989, 122.9755],
+            [$silay, 'Silay City Public Plaza, Silay City', 10.7989, 122.9755],
         ];
         foreach ([
             ['Manapla', 10.9490, 123.1230],
@@ -78,19 +80,10 @@ class ShowcaseSeeder extends Seeder
             ['Cadiz', 10.9553, 123.3105],
         ] as [$city, $lat, $lng]) {
             $placeName = $city === 'Manapla' ? $city : $city.' City';
-            $facility = Facility::firstOrCreate(['code' => 'SC-'.strtoupper($city)], [
-                'name' => 'Philippine Red Cross '.$city.' Community Branch',
-                'type' => 'blood_bank', 'address' => $placeName.', Negros Occidental',
-                'contact_person' => 'Branch Coordinator', 'contact_number' => '09170009999',
-                'email' => strtolower($city).'.community.branch@gmail.com', 'is_active' => true,
-            ]);
-            if ($facility->email === strtolower($city).'@cbis.test') {
-                $facility->update(['email' => strtolower($city).'.community.branch@gmail.com']);
-            }
-            $places[] = [$facility, $city.' Public Plaza, '.$placeName, $lat, $lng];
+            $places[] = [$silay, $city.' Public Plaza, '.$placeName, $lat, $lng];
         }
 
-        foreach ($places as [$facility, $address, $lat, $lng]) {
+        foreach (array_slice($places, 0, 2) as [$facility, $address, $lat, $lng]) {
             BloodBankLocation::firstOrCreate(['facility_id' => $facility->id, 'address' => $address], [
                 'latitude' => $lat, 'longitude' => $lng, 'contact_number' => '09170009999',
             ]);
@@ -184,7 +177,7 @@ class ShowcaseSeeder extends Seeder
             $pending = $index >= 10;
             $date = $past ? today()->subDays(70 - $index * 11) : today()->addDays(5 + ($index - 5) * 7);
             $title = 'Community Blood Drive - '.explode(' Public Plaza', $venue)[0].' - '.($index + 1);
-            $events[] = DonationSchedule::withTrashed()->firstOrCreate(['title' => $title], [
+            $event = DonationSchedule::withTrashed()->firstOrCreate(['title' => $title], [
                 'facility_id' => $facility->id, 'event_type' => $index % 3 === 0 ? 'bloodletting' : 'blood_donation',
                 'event_date' => $date, 'start_time' => '08:00', 'end_time' => '16:00',
                 'start_at' => $date->copy()->setTime(8, 0), 'end_at' => $date->copy()->setTime(16, 0),
@@ -197,6 +190,10 @@ class ShowcaseSeeder extends Seeder
                 'reviewed_at' => $pending ? null : $date->copy()->subDays(14),
                 'status' => $past ? 'completed' : 'planned',
             ]);
+            if (! $event->trashed() && $event->facility_id !== $facility->id) {
+                $event->update(['facility_id' => $facility->id]);
+            }
+            $events[] = $event;
         }
 
         return $events;
@@ -210,15 +207,26 @@ class ShowcaseSeeder extends Seeder
                 if ($event->trashed()) {
                     continue;
                 }
-                EventRegistration::firstOrCreate([
+                $registration = EventRegistration::firstOrCreate([
                     'donation_schedule_id' => $event->id, 'donor_id' => $donor->id,
                 ], [
                     'facility_id' => $event->facility_id,
                     'status' => $eventIndex < 5 ? ($index % 7 === 0 ? 'no_show' : 'attended') : 'registered',
                     'registered_at' => $event->event_date->copy()->subDays(7),
                 ]);
+                if ($registration->facility_id !== $event->facility_id) {
+                    $registration->update(['facility_id' => $event->facility_id]);
+                }
             }
         }
+    }
+
+    private function retireExtraBranches(): void
+    {
+        Facility::whereIn('code', ['SC-MANAPLA', 'SC-VICTORIAS', 'SC-CADIZ'])->get()->each(function (Facility $facility): void {
+            $facility->locations()->delete();
+            $facility->delete();
+        });
     }
 
     private function donations(array $donors, Facility $main, User $bbs): void
@@ -455,8 +463,11 @@ class ShowcaseSeeder extends Seeder
     {
         $hex = substr(hash('sha256', 'cbis-local-showcase-'.$key.'-'.$recipient->id), 0, 32);
         $id = substr($hex, 0, 8).'-'.substr($hex, 8, 4).'-'.substr($hex, 12, 4).'-'.substr($hex, 16, 4).'-'.substr($hex, 20);
-        $recipient->notifications()->firstOrCreate(['id' => $id], [
+        $notification = $recipient->notifications()->firstOrCreate(['id' => $id], [
             'type' => $type, 'data' => $data, 'read_at' => $read ? now()->subDays(1) : null,
         ]);
+        if (! $notification->wasRecentlyCreated && isset($data['facility_id']) && $notification->data !== $data) {
+            $notification->update(['data' => $data]);
+        }
     }
 }

@@ -11,7 +11,7 @@ php artisan storage:link
 
 Set `APP_ENV=local` in `.env` and start MySQL first. The command refuses to run in production. Running it again leaves existing records and edits in place and does not create duplicate showcase records.
 
-The local scenario includes 100 verified synthetic accounts, donor screenings, 12 plaza events across Bacolod, Silay, Manapla, Victorias, and Cadiz, registrations, about 100 donation and bloodletting records, linked inventory, 40 manual stock batches including low and expired stock, 32 requests in different states with 64 viewable PDF attachments, completed releases, and in-app notifications for donors, patients, QAO, and BBS. The PDFs match each request's patient and blood details and carry a fictional-record notice. Counts can be lower when the command is run against a database containing previously deleted showcase records.
+The local scenario includes 100 verified synthetic accounts, donor screenings, 12 plaza events across Bacolod, Silay, Manapla, Victorias, and Cadiz, registrations, about 100 donation and bloodletting records, linked inventory, 40 manual stock batches including low and expired stock, 32 requests in different states with 64 viewable PDF attachments, completed releases, and in-app notifications for donors, patients, QAO, and BBS. Only Bacolod and Silay are facility branches; the other cities are event venues served by Silay. Rerunning the command retires the three extra branches created by an earlier version while keeping their events. The PDFs match each request's patient and blood details and carry a fictional-record notice. Counts can be lower when the command is run against a database containing previously deleted showcase records.
 
 The two public login accounts are:
 
