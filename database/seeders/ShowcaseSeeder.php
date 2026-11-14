@@ -6,6 +6,7 @@ use App\Models\BloodBankLocation;
 use App\Models\BloodInventory;
 use App\Models\BloodRelease;
 use App\Models\BloodReservation;
+use App\Models\BloodReservationDocument;
 use App\Models\BloodlettingRecord;
 use App\Models\DonationRecord;
 use App\Models\DonationSchedule;
@@ -21,9 +22,11 @@ use App\Notifications\BloodReservationSubmitted;
 use App\Notifications\DonorScreeningUpdated;
 use App\Notifications\EventPostedNotification;
 use App\Notifications\LowStockAlert;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -49,6 +52,7 @@ class ShowcaseSeeder extends Seeder
             $this->donations($donors, $main, $bbs);
             $stock = $this->stock($main);
             $requests = $this->requests($patients, $stock, $main, $bbs);
+            $this->requestDocuments($requests);
             $this->notifications($donors, $requests, $stock, $events, $qao, $bbs);
         });
 
@@ -57,6 +61,7 @@ class ShowcaseSeeder extends Seeder
             ['Donations', DonationRecord::where('donation_no', 'like', 'SC-DON-%')->count()],
             ['Manual stock batches', BloodInventory::whereNotNull('showcase_key')->count()],
             ['Requests', BloodReservation::where('reference', 'like', 'SC-REQ-%')->count()],
+            ['Request documents', BloodReservationDocument::whereHas('reservation', fn ($query) => $query->where('reference', 'like', 'SC-REQ-%'))->count()],
             ['Events', DonationSchedule::where('title', 'like', 'Community %')->count()],
         ]);
     }
@@ -342,6 +347,31 @@ class ShowcaseSeeder extends Seeder
         }
 
         return $requests;
+    }
+
+    private function requestDocuments(array $requests): void
+    {
+        foreach ($requests as $request) {
+            $request->loadMissing(['patient', 'facility']);
+            foreach (['blood_request', 'identification'] as $type) {
+                $name = $type === 'blood_request' ? 'Blood-Request-'.$request->reference.'.pdf' : 'Patient-Profile-'.$request->reference.'.pdf';
+                $path = 'reservations/'.$request->id.'/'.$name;
+                if (! Storage::disk('local')->exists($path)) {
+                    $pdf = Pdf::loadView('pdf.showcase-request-document', [
+                        'reservation' => $request,
+                        'type' => $type,
+                    ])->setPaper('a4');
+                    Storage::disk('local')->put($path, $pdf->output());
+                    unset($pdf);
+                    gc_collect_cycles();
+                }
+                $request->documents()->firstOrCreate(['type' => $type, 'path' => $path], [
+                    'original_name' => $name,
+                    'mime_type' => 'application/pdf',
+                    'size' => Storage::disk('local')->size($path),
+                ]);
+            }
+        }
     }
 
     private function notifications(array $donors, array $requests, array $stock, array $events, User $qao, User $bbs): void

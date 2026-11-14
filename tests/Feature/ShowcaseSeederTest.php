@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ShowcaseSeederTest extends TestCase
@@ -18,12 +19,22 @@ class ShowcaseSeederTest extends TestCase
     public function test_local_showcase_records_are_connected_repeatable_and_send_no_mail(): void
     {
         Mail::fake();
+        Storage::fake('local');
 
         $this->artisan('showcase:populate')->assertExitCode(0);
 
         $this->assertSame(100, User::where('is_showcase', true)->where('email', 'like', '%@gmail.com')->count());
         $this->assertSame(40, BloodInventory::whereNotNull('showcase_key')->count());
         $this->assertSame(32, BloodReservation::where('reference', 'like', 'SC-REQ-%')->count());
+        $this->assertSame(64, DB::table('blood_reservation_documents')->count());
+        $firstRequest = BloodReservation::where('reference', 'SC-REQ-001')->firstOrFail();
+        foreach ($firstRequest->documents as $document) {
+            $this->assertTrue(Storage::disk('local')->exists($document->path));
+            $this->assertStringStartsWith('%PDF', Storage::disk('local')->get($document->path));
+        }
+        $staff = User::role('Blood Bank Staff')->where('facility_id', $firstRequest->facility_id)->firstOrFail();
+        $this->actingAs($staff)->get(route('reservations.documents.show', [$firstRequest, $firstRequest->documents->first()]))
+            ->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->assertSame(12, DonationSchedule::where('title', 'like', 'Community Blood Drive - %')->count());
         $this->assertGreaterThan(100, DB::table('notifications')->count());
         $this->assertNotNull(User::where('email', 'maria.santos.001@gmail.com')->firstOrFail()->email_verified_at);
@@ -34,7 +45,7 @@ class ShowcaseSeederTest extends TestCase
 
         $counts = [
             User::count(), BloodInventory::count(), BloodReservation::count(),
-            DonationSchedule::count(), DB::table('notifications')->count(),
+            DonationSchedule::count(), DB::table('notifications')->count(), DB::table('blood_reservation_documents')->count(),
         ];
         User::where('email', 'maria.santos.001@gmail.com')->firstOrFail()
             ->forceFill(['email' => 'maria.santos.001@cbis.test'])->save();
@@ -42,7 +53,7 @@ class ShowcaseSeederTest extends TestCase
         $this->assertNotNull(User::where('email', 'maria.santos.001@gmail.com')->first());
         $this->assertSame($counts, [
             User::count(), BloodInventory::count(), BloodReservation::count(),
-            DonationSchedule::count(), DB::table('notifications')->count(),
+            DonationSchedule::count(), DB::table('notifications')->count(), DB::table('blood_reservation_documents')->count(),
         ]);
         Mail::assertNothingSent();
     }
