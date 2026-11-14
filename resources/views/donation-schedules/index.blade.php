@@ -99,7 +99,7 @@
             <details class="cbis-event-actions">
                 <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
                 <div class="cbis-event-action-buttons">
-                        @if($canReviewActivities)
+                        @if($canReviewActivities && $schedule->approval_status === 'pending')
                             <form
                                 method="POST"
                                 action="{{ route('donation-schedules.review',$schedule) }}"

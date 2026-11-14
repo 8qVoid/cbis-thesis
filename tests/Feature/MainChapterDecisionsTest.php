@@ -50,6 +50,11 @@ class MainChapterDecisionsTest extends TestCase
         $this->assertSame('approved', $event->approval_status);
         $this->assertSame($this->qao->id, $event->reviewed_by);
         $this->assertTrue($event->is_public);
+        $this->get(route('donation-schedules.index'))
+            ->assertDontSee(route('donation-schedules.review', $event), false);
+        $this->patch(route('donation-schedules.review', $event), ['approval_status' => 'approved'])
+            ->assertSessionHasErrors('approval_status');
+        $this->assertSame('approved', $event->fresh()->approval_status);
         Notification::assertSentTo($onlineDonor, EventPostedNotification::class);
         $this->get(route('public.map'))->assertSee('QAO Public Drive');
         $facilitator = User::factory()->create(['facility_id' => $this->branch->id]);
