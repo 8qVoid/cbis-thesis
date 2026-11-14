@@ -53,7 +53,7 @@ class ShowcaseSeeder extends Seeder
         });
 
         $this->command?->table(['Record', 'Count'], [
-            ['Synthetic users', User::where('email', 'like', '%@cbis.test')->count()],
+            ['Synthetic users', User::where('is_showcase', true)->where('email', 'like', '%@gmail.com')->count()],
             ['Donations', DonationRecord::where('donation_no', 'like', 'SC-DON-%')->count()],
             ['Manual stock batches', BloodInventory::whereNotNull('showcase_key')->count()],
             ['Requests', BloodReservation::where('reference', 'like', 'SC-REQ-%')->count()],
@@ -77,8 +77,11 @@ class ShowcaseSeeder extends Seeder
                 'name' => 'Philippine Red Cross '.$city.' Community Branch',
                 'type' => 'blood_bank', 'address' => $placeName.', Negros Occidental',
                 'contact_person' => 'Branch Coordinator', 'contact_number' => '09170009999',
-                'email' => strtolower($city).'@cbis.test', 'is_active' => true,
+                'email' => strtolower($city).'.community.branch@gmail.com', 'is_active' => true,
             ]);
+            if ($facility->email === strtolower($city).'@cbis.test') {
+                $facility->update(['email' => strtolower($city).'.community.branch@gmail.com']);
+            }
             $places[] = [$facility, $city.' Public Plaza, '.$placeName, $lat, $lng];
         }
 
@@ -103,7 +106,9 @@ class ShowcaseSeeder extends Seeder
             $first = $firstNames[($number - 1) % count($firstNames)];
             $last = $lastNames[intdiv($number - 1, count($firstNames))];
             $suffix = sprintf('%03d', $number);
-            $email = Str::slug($first.'.'.$last, '.').'.'.$suffix.'@cbis.test';
+            $emailStem = Str::slug($first.'.'.$last, '.').'.'.$suffix;
+            $email = $emailStem.'@gmail.com';
+            $previousEmail = $emailStem.'@cbis.test';
             $isDonor = $number <= 64 || $number % 13 === 0;
             $isPatient = $number > 64 || $number % 13 === 0;
             $sex = $number % 2 ? 'female' : 'male';
@@ -111,6 +116,15 @@ class ShowcaseSeeder extends Seeder
             $phone = '0917000'.sprintf('%04d', $number);
             $address = 'Barangay 1, '.$cities[($number - 1) % count($cities)].', Negros Occidental';
             $user = User::withTrashed()->where('email', $email)->first();
+            if ($user && ! $user->is_showcase) {
+                throw new RuntimeException('An existing account uses a showcase email address: '.$email);
+            }
+            if (! $user) {
+                $user = User::withTrashed()->where('email', $previousEmail)->where('is_showcase', true)->first();
+                if ($user) {
+                    $user->forceFill(['email' => $email])->save();
+                }
+            }
             if (! $user) {
                 $user = new User;
                 $user->forceFill([

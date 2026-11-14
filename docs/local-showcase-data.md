@@ -17,9 +17,9 @@ The two public login accounts are:
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Donor | `maria.santos.001@cbis.test` | `CBIS-Local-2026!` |
-| Patient | `paolo.gonzales.066@cbis.test` | `CBIS-Local-2026!` |
+| Donor | `maria.santos.001@gmail.com` | `CBIS-Local-2026!` |
+| Patient | `paolo.gonzales.066@gmail.com` | `CBIS-Local-2026!` |
 
-All other synthetic accounts receive random passwords and do not need to be used for sign-in. Their addresses use the reserved `.test` domain. The seeder sets verification timestamps directly and inserts notifications into the database without sending email. Existing staff accounts keep their current passwords.
+All other synthetic accounts receive random passwords and do not need to be used for sign-in. These Gmail-style addresses are invented and are not verified mailboxes. The seeder sets verification timestamps directly and inserts notifications into the database without sending email. Showcase accounts suppress outbound notification email. Existing staff accounts keep their current passwords. Running the command again updates addresses created by the earlier version of this seeder.
 
 The event image uses the photo stored with the repository at `storage/app/public/event-photos/community-blood-drive.jpg`. The storage link makes it visible in the browser.
