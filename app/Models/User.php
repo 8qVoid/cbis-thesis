@@ -73,7 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new AccountResetPasswordNotification($token, 'staff'));
+        $this->notify(new AccountResetPasswordNotification($token, $this->hasAnyRole(['Donor', 'Patient']) ? 'donor' : 'staff'));
     }
 
     public function routeNotificationForMail(?Notification $notification = null): ?string

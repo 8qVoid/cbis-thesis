@@ -49,7 +49,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('password-email', function (Request $request): Limit {
             $identifier = (string) $request->input('email', 'unknown');
 
-            return Limit::perMinutes(10, 3)->by(strtolower($identifier).'|'.$request->ip());
+            return Limit::perMinutes(10, 3)->by(strtolower($identifier).'|'.$request->ip())
+                ->response(function (Request $request, array $headers) {
+                    $minutes = max(1, (int) ceil(((int) ($headers['Retry-After'] ?? 600)) / 60));
+                    $message = "Too many password reset requests. Please wait {$minutes} minute(s) before trying again.";
+
+                    if ($request->expectsJson()) {
+                        return response()->json(['message' => $message], 429, $headers);
+                    }
+
+                    return back()->withErrors(['email' => $message])
+                        ->withInput($request->only('account_type', 'email'))
+                        ->withHeaders($headers);
+                });
         });
         RateLimiter::for('password-reset', function (Request $request): Limit {
             $identifier = (string) $request->input('email', 'unknown');

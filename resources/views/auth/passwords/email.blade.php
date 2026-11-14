@@ -17,7 +17,7 @@
                         <label for="reset-account-type" class="form-label">Account Type</label>
                         <select id="reset-account-type" name="account_type" class="form-select" required>
                             <option value="staff" @selected(old('account_type', 'staff') === 'staff')>Staff Account</option>
-                            <option value="donor" @selected(old('account_type') === 'donor')>Donor Account</option>
+                            <option value="donor" @selected(old('account_type') === 'donor')>Donor / Patient Account</option>
                         </select>
                     </div>
                     <div class="mb-3">

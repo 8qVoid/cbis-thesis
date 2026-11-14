@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Models\Donor;
+use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +24,8 @@ class ForgotPasswordController extends Controller
     public function store(ForgotPasswordRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $status = Password::broker($this->brokerFor($data['account_type']))
+        $broker = $this->brokerFor($data['account_type'], $data['email']);
+        $status = $broker === null ? Password::INVALID_USER : Password::broker($broker)
             ->sendResetLink(['email' => $data['email']]);
 
         return $status === Password::RESET_LINK_SENT
@@ -44,7 +47,8 @@ class ForgotPasswordController extends Controller
     public function update(ResetPasswordRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $status = Password::broker($this->brokerFor($data['account_type']))->reset(
+        $broker = $this->brokerFor($data['account_type'], $data['email']);
+        $status = $broker === null ? Password::INVALID_USER : Password::broker($broker)->reset(
             [
                 'email' => $data['email'],
                 'password' => $data['password'],
@@ -71,8 +75,17 @@ class ForgotPasswordController extends Controller
             : back()->withErrors(['email' => __($status)])->onlyInput('email', 'account_type');
     }
 
-    private function brokerFor(string $accountType): string
+    private function brokerFor(string $accountType, string $email): ?string
     {
-        return $accountType === 'donor' ? 'donors' : 'users';
+        $user = User::where('email', $email)->first();
+        if ($accountType === 'staff') {
+            return $user && ! $user->hasAnyRole(['Donor', 'Patient']) ? 'users' : null;
+        }
+
+        if ($user?->hasAnyRole(['Donor', 'Patient'])) {
+            return 'users';
+        }
+
+        return Donor::where('email', $email)->where('is_online_registered', true)->exists() ? 'donors' : null;
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ForgotPasswordFlowTest extends TestCase
@@ -79,5 +80,46 @@ class ForgotPasswordFlowTest extends TestCase
         ])->assertRedirect(route('login'));
 
         $this->assertTrue(Hash::check('new-password', $donor->fresh()->password));
+    }
+
+    public function test_new_public_account_uses_the_user_password_broker(): void
+    {
+        Notification::fake();
+        Role::findOrCreate('Patient', 'web');
+        $patient = User::factory()->create([
+            'email' => 'patient@example.com', 'password' => 'old-password', 'is_active' => true,
+        ]);
+        $patient->assignRole('Patient');
+
+        $this->post(route('password.email'), [
+            'account_type' => 'donor', 'email' => $patient->email,
+        ])->assertSessionHas('success');
+        Notification::assertSentTo($patient, AccountResetPasswordNotification::class, function ($notification) use ($patient) {
+            return str_contains($notification->toMail($patient)->actionUrl, '/reset-password/donor/');
+        });
+
+        $token = Password::broker('users')->createToken($patient);
+        $this->post(route('password.reset.update'), [
+            'account_type' => 'donor', 'token' => $token, 'email' => $patient->email,
+            'password' => 'new-password', 'password_confirmation' => 'new-password',
+        ])->assertRedirect(route('login'));
+        $this->assertTrue(Hash::check('new-password', $patient->fresh()->password));
+
+        $this->post(route('password.email'), [
+            'account_type' => 'staff', 'email' => $patient->email,
+        ])->assertSessionHasErrors('email');
+    }
+
+    public function test_repeated_reset_requests_show_a_wait_message(): void
+    {
+        foreach (range(1, 3) as $_) {
+            $this->post(route('password.email'), [
+                'account_type' => 'donor', 'email' => 'missing@example.com',
+            ])->assertSessionHasErrors('email');
+        }
+
+        $this->post(route('password.email'), [
+            'account_type' => 'donor', 'email' => 'missing@example.com',
+        ])->assertRedirect()->assertSessionHasErrors(['email' => 'Too many password reset requests. Please wait 10 minute(s) before trying again.']);
     }
 }
