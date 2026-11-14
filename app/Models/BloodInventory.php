@@ -24,7 +24,7 @@ class BloodInventory extends Model
     protected $table = 'blood_inventory';
 
     protected $fillable = [
-        'facility_id', 'donation_record_id', 'blood_type', 'component', 'units_available', 'expiration_date', 'status', 'last_low_stock_alert_at',
+        'facility_id', 'donation_record_id', 'blood_type', 'component', 'units_available', 'expiration_date', 'status', 'last_low_stock_alert_at', 'showcase_key',
     ];
 
     protected function casts(): array
