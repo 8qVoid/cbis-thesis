@@ -58,6 +58,7 @@
     </select>
     <button type="button" class="btn btn-sm btn-outline-danger js-near-me">Near Me</button>
 </div>
+<p class="small text-muted mb-2">Pins at the same location appear side by side so you can open each one.</p>
 
 <style>
     .cbis-map-dot {
@@ -327,6 +328,7 @@ let data = JSON.parse(mapDataElement.textContent);
 const inBoundsMarkers = [];
 const markersByType = { event: [], facility: [] };
 const markerItems = [];
+const overlapConnectors = [];
 let userLatLng = null;
 let userMarker = null;
 let selectedMarker = null;
@@ -538,7 +540,37 @@ const addMarkers = (locations) => locations.forEach((item) => {
         focusDirections(item);
     });
 });
+const spreadOverlappingPins = () => {
+    overlapConnectors.forEach((line) => line.removeFrom(map));
+    overlapConnectors.length = 0;
+    const groups = new Map();
+    markerItems.filter(({ marker }) => map.hasLayer(marker)).forEach((entry) => {
+        const key = `${Number(entry.item.lat).toFixed(5)},${Number(entry.item.lng).toFixed(5)}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(entry);
+    });
+    groups.forEach((entries) => {
+        entries.forEach(({ marker, item }, index) => {
+            const actual = L.latLng(item.lat, item.lng);
+            if (entries.length === 1) {
+                marker.setLatLng(actual);
+                return;
+            }
+            // Offset only the visible pins. Directions and distance still use the actual coordinates.
+            const angle = entries.length === 2 ? (index === 0 ? Math.PI : 0) : -Math.PI / 2 + index * 2 * Math.PI / entries.length;
+            const radius = entries.length === 2 ? 16 : Math.max(19, entries.length * 5);
+            const point = map.project(actual, map.getZoom()).add(L.point(Math.cos(angle) * radius, Math.sin(angle) * radius));
+            const displayed = map.unproject(point, map.getZoom());
+            marker.setLatLng(displayed);
+            overlapConnectors.push(L.polyline([actual, displayed], {
+                color: '#53657a', weight: 1.5, opacity: 0.7, interactive: false,
+            }).addTo(map));
+        });
+    });
+};
 addMarkers(data);
+spreadOverlappingPins();
+map.on('zoomend', spreadOverlappingPins);
 
 document.addEventListener('cbis:live-document', (event) => {
     const nextDataElement = event.detail.document.getElementById('cbis-live-map-data');
@@ -559,6 +591,7 @@ document.addEventListener('cbis:live-document', (event) => {
     data = nextData;
     mapDataElement.textContent = nextDataElement.textContent;
     addMarkers(data);
+    spreadOverlappingPins();
 
     const selected = markerItems.find(({ item }) =>
         (item.type === 'event' ? `event:${item.event_id}` : `facility:${item.title}:${item.lat}:${item.lng}`) === selectedKey);
@@ -615,6 +648,7 @@ document.querySelectorAll('.js-map-toggle').forEach((toggle) => {
                 marker.removeFrom(map);
             }
         });
+        spreadOverlappingPins();
     });
 });
 
