@@ -38,17 +38,16 @@ Route::middleware('guest:web,donor')->group(function () {
         ->middleware('throttle:login')
         ->name('login.store');
 
-    Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
-        ->name('password.request');
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware('throttle:password-email')
-        ->name('password.email');
-    Route::get('/reset-password/{accountType}/{token}', [ForgotPasswordController::class, 'edit'])
-        ->name('password.reset');
-    Route::post('/reset-password', [ForgotPasswordController::class, 'update'])
-        ->middleware('throttle:password-reset')
-        ->name('password.reset.update');
 });
+
+// A reset link must also open when the browser still has an active session.
+Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
+    ->middleware('throttle:password-email')->name('password.email');
+Route::get('/reset-password/{accountType}/{token}', [ForgotPasswordController::class, 'edit'])
+    ->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'update'])
+    ->middleware('throttle:password-reset')->name('password.reset.update');
 
 Route::middleware('auth')->group(function () {
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');

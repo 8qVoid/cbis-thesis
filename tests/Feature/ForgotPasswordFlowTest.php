@@ -122,4 +122,18 @@ class ForgotPasswordFlowTest extends TestCase
             'account_type' => 'donor', 'email' => 'missing@example.com',
         ])->assertRedirect()->assertSessionHasErrors(['email' => 'Too many password reset requests. Please wait 10 minute(s) before trying again.']);
     }
+
+    public function test_signed_in_public_account_can_open_reset_link_without_a_facility_error(): void
+    {
+        Role::findOrCreate('Donor', 'web');
+        $donor = User::factory()->create(['email' => 'signed-in-donor@example.com', 'is_active' => true]);
+        $donor->assignRole('Donor');
+        $token = Password::broker('users')->createToken($donor);
+
+        $this->actingAs($donor)->get(route('password.reset', [
+            'accountType' => 'donor', 'token' => $token, 'email' => $donor->email,
+        ]))->assertOk()->assertSee('Reset Password');
+
+        $this->get(route('login'))->assertRedirect(route('account.dashboard'));
+    }
 }

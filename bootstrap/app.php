@@ -11,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -23,6 +24,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $user = Auth::guard('web')->user();
+            if ($user?->hasAnyRole(['Donor', 'Patient'])) {
+                return route('account.dashboard');
+            }
+
+            return Auth::guard('donor')->check() ? route('donor.portal.profile') : route('dashboard');
+        });
+
         // Render terminates TLS at its proxy. Trust its forwarded HTTPS details so
         // Laravel validates signed verification URLs against the public URL.
         if (env('APP_ENV') === 'production') {
