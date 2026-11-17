@@ -95,6 +95,9 @@
             @if($canViewSchedules)
                 <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
             @endif
+            @if($canManageSchedules)
+                <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit event</a>
+            @endif
             @if($canManageSchedules || $canReviewActivities)
             <details class="cbis-event-actions">
                 <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
@@ -130,7 +133,6 @@
                             </form>
                         @endif
                         @if($canManageSchedules)
-                            <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit</a>
                             @if(in_array($schedule->status, ['planned', 'ongoing'], true))
                                 <form
                                     method="POST"

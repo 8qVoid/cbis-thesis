@@ -61,6 +61,9 @@ class MainChapterDecisionsTest extends TestCase
         $facilitator->assignRole('Event Facilitator');
         $this->actingAs($facilitator)->post(route('donation-schedules.store'), [...$payload, 'title' => 'Pending Branch Drive'])->assertRedirect();
         $pending = DonationSchedule::where('title', 'Pending Branch Drive')->firstOrFail();
+        $this->get(route('donation-schedules.edit', $pending))->assertOk()->assertSee('Update event');
+        $this->get(route('donation-schedules.index'))->assertOk()->assertSee('Edit event');
+        $this->get(route('donation-schedules.show', $pending))->assertOk()->assertSee('Edit event');
         $this->assertFalse($pending->is_public);
         $this->get(route('public.map'))->assertDontSee('Pending Branch Drive');
         $this->actingAs($this->qao)->patch(route('donation-schedules.review', $pending), ['approval_status' => 'approved'])->assertRedirect();
