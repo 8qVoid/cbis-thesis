@@ -8,6 +8,7 @@ use App\Models\DonationSchedule;
 use App\Models\EventRegistration;
 use App\Models\Facility;
 use App\Models\User;
+use App\Notifications\LowStockAlert;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -26,7 +27,17 @@ class ShowcaseSeederTest extends TestCase
         $this->artisan('showcase:populate')->assertExitCode(0);
 
         $this->assertSame(100, User::where('is_showcase', true)->where('email', 'like', '%@gmail.com')->count());
-        $this->assertSame(40, BloodInventory::whereNotNull('showcase_key')->count());
+        $this->assertSame(42, BloodInventory::whereNotNull('showcase_key')->count());
+        $expiredByTime = BloodInventory::where('showcase_key', 'SC-TIME-EXPIRED')->firstOrFail();
+        $availableByTime = BloodInventory::where('showcase_key', 'SC-TIME-AVAILABLE')->firstOrFail();
+        $this->assertTrue($expiredByTime->isExpired());
+        $this->assertFalse($availableByTime->isExpired());
+        $this->assertSame(2, $availableByTime->units_available);
+        $this->assertSame(0, $expiredByTime->units_available);
+        $this->assertTrue($availableByTime->expiresAt()->greaterThan($expiredByTime->expiresAt()));
+        $lowStockNotification = DB::table('notifications')->where('type', LowStockAlert::class)->first();
+        $this->assertNotNull($lowStockNotification);
+        $this->assertNotEmpty(json_decode($lowStockNotification->data, true)['expiration_time'] ?? null);
         $this->assertSame(32, BloodReservation::where('reference', 'like', 'SC-REQ-%')->count());
         $this->assertSame(64, DB::table('blood_reservation_documents')->count());
         $firstRequest = BloodReservation::where('reference', 'SC-REQ-001')->firstOrFail();

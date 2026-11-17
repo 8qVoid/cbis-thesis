@@ -28,6 +28,7 @@
             <div class="cbis-service-card-actions">
             <a href="{{ route('public.map') }}" class="btn btn-danger cbis-reference-action"><x-ui.icon name="calendar" /> Find Donation Event</a>
             <a href="{{ route('account.dashboard', ['view' => 'donor']) }}" class="cbis-combined-detail">Open Donor View <span aria-hidden="true">›</span></a>
+            <a href="{{ route('donor.history') }}" class="cbis-combined-detail">View donation history <span aria-hidden="true">›</span></a>
             </div>
         </section>
         <section class="card cbis-combined-card">
@@ -48,6 +49,7 @@
             <div class="cbis-service-card-actions">
             <a href="{{ route('reservations.create') }}" class="btn btn-danger cbis-reference-action"><x-ui.icon name="report" /> Request Blood</a>
             <a href="{{ route('account.dashboard', ['view' => 'patient']) }}" class="cbis-combined-detail">Open Patient View <span aria-hidden="true">›</span></a>
+            <a href="{{ route('reservations.index') }}" class="cbis-combined-detail">View blood request history <span aria-hidden="true">›</span></a>
             </div>
         </section>
     </div>

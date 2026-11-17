@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationRecordController;
 use App\Http\Controllers\DonationScheduleController;
 use App\Http\Controllers\DonorController;
+use App\Http\Controllers\DonorDonationHistoryController;
 use App\Http\Controllers\DonorEventRegistrationController;
 use App\Http\Controllers\FacilityApplicationController;
 use App\Http\Controllers\FacilityController;
@@ -89,6 +90,7 @@ Route::prefix('donor')->group(function () {
     Route::middleware(['auth', 'public.verified', 'role:Donor'])->group(function () {
         Route::get('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile');
         Route::put('/portal/profile', fn () => redirect()->route('account.dashboard'))->name('donor.portal.profile.update');
+        Route::get('/history', DonorDonationHistoryController::class)->name('donor.history');
         Route::get('/events', [DonorEventRegistrationController::class, 'index'])->name('donor.events.index');
         Route::get('/events/{donationSchedule}/join', [DonorEventRegistrationController::class, 'join'])->name('donor.events.join');
         Route::post('/events/{donationSchedule}/register', [DonorEventRegistrationController::class, 'store'])->name('donor.events.register');

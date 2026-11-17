@@ -20,11 +20,12 @@
             <section class="card"><span class="cbis-reference-icon"><x-ui.icon name="pin" /></span><div><small>Donations</small><strong>{{ $donationHistory->count() }}</strong></div></section>
         </div>
         <section class="card cbis-reference-map"><h2>Approved Donation Events</h2><x-ui.event-map :events="$upcomingEvents" /></section>
-        <section class="card cbis-reference-history" data-live-region="account-donor-history"><div class="d-flex justify-content-between align-items-center"><h2>Donation History</h2><a href="{{ route('donor.events.index') }}" class="small">My Registrations</a></div>
+        <section class="card cbis-reference-history" data-live-region="account-donor-history"><div class="d-flex justify-content-between align-items-center"><h2>Recent Donations</h2><a href="{{ route('donor.history') }}" class="small">View all donation history</a></div>
             @forelse($donationHistory->take(5) as $record)
                 <details><summary><x-ui.icon name="calendar" /><span>{{ $record->donated_at?->format('M d, Y') }}</span><span>{{ $record->facility?->name ?? 'Bacolod Main Chapter' }}</span><span aria-hidden="true">›</span></summary><div class="small text-muted p-3">{{ $record->donation_no }} · {{ $record->blood_type }} · {{ str($record->status)->title() }}</div></details>
             @empty<div class="cbis-empty-state"><strong>No donations recorded yet</strong><span>Find an approved event to register. Blood Bank Staff record your donation after collection.</span><a href="{{ route('public.map') }}" class="btn btn-sm btn-outline-danger mt-2">Explore events</a></div>@endforelse
         </section>
+        <a href="{{ route('donor.events.index') }}" class="small d-block text-end mt-2">My event registrations</a>
     @else
         <section class="card cbis-reference-request" aria-label="My Blood Requests" data-live-region="account-patient-request">
             <div class="cbis-reference-request-title"><span class="cbis-reference-icon"><x-ui.icon name="report" /></span><div><h2>{{ $latest?->reference ?? 'No requests yet' }}</h2>

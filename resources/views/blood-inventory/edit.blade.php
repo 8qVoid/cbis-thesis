@@ -4,7 +4,7 @@
     <h1 class="cbis-page-title mb-0">Edit Inventory Adjustment</h1>
     <p class="cbis-page-subtitle">Correct the unit balance, expiration date and time, or status. The stock type and facility stay linked to this record.</p>
 </div>
-<form method="POST" action="{{ route('blood-inventory.update',$bloodInventory) }}" class="card card-body">@csrf @method('PUT')
+<form method="POST" action="{{ route('blood-inventory.update',$bloodInventory) }}" class="card card-body js-confirm-action" data-confirm-title="Confirm inventory update?" data-confirm-button="Save changes" data-confirm-variant="danger">@csrf @method('PUT')
 @if($errors->any())<div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="alert alert-light border">One unit equals one blood bag. Keep bags with different expiration dates or times in separate records. Enter the time shown on the bag label in Philippine time.</div>
 <div class="row g-3">
@@ -19,6 +19,7 @@
 </div></form>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form.js-confirm-action');
     const date = document.querySelector('[name="expiration_date"]');
     const status = document.querySelector('[name="status"]');
     const update = () => {
@@ -29,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     status.addEventListener('change', update); update();
+    form.addEventListener('submit', () => {
+        const units = form.querySelector('[name="units_available"]').value;
+        const time = form.querySelector('[name="expiration_time"]').value;
+        const selectedStatus = status.options[status.selectedIndex].text;
+        form.dataset.confirmMessage = `Review this stock adjustment before saving:\nBlood bags: ${units}\nExpiration: ${date.value} ${time} (Philippine time)\nStatus: ${selectedStatus}`;
+    });
 });
 </script>
 @endsection

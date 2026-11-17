@@ -299,6 +299,21 @@ class ShowcaseSeeder extends Seeder
             ]);
         }
 
+        // Keep two dedicated time examples relative to Philippine time on each local seed.
+        $nowPht = now('Asia/Manila')->startOfMinute();
+        foreach ([
+            ['SC-TIME-EXPIRED', $nowPht->copy()->subHour(), 'expired', 0],
+            ['SC-TIME-AVAILABLE', $nowPht->copy()->addHours(2), 'low_stock', 2],
+        ] as [$key, $expiresAt, $status, $units]) {
+            BloodInventory::updateOrCreate(['showcase_key' => $key], [
+                'facility_id' => $main->id, 'donation_record_id' => null,
+                'blood_type' => 'O-', 'component' => 'whole_blood',
+                'units_available' => $units, 'expiration_date' => $expiresAt->toDateString(),
+                'expiration_time' => $expiresAt->format('H:i:s'), 'status' => $status,
+                'last_low_stock_alert_at' => $status === 'low_stock' ? now() : null,
+            ]);
+        }
+
         return $batches;
     }
 
@@ -432,6 +447,7 @@ class ShowcaseSeeder extends Seeder
                 'facility_name' => $batch->facility->name, 'blood_type' => $batch->blood_type,
                 'component' => $batch->component_label, 'units_available' => $batch->units_available,
                 'expiration_date' => $batch->expiration_date->toDateString(),
+                'expiration_time' => substr($batch->expiration_time ?: '23:59', 0, 5),
             ];
             foreach ([$qao, $bbs] as $recipient) {
                 $this->notify($recipient, 'low-stock-'.$batch->id, LowStockAlert::class, $data);
