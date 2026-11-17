@@ -150,7 +150,7 @@
                         <td data-label="Volume">{{ $record->volume_ml }} ml</td>
                         <td data-label="Record status"><span class="cbis-inline-status {{ $record->status === 'verified' ? 'cbis-tone-success' : 'cbis-tone-warning' }}">{{ str($record->status)->headline() }}</span></td>
                         <td data-label="Bloodletting">{{ str($record->bloodlettingRecord->verification_status ?? 'N/A')->headline() }}</td>
-                        <td data-label="Expiry">{{ $record->expiration_date?->format('M j, Y') ?? '—' }}</td>
+                        <td data-label="Expiry">{{ $record->inventory?->expiresAt()?->format('M j, Y g:i A') ?? ($record->expiration_date?->format('M j, Y').' '.substr($record->expiration_time ?: '23:59', 0, 5)) }} PHT</td>
                     </tr>
                 @empty
                     <tr>

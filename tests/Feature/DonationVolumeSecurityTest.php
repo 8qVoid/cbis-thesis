@@ -73,6 +73,16 @@ class DonationVolumeSecurityTest extends TestCase
         $this->assertDatabaseCount('blood_inventory', 0);
     }
 
+    public function test_http_creation_requires_an_expiration_time(): void
+    {
+        $payload = $this->payload();
+        unset($payload['expiration_time']);
+
+        $this->actingAs($this->staff)->post(route('donation-records.store'), $payload)
+            ->assertSessionHasErrors('expiration_time');
+        $this->assertDatabaseCount('donation_records', 0);
+    }
+
     public function test_livewire_creation_rejects_a_tampered_oversized_volume(): void
     {
         $this->livewireDonation(5001)->call('save')->assertHasErrors(['volume_ml' => 'max']);
@@ -198,7 +208,7 @@ class DonationVolumeSecurityTest extends TestCase
     {
         return Livewire::actingAs($this->staff)->test(CreateDonationRecord::class)
             ->set('donor_id', $this->donor->id)->set('donated_at', now()->toDateTimeString())
-            ->set('volume_ml', $volume)->set('expiration_date', today()->addDays(30)->toDateString())
+            ->set('volume_ml', $volume)->set('expiration_date', today()->addDays(30)->toDateString())->set('expiration_time', '17:00')
             ->set('status', 'verified');
     }
 
@@ -208,7 +218,7 @@ class DonationVolumeSecurityTest extends TestCase
             'facility_id' => $this->main->id, 'donor_id' => $this->donor->id,
             'donation_no' => 'DN-VOLUME-SECURITY', 'donated_at' => now()->toDateTimeString(),
             'blood_type' => 'A+', 'volume_ml' => 450,
-            'expiration_date' => today()->addDays(30)->toDateString(), 'status' => 'pending',
+            'expiration_date' => today()->addDays(30)->toDateString(), 'expiration_time' => '17:00', 'status' => 'pending',
         ];
     }
 }

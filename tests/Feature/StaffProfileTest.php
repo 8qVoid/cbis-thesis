@@ -22,7 +22,7 @@ class StaffProfileTest extends TestCase
 
         $this->actingAs($staff)->post(route('blood-inventory.store'), [
             'blood_type' => 'O+', 'component' => 'whole_blood', 'units_available' => 2,
-            'expiration_date' => now()->addMonth()->toDateString(), 'status' => 'active',
+            'expiration_date' => now()->addMonth()->toDateString(), 'expiration_time' => '17:00', 'status' => 'active',
         ])->assertRedirect(route('blood-inventory.index'));
         $inventoryLog = AuditLog::where('action', 'blood_inventory.created')->firstOrFail();
         $this->assertSame('Original Staff', $inventoryLog->details['actor_name']);

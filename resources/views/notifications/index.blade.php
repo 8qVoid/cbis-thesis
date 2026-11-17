@@ -112,7 +112,7 @@
                                 @else
                                     <div>{{ $data['facility_name'] ?? 'N/A' }}</div>
                                     <div class="text-muted small">
-                                        {{ $data['blood_type'] ?? 'N/A' }} | {{ $data['units_available'] ?? 'N/A' }} units | Expires {{ $data['expiration_date'] ?? 'N/A' }}
+                                        {{ $data['blood_type'] ?? 'N/A' }} | {{ $data['units_available'] ?? 'N/A' }} units | Expires {{ $data['expiration_date'] ?? 'N/A' }} {{ $data['expiration_time'] ?? '' }} PHT
                                     </div>
                                 @endif
                             </td>

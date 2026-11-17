@@ -59,8 +59,10 @@ class OperationalAuditTest extends TestCase
     public function test_manual_stock_rejects_duplicate_and_active_past_expiry(): void
     {
         $stock = $this->stock('whole_blood');
+        $stock->update(['expiration_time' => '17:00']);
         $data = $stock->only(['blood_type', 'component', 'units_available', 'status']);
         $data['expiration_date'] = $stock->expiration_date->toDateString();
+        $data['expiration_time'] = '17:00';
         $this->actingAs($this->bbs)->post(route('blood-inventory.store'), $data)
             ->assertSessionHasErrors('expiration_date');
         $this->assertDatabaseCount('blood_inventory', 1);
@@ -76,7 +78,7 @@ class OperationalAuditTest extends TestCase
     public function test_manual_balance_changes_are_visible_as_stock_in_and_out(): void
     {
         $data = ['blood_type' => 'B+', 'component' => 'whole_blood', 'units_available' => 8,
-            'status' => 'active', 'expiration_date' => today()->addDays(10)->toDateString()];
+            'status' => 'active', 'expiration_date' => today()->addDays(10)->toDateString(), 'expiration_time' => '17:00'];
         $this->actingAs($this->bbs)->post(route('blood-inventory.store'), $data)->assertSessionHasNoErrors();
         $stock = BloodInventory::firstOrFail();
         $data['units_available'] = 5;

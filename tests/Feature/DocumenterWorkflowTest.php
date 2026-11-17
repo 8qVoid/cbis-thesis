@@ -450,7 +450,7 @@ class DocumenterWorkflowTest extends TestCase
         $payload = [
             'donor_id' => $donor->id, 'donation_no' => 'DN-FLOW-1',
             'donated_at' => now()->subHour()->format('Y-m-d H:i:s'), 'blood_type' => 'A+',
-            'volume_ml' => 900, 'expiration_date' => now()->addDays(30)->toDateString(),
+            'volume_ml' => 900, 'expiration_date' => now()->addDays(30)->toDateString(), 'expiration_time' => '17:00',
             'status' => 'pending', 'remarks' => 'Awaiting verification',
         ];
 

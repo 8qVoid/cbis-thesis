@@ -26,7 +26,7 @@ class StoreBloodInventoryRequest extends BaseFormRequest
             'component' => ['required', 'in:whole_blood,packed_red_blood_cells,platelet_concentrate,fresh_frozen_plasma'],
             'units_available' => ['required', 'integer', 'min:0', 'max:100000'],
             'expiration_date' => ['required', 'date'],
-            'expiration_time' => ['nullable', 'date_format:H:i'],
+            'expiration_time' => ['required', 'date_format:H:i'],
             'status' => ['required', 'in:active,low_stock,expired'],
         ];
     }
