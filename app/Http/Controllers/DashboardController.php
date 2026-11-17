@@ -44,7 +44,7 @@ class DashboardController extends Controller
         $activeFacilityCount = $user->isQao() ? Facility::where('is_active', true)->count() : 0;
         $publicUserCount = $user->isQao() ? User::role(['Donor', 'Patient'])->count() : 0;
         $expiringStockCount = FacilityScope::apply(BloodInventory::query(), $user)->where('units_available', '>', 0)
-            ->whereDate('expiration_date', '>=', today())->whereDate('expiration_date', '<=', today()->addDays(14))->count();
+            ->notExpired()->whereDate('expiration_date', '<=', now('Asia/Manila')->addDays(14))->count();
         $donations = FacilityScope::apply(DonationRecord::query(), $user)->count();
         $releases = FacilityScope::apply(BloodRelease::query(), $user)->count();
 
@@ -70,8 +70,8 @@ class DashboardController extends Controller
         $pendingActivityCount = DonationSchedule::query()->where('approval_status', 'pending')->count();
         $pendingActivities = DonationSchedule::query()->with('facility')->where('approval_status', 'pending')->orderBy('event_date')->limit(5)->get();
         $expiringInventory = FacilityScope::apply(BloodInventory::query(), $user)
-            ->whereDate('expiration_date', '>=', today())->whereDate('expiration_date', '<=', today()->addDays(14))
-            ->orderBy('expiration_date')->limit(6)->get();
+            ->notExpired()->whereDate('expiration_date', '<=', now('Asia/Manila')->addDays(14))
+            ->orderBy('expiration_date')->orderBy('expiration_time')->limit(6)->get();
 
         return view('dashboard.index', compact(
             'awaitingScreeningCount', 'activeFacilityCount', 'publicUserCount', 'expiringStockCount',

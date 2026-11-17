@@ -47,7 +47,7 @@ class StoreBloodReleaseRequest extends BaseFormRequest
                 return;
             }
 
-            if ($inventory->status === 'expired' || $inventory->expiration_date?->isBefore(today())) {
+            if ($inventory->status === 'expired' || $inventory->isExpired()) {
                 $validator->errors()->add('blood_inventory_id', 'Expired blood inventory cannot be released.');
             }
 

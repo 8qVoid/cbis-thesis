@@ -321,7 +321,7 @@ class DemoDataScenario
         $inventory = BloodInventory::query()
             ->where('facility_id', $facility->id)->where('blood_type', $fulfilled->blood_type)
             ->where('component', $fulfilled->component)->where('units_available', '>', 0)
-            ->whereDate('expiration_date', '>=', today())->orderBy('expiration_date')->firstOrFail();
+            ->notExpired()->orderBy('expiration_date')->orderBy('expiration_time')->firstOrFail();
         $release = BloodRelease::withTrashed()->firstOrCreate([
             'blood_reservation_id' => $fulfilled->id,
         ], [

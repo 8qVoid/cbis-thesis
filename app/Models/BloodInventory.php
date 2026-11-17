@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class BloodInventory extends Model
 {
@@ -24,7 +26,7 @@ class BloodInventory extends Model
     protected $table = 'blood_inventory';
 
     protected $fillable = [
-        'facility_id', 'donation_record_id', 'blood_type', 'component', 'units_available', 'expiration_date', 'status', 'last_low_stock_alert_at', 'showcase_key',
+        'facility_id', 'donation_record_id', 'blood_type', 'component', 'units_available', 'expiration_date', 'expiration_time', 'status', 'last_low_stock_alert_at', 'showcase_key',
     ];
 
     protected function casts(): array
@@ -53,5 +55,47 @@ class BloodInventory extends Model
     public function getComponentLabelAttribute(): string
     {
         return self::COMPONENTS[$this->component] ?? $this->component;
+    }
+
+    public function expiresAt(): ?Carbon
+    {
+        if (! $this->expiration_date) {
+            return null;
+        }
+
+        return Carbon::parse($this->expiration_date->toDateString().' '.($this->expiration_time ?: '23:59:59'), 'Asia/Manila');
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expiresAt()?->isPast() ?? false;
+    }
+
+    public function scopeNotExpired(Builder $query): Builder
+    {
+        $now = now('Asia/Manila');
+
+        return $query->where(function (Builder $query) use ($now): void {
+            $query->whereDate('expiration_date', '>', $now->toDateString())
+                ->orWhere(function (Builder $query) use ($now): void {
+                    $query->whereDate('expiration_date', $now->toDateString())
+                        ->where(function (Builder $query) use ($now): void {
+                            $query->whereNull('expiration_time')->orWhereTime('expiration_time', '>=', $now->format('H:i:s'));
+                        });
+                });
+        });
+    }
+
+    public function scopeExpired(Builder $query): Builder
+    {
+        $now = now('Asia/Manila');
+
+        return $query->where(function (Builder $query) use ($now): void {
+            $query->whereDate('expiration_date', '<', $now->toDateString())
+                ->orWhere(function (Builder $query) use ($now): void {
+                    $query->whereDate('expiration_date', $now->toDateString())
+                        ->whereNotNull('expiration_time')->whereTime('expiration_time', '<', $now->format('H:i:s'));
+                });
+        });
     }
 }

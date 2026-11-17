@@ -337,9 +337,10 @@ class OperationalAuditTest extends TestCase
         Livewire::actingAs($this->bbs)->test(CreateDonationRecord::class)
             ->set('selected_event_id', $event->id)->set('donor_id', $donor->id)
             ->set('donated_at', now()->toDateTimeString())->set('volume_ml', 450)
-            ->set('expiration_date', today()->addDays(30)->toDateString())->set('status', 'verified')
+            ->set('expiration_date', today()->addDays(30)->toDateString())->set('expiration_time', '17:00')->set('status', 'verified')
             ->call('save')->assertHasNoErrors()->assertRedirect(route('donation-records.index'));
         $this->assertSame('attended', $registration->fresh()->status);
         $this->assertSame($this->main->id, BloodInventory::firstOrFail()->facility_id);
+        $this->assertStringStartsWith('17:00', BloodInventory::firstOrFail()->expiration_time);
     }
 }

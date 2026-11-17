@@ -57,6 +57,8 @@ class CreateDonationRecord extends Component
 
     public ?string $expiration_date = null;
 
+    public ?string $expiration_time = null;
+
     public string $status = 'pending';
 
     public function mount(): void
@@ -209,6 +211,7 @@ class CreateDonationRecord extends Component
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'volume_ml' => DonationVolumePolicy::rules(),
             'expiration_date' => ['required', 'date', 'after:donated_at'],
+            'expiration_time' => ['required', 'date_format:H:i'],
             'status' => ['required', 'in:pending,verified,rejected'],
         ];
     }

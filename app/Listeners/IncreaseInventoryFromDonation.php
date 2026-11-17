@@ -28,7 +28,8 @@ class IncreaseInventoryFromDonation
             'component' => 'whole_blood',
             'units_available' => max(1, (int) floor($record->volume_ml / 450)),
             'expiration_date' => $record->expiration_date,
-            'status' => now()->toDateString() > $record->expiration_date->toDateString() ? 'expired' : 'active',
+            'expiration_time' => $record->expiration_time,
+            'status' => \Illuminate\Support\Carbon::parse($record->expiration_date->toDateString().' '.($record->expiration_time ?: '23:59:59'), 'Asia/Manila')->isPast() ? 'expired' : 'active',
         ]);
     }
 }

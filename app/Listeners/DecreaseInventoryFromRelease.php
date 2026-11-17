@@ -17,7 +17,7 @@ class DecreaseInventoryFromRelease
             throw ValidationException::withMessages(['blood_inventory_id' => 'This inventory item is no longer available.']);
         }
 
-        if ($inventory->status === 'expired' || $inventory->expiration_date->isBefore(today())
+        if ($inventory->status === 'expired' || $inventory->isExpired()
             || $inventory->units_available < $release->units_released) {
             throw ValidationException::withMessages(['units_released' => 'Stock changed or expired. Reload the inventory before recording this release.']);
         }
@@ -37,7 +37,7 @@ class DecreaseInventoryFromRelease
             $inventory->last_low_stock_alert_at = null;
         }
 
-        if ($inventory->expiration_date->isBefore(today())) {
+        if ($inventory->isExpired()) {
             $inventory->status = 'expired';
         }
 

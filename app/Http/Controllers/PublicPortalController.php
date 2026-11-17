@@ -215,7 +215,7 @@ class PublicPortalController extends Controller
             ->whereIn('blood_type', $bloodTypes)
             ->where('units_available', '>', 0)
             ->where('status', '!=', 'expired')
-            ->whereDate('expiration_date', '>=', now()->toDateString())
+            ->notExpired()
             ->groupBy('facility_id', 'blood_type')
             ->get()
             ->groupBy('facility_id')

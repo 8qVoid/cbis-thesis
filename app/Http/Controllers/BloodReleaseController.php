@@ -44,7 +44,7 @@ class BloodReleaseController extends Controller
                 ->with('facility')
                 ->where('status', '!=', 'expired')
                 ->where('units_available', '>', 0)
-                ->whereDate('expiration_date', '>=', now()->toDateString()),
+                ->notExpired(),
             $user
         )->get();
 
@@ -78,7 +78,7 @@ class BloodReleaseController extends Controller
             }
             $totalAvailable = BloodInventory::where('facility_id', $data['facility_id'])
                 ->where('blood_type', $stock->blood_type)->where('component', $stock->component)
-                ->whereIn('status', ['active', 'low_stock'])->whereDate('expiration_date', '>=', today())->sum('units_available');
+                ->whereIn('status', ['active', 'low_stock'])->notExpired()->sum('units_available');
             $reserved = ReservedStock::outstanding($data['facility_id'], $stock->blood_type, $stock->component, $reservation?->id);
             if ($totalAvailable - $reserved < $data['units_released']) {
                 throw ValidationException::withMessages(['units_released' => 'These units are committed to other approved reservations. Open the relevant reservation to release its blood.']);

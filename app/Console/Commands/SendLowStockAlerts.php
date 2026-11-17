@@ -21,7 +21,7 @@ class SendLowStockAlerts extends Command
         BloodInventory::query()->whereIn('facility_id', \App\Support\MainChapter::ids())
             ->where('status', 'low_stock')
             ->whereRaw("units_available > CASE component WHEN 'whole_blood' THEN 20 WHEN 'packed_red_blood_cells' THEN 20 WHEN 'platelet_concentrate' THEN 5 WHEN 'fresh_frozen_plasma' THEN 10 ELSE ? END", [$defaultThreshold])
-            ->whereDate('expiration_date', '>=', now()->toDateString())
+            ->notExpired()
             ->update([
                 'status' => 'active',
                 'last_low_stock_alert_at' => null,
@@ -30,7 +30,7 @@ class SendLowStockAlerts extends Command
         $lowStockItems = BloodInventory::query()->whereIn('facility_id', \App\Support\MainChapter::ids())
             ->with('facility')
             ->whereRaw("units_available <= CASE component WHEN 'whole_blood' THEN 20 WHEN 'packed_red_blood_cells' THEN 20 WHEN 'platelet_concentrate' THEN 5 WHEN 'fresh_frozen_plasma' THEN 10 ELSE ? END", [$defaultThreshold])
-            ->whereDate('expiration_date', '>=', now()->toDateString())
+            ->notExpired()
             ->where(function ($query): void {
                 $query
                     ->where('status', 'active')

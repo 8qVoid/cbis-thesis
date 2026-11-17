@@ -243,7 +243,7 @@ class ShowcaseSeeder extends Seeder
                 $donation = DonationRecord::withTrashed()->firstOrCreate(['donation_no' => sprintf('SC-DON-%04d', $number)], [
                     'facility_id' => $main->id, 'donor_id' => $donor->id, 'recorded_by' => $bbs->id,
                     'donated_at' => $donatedAt, 'blood_type' => $donor->blood_type,
-                    'volume_ml' => 450, 'expiration_date' => $expiration,
+                    'volume_ml' => 450, 'expiration_date' => $expiration, 'expiration_time' => sprintf('%02d:30', 9 + $index % 7),
                     'status' => $status, 'remarks' => 'Collected during a scheduled blood service visit.',
                 ]);
                 if ($donation->trashed()) {
@@ -260,6 +260,7 @@ class ShowcaseSeeder extends Seeder
                         'facility_id' => $main->id, 'blood_type' => $donor->blood_type,
                         'component' => 'whole_blood', 'units_available' => $round ? 0 : 1,
                         'expiration_date' => $expiration,
+                        'expiration_time' => $donation->expiration_time,
                         'status' => $round ? 'expired' : 'low_stock',
                         'last_low_stock_alert_at' => now(),
                     ]);
@@ -283,6 +284,7 @@ class ShowcaseSeeder extends Seeder
                     'blood_type' => $bloodType, 'component' => $component,
                     'units_available' => $units,
                     'expiration_date' => today()->addDays(12 + $number * 2),
+                    'expiration_time' => sprintf('%02d:00', 8 + $number % 10),
                     'status' => $low ? 'low_stock' : 'active',
                     'last_low_stock_alert_at' => $low ? now() : null,
                 ]);
@@ -293,7 +295,7 @@ class ShowcaseSeeder extends Seeder
             BloodInventory::withTrashed()->firstOrCreate(['showcase_key' => 'SC-EXPIRED-'.sprintf('%02d', $index)], [
                 'facility_id' => $main->id, 'donation_record_id' => null,
                 'blood_type' => $bloodType, 'component' => $components[$index % count($components)],
-                'units_available' => 0, 'expiration_date' => today()->subDays(2 + $index), 'status' => 'expired',
+                'units_available' => 0, 'expiration_date' => today()->subDays(2 + $index), 'expiration_time' => '17:00', 'status' => 'expired',
             ]);
         }
 

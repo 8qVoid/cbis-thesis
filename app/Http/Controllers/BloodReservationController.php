@@ -146,7 +146,7 @@ class BloodReservationController extends Controller
                     ->where('blood_type', $reservation->blood_type)
                     ->where('component', $reservation->component)
                     ->whereIn('status', ['active', 'low_stock'])
-                    ->whereDate('expiration_date', '>=', today())
+                    ->notExpired()
                     ->sum('units_available');
                 $alreadyReserved = ReservedStock::outstanding($reservation->facility_id, $reservation->blood_type, $reservation->component, $reservation->id);
 

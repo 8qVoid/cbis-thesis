@@ -32,17 +32,18 @@ class BloodInventoryController extends Controller
         $inventory = FacilityScope::apply(BloodInventory::query()->with(['facility', 'donationRecord']), auth()->user())
             ->when($filters['blood_type'] ?? null, fn ($query, $type) => $query->where('blood_type', $type))
             ->when($filters['component'] ?? null, fn ($query, $component) => $query->where('component', $component))
-            ->when($filters['status'] ?? null, fn ($query) => $query->where('units_available', '>', 0)->where('units_available', '<=', 5)->where('status', '!=', 'expired')->whereDate('expiration_date', '>=', today()))
-            ->when($filters['expiring'] ?? null, fn ($query) => $query->where('status', '!=', 'expired')->where('units_available', '>', 0)->whereDate('expiration_date', '>=', today())->whereDate('expiration_date', '<=', today()->addDays(14)))
+            ->when($filters['status'] ?? null, fn ($query) => $query->where('units_available', '>', 0)->where('units_available', '<=', 5)->where('status', '!=', 'expired')->notExpired())
+            ->when($filters['expiring'] ?? null, fn ($query) => $query->where('status', '!=', 'expired')->where('units_available', '>', 0)->notExpired()->whereDate('expiration_date', '<=', now('Asia/Manila')->addDays(14)))
             ->orderBy('blood_type')
             ->orderBy('expiration_date')
+            ->orderBy('expiration_time')
             ->paginate(20)->withQueryString();
 
         $scopedInventory = FacilityScope::apply(BloodInventory::query(), auth()->user());
         $storageRows = (clone $scopedInventory)
             ->selectRaw('blood_type, component, SUM(units_available) as units, MIN(expiration_date) as next_expiration, COUNT(*) as batch_count')
             ->where('units_available', '>', 0)->where('status', '!=', 'expired')
-            ->whereDate('expiration_date', '>=', today())->groupBy('blood_type', 'component')->get()
+            ->notExpired()->groupBy('blood_type', 'component')->get()
             ->keyBy(fn ($row) => $row->blood_type.'|'.$row->component);
         $totalAvailableUnits = (int) $storageRows->sum('units');
         $lowStockGroups = $storageRows->filter(fn ($row) => (int) $row->units <= 5)->count();
@@ -101,7 +102,7 @@ class BloodInventoryController extends Controller
         $stockQuery = FacilityScope::apply(BloodInventory::query(), auth()->user())
             ->where('blood_type', $bloodType)->where('component', $componentKey)
             ->where('units_available', '>', 0)->where('status', '!=', 'expired')
-            ->whereDate('expiration_date', '>=', today());
+            ->notExpired();
 
         $expiryGroups = (clone $stockQuery)
             ->selectRaw('expiration_date, SUM(units_available) as units, COUNT(*) as batch_count')
@@ -115,7 +116,7 @@ class BloodInventoryController extends Controller
         $batches = (clone $stockQuery)
             ->with(['donationRecord:id,donation_no', 'facility'])
             ->when($selectedExpiry, fn ($query, $date) => $query->whereDate('expiration_date', $date))
-            ->orderBy('expiration_date', $sort === 'latest' ? 'desc' : 'asc')->orderBy('id')
+            ->orderBy('expiration_date', $sort === 'latest' ? 'desc' : 'asc')->orderBy('expiration_time', $sort === 'latest' ? 'desc' : 'asc')->orderBy('id')
             ->paginate(20)->withQueryString();
 
         return view('blood-inventory.storage', compact(
@@ -228,9 +229,10 @@ class BloodInventoryController extends Controller
         $exists = BloodInventory::where('facility_id', $data['facility_id'])->whereNull('donation_record_id')
             ->where('blood_type', $data['blood_type'])->where('component', $data['component'])
             ->whereDate('expiration_date', $data['expiration_date'])
+            ->where('expiration_time', $data['expiration_time'] ?? null)
             ->when($record, fn ($query) => $query->whereKeyNot($record->id))->exists();
         if ($exists) {
-            throw ValidationException::withMessages(['expiration_date' => 'Manual stock with this facility, blood type, component, and expiration date already exists. Edit its unit balance instead of adding a duplicate.']);
+            throw ValidationException::withMessages(['expiration_date' => 'Manual stock with this facility, blood type, component, and expiration date and time already exists. Edit its unit balance instead of adding a duplicate.']);
         }
     }
 

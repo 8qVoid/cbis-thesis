@@ -94,7 +94,7 @@
                     @foreach($dateBatches as $batch)
                         @php
                             $units = (int) $batch->units_available;
-                            $displayStatus = $batch->status === 'expired' || $batch->expiration_date?->lt(today()) ? 'Expired' : ($units === 0 ? 'Depleted' : 'In storage');
+                            $displayStatus = $batch->status === 'expired' || $batch->isExpired() ? 'Expired' : ($units === 0 ? 'Depleted' : 'In storage');
                             $statusClass = in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : 'cbis-status-active';
                         @endphp
                         @for($unitNumber = 1; $unitNumber <= $units; $unitNumber++)
@@ -106,7 +106,7 @@
                                     </div>
                                     <strong class="cbis-storage-batch-units">1 <small>unit</small></strong>
                                     <dl class="cbis-storage-batch-details">
-                                        <div><dt>Expires</dt><dd><time datetime="{{ $expiryDate }}">{{ $batch->expiration_date->format('M d, Y') }}</time></dd></div>
+                                        <div><dt>Expires</dt><dd><time datetime="{{ $batch->expiresAt()?->toIso8601String() }}">{{ $batch->expiresAt()?->format('M d, Y g:i A') }}</time> <small class="text-muted">PHT</small></dd></div>
                                         <div><dt>Source</dt><dd class="cbis-storage-batch-source">{{ $batch->donationRecord ? 'Donation '.$batch->donationRecord->donation_no : 'Manual stock entry' }}</dd></div>
                                     </dl>
                                 </div>

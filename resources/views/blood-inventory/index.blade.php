@@ -123,9 +123,9 @@
                         <td>{{ $item->blood_type }}</td>
                         <td>{{ $item->component_label }}</td>
                         <td>{{ $item->units_available }}</td>
-                        <td>{{ $item->expiration_date?->toDateString() }}</td>
+                        <td>{{ $item->expiresAt()?->format('M j, Y g:i A') }} <small class="text-muted d-block">Philippine time</small></td>
                         <td>{{ $item->donationRecord ? 'Donation '.$item->donationRecord->donation_no : 'Manual adjustment' }}</td>
-                        @php($displayStatus = $item->status === 'expired' || $item->expiration_date?->lt(today()) ? 'Expired' : ((int) $item->units_available === 0 ? 'Depleted' : ((int) $item->units_available <= 5 ? 'Low stock' : 'In storage')))
+                        @php($displayStatus = $item->status === 'expired' || $item->isExpired() ? 'Expired' : ((int) $item->units_available === 0 ? 'Depleted' : ((int) $item->units_available <= 5 ? 'Low stock' : 'In storage')))
                         <td><span class="badge {{ in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : ($displayStatus === 'Low stock' ? 'cbis-status-low' : 'cbis-status-active') }}">{{ $displayStatus }}</span></td>
                         <td><div class="d-flex flex-wrap gap-1"><a href="{{ route('blood-inventory.show',$item) }}" class="btn btn-sm btn-outline-secondary">View</a>@if($canManageInventory)<a href="{{ route('blood-inventory.edit',$item) }}" class="btn btn-sm btn-outline-danger">Edit stock</a>@endif</div></td>
                     </tr>

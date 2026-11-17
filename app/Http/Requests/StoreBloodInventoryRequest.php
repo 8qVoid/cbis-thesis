@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Validator;
+use Illuminate\Support\Carbon;
 
 class StoreBloodInventoryRequest extends BaseFormRequest
 {
@@ -10,8 +12,6 @@ class StoreBloodInventoryRequest extends BaseFormRequest
     public function messages(): array
     {
         return [
-            'expiration_date.after_or_equal' => 'Available stock must expire today or later. For a past expiration date, select Expired.',
-            'expiration_date.before' => 'Expired stock must have an expiration date before today.',
             'donation_record_id.prohibited' => 'Donation stock is added automatically. Use the existing donation inventory record.',
             'donation_record_id.unique' => 'This donation already has an inventory record. Edit the existing record instead.',
         ];
@@ -25,8 +25,26 @@ class StoreBloodInventoryRequest extends BaseFormRequest
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'component' => ['required', 'in:whole_blood,packed_red_blood_cells,platelet_concentrate,fresh_frozen_plasma'],
             'units_available' => ['required', 'integer', 'min:0', 'max:100000'],
-            'expiration_date' => ['required', 'date', $this->input('status') === 'expired' ? 'before:today' : 'after_or_equal:today'],
+            'expiration_date' => ['required', 'date'],
+            'expiration_time' => ['nullable', 'date_format:H:i'],
             'status' => ['required', 'in:active,low_stock,expired'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        parent::withValidator($validator);
+
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->has('expiration_date') || $validator->errors()->has('expiration_time') || ! $this->input('expiration_date')) {
+                return;
+            }
+            $expiresAt = Carbon::parse($this->input('expiration_date').' '.($this->input('expiration_time') ?: '23:59:59'), 'Asia/Manila');
+            if ($this->input('status') === 'expired' && $expiresAt->isFuture()) {
+                $validator->errors()->add('expiration_date', 'Expired stock must have a past expiration date and time.');
+            } elseif ($this->input('status') !== 'expired' && $expiresAt->isPast()) {
+                $validator->errors()->add('expiration_date', 'Available stock must have a future expiration date and time.');
+            }
+        });
     }
 }

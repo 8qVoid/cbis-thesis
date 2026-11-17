@@ -14,7 +14,7 @@ class DonationRecord extends Model
 
     protected $fillable = [
         'facility_id', 'donor_id', 'recorded_by', 'donation_no', 'donated_at', 'blood_type',
-        'volume_ml', 'expiration_date', 'status', 'remarks',
+        'volume_ml', 'expiration_date', 'expiration_time', 'status', 'remarks',
     ];
 
     protected function casts(): array

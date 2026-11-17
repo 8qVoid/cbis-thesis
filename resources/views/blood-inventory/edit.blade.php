@@ -2,17 +2,18 @@
 @section('content')
 <div class="mb-3">
     <h1 class="cbis-page-title mb-0">Edit Inventory Adjustment</h1>
-    <p class="cbis-page-subtitle">Correct the unit balance, expiration date, or status. The stock type and facility stay linked to this record.</p>
+    <p class="cbis-page-subtitle">Correct the unit balance, expiration date and time, or status. The stock type and facility stay linked to this record.</p>
 </div>
 <form method="POST" action="{{ route('blood-inventory.update',$bloodInventory) }}" class="card card-body">@csrf @method('PUT')
 @if($errors->any())<div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
-<div class="alert alert-light border">One unit equals one blood bag. Keep bags with different expiration dates in separate records. Available stock must expire today or later.</div>
+<div class="alert alert-light border">One unit equals one blood bag. Keep bags with different expiration dates or times in separate records. Enter the time shown on the bag label in Philippine time.</div>
 <div class="row g-3">
 @if(auth('web')->user()?->isCentralAdmin())<div class="col-md-4"><label class="form-label">Facility</label><input type="hidden" name="facility_id" value="{{ $bloodInventory->facility_id }}"><select disabled aria-label="facility id" class="form-select" required><option value="">Select facility</option>@foreach($facilities as $facility)<option value="{{ $facility->id }}" @selected(old('facility_id',$bloodInventory->facility_id) == $facility->id)>{{ $facility->name }}</option>@endforeach</select></div>@endif
 <div class="col-md-3"><label class="form-label">Blood Type</label><input type="hidden" name="blood_type" value="{{ $bloodInventory->blood_type }}"><select disabled aria-label="blood type" class="form-select">@foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $type)<option value="{{ $type }}" @selected(old('blood_type', $bloodInventory->blood_type)===$type)>{{ $type }}</option>@endforeach</select></div>
 <div class="col-md-4"><label class="form-label">Blood Component</label><input type="hidden" name="component" value="{{ $bloodInventory->component }}"><select disabled aria-label="component" class="form-select">@foreach(\App\Models\BloodInventory::COMPONENTS as $value=>$label)<option value="{{ $value }}" @selected(old('component', $bloodInventory->component)===$value)>{{ $label }}</option>@endforeach</select></div>
 <div class="col-md-3"><label class="form-label">Blood bags</label><input name="units_available" type="number" min="0" max="100000" step="1" class="form-control" value="{{ old('units_available',$bloodInventory->units_available) }}" required><small class="form-text text-muted">Each bag counts as one unit.</small></div>
 <div class="col-md-3"><label class="form-label">Expiration Date</label><input name="expiration_date" type="date" class="form-control" value="{{ old('expiration_date',$bloodInventory->expiration_date?->toDateString()) }}" required></div>
+<div class="col-md-3"><label class="form-label">Expiration Time</label><input name="expiration_time" type="time" class="form-control" value="{{ old('expiration_time',substr($bloodInventory->expiration_time ?: '23:59', 0, 5)) }}" required><small class="text-muted">Philippine time; older records default to 11:59 PM</small></div>
 <div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active" @selected(old('status', $bloodInventory->status)==='active')>In storage</option><option value="low_stock" @selected(old('status', $bloodInventory->status)==='low_stock')>Low stock</option><option value="expired" @selected(old('status', $bloodInventory->status)==='expired')>Expired</option></select><small class="text-muted">The inventory list shows Low stock when 1–5 bags remain and Depleted when none remain.</small></div>
 <div class="col-12 d-flex flex-wrap gap-2 pt-2"><a href="{{ route('blood-inventory.index') }}#stock-batches" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Update Adjustment</button></div>
 </div></form>
@@ -22,9 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const status = document.querySelector('[name="status"]');
     const update = () => {
         if (status.value === 'expired') {
-            date.removeAttribute('min'); date.max = '{{ today()->subDay()->toDateString() }}';
+            date.removeAttribute('min'); date.max = '{{ now('Asia/Manila')->toDateString() }}';
         } else {
-            date.removeAttribute('max'); date.min = '{{ today()->toDateString() }}';
+            date.removeAttribute('max'); date.min = '{{ now('Asia/Manila')->toDateString() }}';
         }
     };
     status.addEventListener('change', update); update();

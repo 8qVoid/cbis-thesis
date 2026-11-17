@@ -17,6 +17,7 @@ class UpdateDonationRecordRequest extends StoreDonationRecordRequest
             'blood_type' => ['required', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
             'volume_ml' => DonationVolumePolicy::rules(),
             'expiration_date' => ['required', 'date', 'after:donated_at'],
+            'expiration_time' => ['nullable', 'date_format:H:i'],
             'status' => ['required', 'in:pending,verified,rejected'],
             'remarks' => ['nullable', 'string'],
         ];

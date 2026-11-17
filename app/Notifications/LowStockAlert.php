@@ -37,6 +37,7 @@ class LowStockAlert extends Notification implements ShouldQueue
             'component' => $this->inventory->component_label,
             'units_available' => $this->inventory->units_available,
             'expiration_date' => $this->inventory->expiration_date?->toDateString(),
+            'expiration_time' => substr($this->inventory->expiration_time ?: '23:59', 0, 5),
         ];
     }
 
@@ -50,7 +51,7 @@ class LowStockAlert extends Notification implements ShouldQueue
             ->line('Blood Type: '.$this->inventory->blood_type)
             ->line('Component: '.$this->inventory->component_label)
             ->line('Units Available: '.$this->inventory->units_available)
-            ->line('Expiration Date: '.($this->inventory->expiration_date?->toDateString() ?? 'N/A'))
+            ->line('Expiration: '.($this->inventory->expiresAt()?->format('M j, Y g:i A') ?? 'N/A').' (Philippine time)')
             ->line('Please review and replenish stock as needed.');
     }
 }

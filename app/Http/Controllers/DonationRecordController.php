@@ -84,7 +84,7 @@ class DonationRecordController extends Controller
             if (BloodInventory::withTrashed()->where('donation_record_id', $record->id)->exists()) {
                 $candidate = clone $record;
                 $candidate->fill($data);
-                foreach (['donor_id', 'facility_id', 'blood_type', 'volume_ml', 'expiration_date', 'status'] as $field) {
+                foreach (['donor_id', 'facility_id', 'blood_type', 'volume_ml', 'expiration_date', 'expiration_time', 'status'] as $field) {
                     if ($candidate->isDirty($field)) {
                         throw ValidationException::withMessages([$field => 'This donation has already created inventory. Its donor, stock details and verification status cannot be changed here.']);
                     }

@@ -6,6 +6,6 @@
 <div><dt>Blood type</dt><dd>{{ $donationRecord->blood_type }}</dd></div>
 <div><dt>Volume</dt><dd>{{ $donationRecord->volume_ml.' ml' }}</dd></div>
 <div><dt>Donation date</dt><dd>{{ $donationRecord->donated_at?->format('M j, Y · g:i A') }}</dd></div>
-<div><dt>Expiration date</dt><dd>{{ $donationRecord->expiration_date?->format('M j, Y') }}</dd></div>
+<div><dt>Expiration</dt><dd>{{ $donationRecord->expiration_date?->format('M j, Y') }} {{ \Illuminate\Support\Carbon::parse($donationRecord->expiration_time ?: '23:59')->format('g:i A') }} (Philippine time)</dd></div>
 </dl></div></section>
 @endsection

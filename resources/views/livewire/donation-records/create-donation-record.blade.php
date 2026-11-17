@@ -133,6 +133,13 @@
             </div>
 
             <div class="col-md-4">
+                <label class="form-label">Expiration Time</label>
+                <input wire:model="expiration_time" type="time" class="form-control" required>
+                <small class="text-muted">Use the time on the blood bag label (Philippine time).</small>
+                @error('expiration_time') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="col-md-4">
                 <label class="form-label">Status</label>
                 <select wire:model="status" class="form-select">
                     <option value="pending">pending</option>

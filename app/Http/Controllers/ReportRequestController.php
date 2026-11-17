@@ -203,7 +203,7 @@ class ReportRequestController extends Controller
             ->selectRaw('blood_type, component, SUM(units_available) as total_units, MIN(expiration_date) as next_expiry')
             ->where('units_available', '>', 0)
             ->where('status', '!=', 'expired')
-            ->whereDate('expiration_date', '>=', today())
+            ->notExpired()
             ->groupBy('blood_type', 'component')
             ->orderBy('blood_type')->orderBy('component')->get();
 

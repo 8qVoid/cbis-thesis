@@ -14,7 +14,7 @@ class FlagExpiredInventory extends Command
     public function handle(): int
     {
         $count = BloodInventory::query()
-            ->whereDate('expiration_date', '<', now()->toDateString())
+            ->expired()
             ->where('status', '!=', 'expired')
             ->update(['status' => 'expired']);
 

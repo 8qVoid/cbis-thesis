@@ -7,9 +7,9 @@
 <div class="card card-body" data-live-region="inventory-record">
     <dl class="row mb-0">
         <dt class="col-sm-3">Units in this batch</dt><dd class="col-sm-9">{{ $bloodInventory->units_available }}</dd>
-        <dt class="col-sm-3">Expiration date</dt><dd class="col-sm-9">{{ $bloodInventory->expiration_date?->format('M j, Y') }}</dd>
+        <dt class="col-sm-3">Expiration</dt><dd class="col-sm-9">{{ $bloodInventory->expiresAt()?->format('M j, Y g:i A') }} (Philippine time)</dd>
         <dt class="col-sm-3">Source</dt><dd class="col-sm-9">{{ $bloodInventory->donationRecord ? 'Donation '.$bloodInventory->donationRecord->donation_no : 'Manual stock entry' }}</dd>
-        <dt class="col-sm-3">Status</dt><dd class="col-sm-9">{{ $bloodInventory->status === 'expired' || $bloodInventory->expiration_date?->lt(today()) ? 'Expired' : ((int) $bloodInventory->units_available === 0 ? 'Depleted' : ((int) $bloodInventory->units_available <= 5 ? 'Low stock' : 'In storage')) }}</dd>
+        <dt class="col-sm-3">Status</dt><dd class="col-sm-9">{{ $bloodInventory->status === 'expired' || $bloodInventory->isExpired() ? 'Expired' : ((int) $bloodInventory->units_available === 0 ? 'Depleted' : ((int) $bloodInventory->units_available <= 5 ? 'Low stock' : 'In storage')) }}</dd>
     </dl>
 </div>
 @endsection

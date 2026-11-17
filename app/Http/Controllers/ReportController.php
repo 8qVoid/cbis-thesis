@@ -136,7 +136,7 @@ class ReportController extends Controller
         $usageTransactions = $releases->count();
         $expirationRiskCount = $inventory
             ->where('status', '!=', 'expired')
-            ->filter(fn (BloodInventory $item) => $item->expiration_date && $item->expiration_date->between(now()->startOfDay(), now()->addDays(7)->endOfDay()))
+            ->filter(fn (BloodInventory $item) => ! $item->isExpired() && $item->expiresAt()?->lte(now('Asia/Manila')->addDays(7)))
             ->count();
         $lowStockCount = $inventory->where('status', 'low_stock')->count();
 

@@ -17,7 +17,7 @@ class ReportData
         $sections = [];
         foreach (array_unique($types) as $type) {
             [$model, $date, $columns, $headings, $quantity] = match ($type) {
-                'inventory' => [BloodInventory::class, 'created_at', ['id', 'blood_type', 'component', 'units_available', 'expiration_date', 'status'], ['Record', 'Blood type', 'Component', 'Units', 'Expiry', 'Status'], 'units_available'],
+                'inventory' => [BloodInventory::class, 'created_at', ['id', 'blood_type', 'component', 'units_available', 'expiration_date', 'expiration_time', 'status'], ['Record', 'Blood type', 'Component', 'Units', 'Expiry date', 'Expiry time (PHT)', 'Status'], 'units_available'],
                 'donations' => [DonationRecord::class, 'donated_at', ['donation_no', 'blood_type', 'volume_ml', 'donated_at', 'status'], ['Donation', 'Blood type', 'Volume (ml)', 'Donated at', 'Status'], 'volume_ml'],
                 'releases' => [BloodRelease::class, 'released_at', ['id', 'blood_inventory_id', 'units_released', 'released_at'], ['Release', 'Inventory record', 'Units', 'Released at'], 'units_released'],
                 'reservations' => [BloodReservation::class, 'created_at', ['reference', 'blood_type', 'component', 'units_requested', 'needed_on', 'status'], ['Reference', 'Blood type', 'Component', 'Units requested', 'Needed on', 'Status'], 'units_requested'],
