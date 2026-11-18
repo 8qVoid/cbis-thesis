@@ -333,7 +333,21 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-inventory-summary-card strong { display:block; margin:6px 0; color:#14233a; font-size:34px; line-height:1; }
 .cbis-inventory-summary-card span { color:#657187; font-size:13px; }
 .cbis-storage-grid { overflow-x:auto; }
-.cbis-storage-header,.cbis-storage-row { display:grid; grid-template-columns:110px repeat(4,minmax(155px,1fr)); min-width:760px; }
+.cbis-storage-header,.cbis-storage-row { display:grid; grid-template-columns:80px repeat(4,minmax(0,1fr)); min-width:0; }
+.cbis-storage-header>span,.cbis-storage-cell { min-width:0; overflow-wrap:anywhere; }
+@media(max-width:1100px) {
+ .cbis-inventory-record-table,.cbis-inventory-record-table tbody,.cbis-inventory-record-table tr,.cbis-inventory-record-table td { display:block; width:100%; }
+ .cbis-inventory-record-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+ .cbis-inventory-record-table tbody { padding:8px; }
+ .cbis-inventory-record-table tbody tr { margin-bottom:10px; border:1px solid #e2e7ef; border-radius:8px; overflow:hidden; background:#fff; }
+ .cbis-inventory-record-table td { display:grid; grid-template-columns:minmax(100px,35%) minmax(0,1fr); gap:8px; padding:8px 12px; overflow-wrap:anywhere; }
+ .cbis-inventory-record-table td::before { content:attr(data-label); color:#596477; font-size:.8rem; font-weight:700; }
+ .cbis-inventory-record-table td[colspan] { display:block; }
+ .cbis-inventory-record-table td[colspan]::before { content:none; }
+ .cbis-storage-header { display:none; }
+ .cbis-storage-row { grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:12px; border:1px solid #e2e7ef; border-radius:8px; }
+ .cbis-storage-row>strong { grid-column:1 / -1; padding:8px 12px; font-size:16px; }
+}
 .cbis-storage-header { color:#596477; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
 .cbis-storage-header>span { padding:10px 12px; border-bottom:1px solid #e6eaf0; }
 .cbis-storage-row>strong { display:flex; align-items:center; padding:14px 12px; border-bottom:1px solid #edf0f4; color:#172840; font-size:20px; }

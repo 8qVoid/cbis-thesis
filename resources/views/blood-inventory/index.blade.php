@@ -105,7 +105,7 @@
     </form>
     <div data-live-region="inventory-batches">
     <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <table class="table table-striped mb-0 cbis-inventory-record-table">
             <thead>
                 <tr>
                     <th>Blood Type</th>
@@ -120,14 +120,14 @@
             <tbody>
                 @forelse($inventory as $item)
                     <tr>
-                        <td>{{ $item->blood_type }}</td>
-                        <td>{{ $item->component_label }}</td>
-                        <td>{{ $item->units_available }}</td>
-                        <td>{{ $item->expiresAt()?->format('M j, Y g:i A') }} <small class="text-muted d-block">Philippine time</small></td>
-                        <td>{{ $item->donationRecord ? 'Donation '.$item->donationRecord->donation_no : 'Manual adjustment' }}</td>
+                        <td data-label="Blood type">{{ $item->blood_type }}</td>
+                        <td data-label="Component">{{ $item->component_label }}</td>
+                        <td data-label="Remaining units">{{ $item->units_available }}</td>
+                        <td data-label="Expiry">{{ $item->expiresAt()?->format('M j, Y g:i A') }} <small class="text-muted d-block">Philippine time</small></td>
+                        <td data-label="Source">{{ $item->donationRecord ? 'Donation '.$item->donationRecord->donation_no : 'Manual adjustment' }}</td>
                         @php($displayStatus = $item->status === 'expired' || $item->isExpired() ? 'Expired' : ((int) $item->units_available === 0 ? 'Depleted' : ((int) $item->units_available <= 5 ? 'Low stock' : 'In storage')))
-                        <td><span class="badge {{ in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : ($displayStatus === 'Low stock' ? 'cbis-status-low' : 'cbis-status-active') }}">{{ $displayStatus }}</span></td>
-                        <td><div class="d-flex flex-wrap gap-1"><a href="{{ route('blood-inventory.show',$item) }}" class="btn btn-sm btn-outline-secondary">View</a>@if($canManageInventory)<a href="{{ route('blood-inventory.edit',$item) }}" class="btn btn-sm btn-outline-danger">Edit stock</a>@endif</div></td>
+                        <td data-label="Status"><span class="badge {{ in_array($displayStatus, ['Expired', 'Depleted']) ? 'cbis-status-expired' : ($displayStatus === 'Low stock' ? 'cbis-status-low' : 'cbis-status-active') }}">{{ $displayStatus }}</span></td>
+                        <td data-label="Action"><div class="d-flex flex-wrap gap-1"><a href="{{ route('blood-inventory.show',$item) }}" class="btn btn-sm btn-outline-secondary">View</a>@if($canManageInventory && $item->status !== 'expired' && ! $item->isExpired())<a href="{{ route('blood-inventory.edit',$item) }}" class="btn btn-sm btn-outline-danger">Edit stock</a>@endif</div></td>
                     </tr>
                 @empty
                     <tr>

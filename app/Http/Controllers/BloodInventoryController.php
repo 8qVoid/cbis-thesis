@@ -165,6 +165,7 @@ class BloodInventoryController extends Controller
     public function edit(BloodInventory $bloodInventory): View
     {
         $this->authorizeRecord($bloodInventory);
+        abort_if($bloodInventory->status === 'expired' || $bloodInventory->isExpired(), 403, 'Expired stock cannot be edited.');
         $facilities = auth()->user()->isCentralAdmin()
             ? Facility::orderBy('name')->get()
             : Facility::query()->whereKey(auth()->user()->facility_id)->get();
@@ -175,6 +176,7 @@ class BloodInventoryController extends Controller
     public function update(UpdateBloodInventoryRequest $request, BloodInventory $bloodInventory): RedirectResponse
     {
         $this->authorizeRecord($bloodInventory);
+        abort_if($bloodInventory->status === 'expired' || $bloodInventory->isExpired(), 403, 'Expired stock cannot be edited.');
 
         $data = $request->validated();
         if (! empty($data['donation_record_id'])) {
@@ -188,6 +190,7 @@ class BloodInventoryController extends Controller
         DB::transaction(function () use ($data, $request, $bloodInventory) {
             Facility::whereKey($bloodInventory->facility_id)->lockForUpdate()->firstOrFail();
             $record = BloodInventory::whereKey($bloodInventory->id)->lockForUpdate()->firstOrFail();
+            abort_if($record->status === 'expired' || $record->isExpired(), 403, 'Expired stock cannot be edited.');
             foreach (['facility_id', 'blood_type', 'component'] as $field) {
                 if ((string) $data[$field] !== (string) $record->$field) {
                     throw ValidationException::withMessages([$field => 'The facility, blood type, and component identify this stock and cannot be changed. Record separate stock instead.']);
