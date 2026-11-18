@@ -7,6 +7,7 @@
     const donorFields = [...form.querySelectorAll('.js-donor-field')];
     const birthDate = document.getElementById('birthDate');
     const password = document.getElementById('registrationPassword');
+    const confirmation = document.getElementById('registrationPasswordConfirmation');
     const nameFields = [...form.querySelectorAll('.js-person-name')];
     const fields = [...form.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), select')];
     const feedbackByField = new Map();
@@ -33,14 +34,16 @@
         const feedback = feedbackByField.get(field);
         if (!feedback) return;
         const invalid = !field.disabled && !field.validity.valid;
+        // The live match indicator already explains a password mismatch.
+        const showError = invalid && !(field === confirmation && field.validity.customError);
         let message = field.validationMessage;
         if (field.validity.valueMissing) {
             const label = field.labels?.[0] || field.parentElement.querySelector('label');
             const name = label?.textContent.replace(/\*/g, '').trim().replace(/\s+/g, ' ') || 'This field';
             message = `${name} is required.`;
         }
-        feedback.textContent = invalid ? message : '';
-        feedback.hidden = !invalid;
+        feedback.textContent = showError ? message : '';
+        feedback.hidden = !showError;
         field.classList.toggle('is-invalid', invalid);
         if (invalid) field.setAttribute('aria-invalid', 'true');
         else field.removeAttribute('aria-invalid');
@@ -89,10 +92,9 @@
             if (field === birthDate) updateBirthDate();
             if (field === password) updatePassword();
             if (nameFields.includes(field)) updateName(field);
-            if (touchedFields.has(field)) showFeedback(field);
-            if (field === password) {
-                const confirmation = document.getElementById('registrationPasswordConfirmation');
-                if (touchedFields.has(confirmation)) showFeedback(confirmation);
+            if (touchedFields.has(field) && field !== confirmation) showFeedback(field);
+            if ((field === password || field === confirmation) && touchedFields.has(confirmation)) {
+                setTimeout(() => showFeedback(confirmation), 0);
             }
         };
         field.addEventListener('input', update);
