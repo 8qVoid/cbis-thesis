@@ -202,8 +202,8 @@
                             <form method="POST" action="{{ route('logout') }}" class="js-logout-form">@csrf<button class="dropdown-item text-danger" type="submit">Logout</button></form>
                         </div>
                     </div>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Login</a>
+                @elseif(! request()->routeIs('login', 'donor.register'))
+                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Log in</a>
                 @endif
             </div>
         </div>

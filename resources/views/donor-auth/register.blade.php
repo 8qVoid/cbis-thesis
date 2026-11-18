@@ -10,7 +10,7 @@
 <div class="cbis-registration-shell">
     <div class="cbis-registration-heading">
         <div><span class="cbis-registration-kicker">New account</span><h1>Create your account</h1><p>Enter your details once, then verify your email to activate your account.</p></div>
-        <a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm">Sign in instead</a>
+        <div class="d-flex flex-wrap align-items-center gap-2"><span class="text-muted">Already have an account?</span><a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm">Log in</a></div>
     </div>
 
     @if($registrationRecovery)
