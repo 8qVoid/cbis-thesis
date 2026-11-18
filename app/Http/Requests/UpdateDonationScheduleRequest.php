@@ -8,6 +8,9 @@ class UpdateDonationScheduleRequest extends StoreDonationScheduleRequest
     {
         $rules = parent::rules();
         $schedule = $this->route('donation_schedule');
+        if ($schedule && in_array($schedule->status, ['completed', 'cancelled'], true)) {
+            $rules['status'] = ['required', \Illuminate\Validation\Rule::in([$schedule->status])];
+        }
 
         $rules['photo'] = [
             $schedule?->photo_path ? 'nullable' : 'required',

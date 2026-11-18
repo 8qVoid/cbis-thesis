@@ -201,6 +201,7 @@ class BloodInventoryController extends Controller
             }
             $this->preventDuplicate($data, $record);
             $before = (int) $record->units_available;
+            $this->protectReservedStock($record, $data);
             $record->update($data);
             $this->logAudit('blood_inventory.updated', $record, $data + ['before_units' => $before, 'movement_delta' => (int) $data['units_available'] - $before], $request);
         });
@@ -217,11 +218,30 @@ class BloodInventoryController extends Controller
             $details = ['blood_type' => $record->blood_type, 'component' => $record->component,
                 'before_units' => (int) $record->units_available, 'units_available' => 0,
                 'movement_delta' => -(int) $record->units_available];
+            $this->protectReservedStock($record, ['units_available' => 0]);
             $record->delete();
             $this->logAudit('blood_inventory.deleted', $record, $details);
         });
 
         return redirect()->route('blood-inventory.index')->with('success', 'Inventory entry deleted.');
+    }
+
+    private function protectReservedStock(BloodInventory $record, array $data): void
+    {
+        $candidate = clone $record;
+        $candidate->fill($data);
+        $remaining = $candidate->status === 'expired' || $candidate->isExpired() ? 0 : (int) $candidate->units_available;
+        $previous = $record->status === 'expired' || $record->isExpired() ? 0 : (int) $record->units_available;
+        if ($remaining >= $previous) {
+            return;
+        }
+        $otherStock = BloodInventory::where('facility_id', $record->facility_id)
+            ->where('blood_type', $record->blood_type)->where('component', $record->component)
+            ->whereKeyNot($record->id)->whereIn('status', ['active', 'low_stock'])->notExpired()->sum('units_available');
+        $reserved = \App\Support\ReservedStock::outstanding($record->facility_id, $record->blood_type, $record->component);
+        if ($otherStock + $remaining < $reserved) {
+            throw ValidationException::withMessages(['units_available' => 'This change would leave insufficient stock for approved reservations. Resolve those reservations before reducing or removing the stock.']);
+        }
     }
 
     private function preventDuplicate(array $data, ?BloodInventory $record = null): void

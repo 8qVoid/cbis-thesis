@@ -157,7 +157,14 @@ class DonationScheduleController extends Controller
             $data['photo_path'] = $request->file('photo')->store('event-photos', 'public');
         }
 
-        $donationSchedule->update($data);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($donationSchedule, $data) {
+            $record = DonationSchedule::whereKey($donationSchedule->id)->lockForUpdate()->firstOrFail();
+            if (in_array($record->status, ['completed', 'cancelled'], true) && $data['status'] !== $record->status) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['status' => 'A closed event cannot change status. Create a new event for another schedule.']);
+            }
+            $record->update($data);
+        });
+        $donationSchedule->refresh();
         $this->logAudit('donation_schedule.updated', $donationSchedule, $data, $request);
 
         if (auth()->user()->isEventFacilitator()) {

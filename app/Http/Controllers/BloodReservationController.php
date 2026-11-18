@@ -156,6 +156,9 @@ class BloodReservationController extends Controller
                     throw ValidationException::withMessages(['status' => "Approval was not saved. This request needs {$reservation->units_requested} unit(s) of {$reservation->blood_type} {$component}; only {$freeUnits} unreserved, non-expired unit(s) are available. Check Inventory for matching stock, then retry when stock is available. The request remains under review."]);
                 }
             }
+            if ($data['status'] === 'rejected' && $reservation->releases()->exists()) {
+                throw ValidationException::withMessages(['status' => 'This request already has recorded releases and cannot be rejected.']);
+            }
             $reservation->update([...$data, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
         });
         // A mail outage must not turn a saved decision into an apparent failure.
