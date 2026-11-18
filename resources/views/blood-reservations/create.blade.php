@@ -27,6 +27,7 @@
                 <div class="col-md-3">
                     <label for="blood_type" class="form-label">Blood Type</label>
                     <select id="blood_type" name="blood_type" class="form-select" required>
+                        <option value="" @selected(! old('blood_type'))>Select blood type</option>
                         @foreach(\App\Models\BloodInventory::BLOOD_TYPES as $type)
                             <option @selected(old('blood_type')===$type)>{{ $type }}</option>
                         @endforeach
