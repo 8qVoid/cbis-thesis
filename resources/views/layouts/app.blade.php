@@ -243,9 +243,6 @@
     @endif
     @yield('content')
 </main>
-@if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
-    </div>
-@endif
 <footer class="cbis-site-footer">
     <div class="cbis-site-footer-inner">
         <div class="cbis-site-footer-about">
@@ -259,6 +256,9 @@
         </div>
     </div>
 </footer>
+@if($webAuthenticated && ! $webUser?->hasAnyRole(['Donor','Patient']))
+    </div>
+@endif
 <div class="modal fade" id="cbisConfirmModal" tabindex="-1" aria-labelledby="cbisConfirmTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content cbis-confirm-modal">
@@ -285,6 +285,12 @@
 @endunless
 <script src="{{ asset('js/cbis-maps.js') }}?v={{ filemtime(public_path('js/cbis-maps.js')) }}"></script>
 <script>
+const cbisStaffNavbar = document.querySelector('body:has(.cbis-staff-shell) .cbis-navbar');
+if (cbisStaffNavbar && window.ResizeObserver) {
+    new ResizeObserver(() => {
+        document.documentElement.style.setProperty('--cbis-staff-navbar-height', `${cbisStaffNavbar.getBoundingClientRect().height}px`);
+    }).observe(cbisStaffNavbar);
+}
 let cbisPendingConfirmForm = null;
 let cbisPendingConfirmSubmitter = null;
 const cbisConfirmModalElement = document.getElementById('cbisConfirmModal');
