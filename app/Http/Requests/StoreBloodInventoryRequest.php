@@ -27,7 +27,7 @@ class StoreBloodInventoryRequest extends BaseFormRequest
             'units_available' => ['required', 'integer', 'min:0', 'max:100000'],
             'expiration_date' => ['required', 'date'],
             'expiration_time' => ['required', 'date_format:H:i'],
-            'status' => ['required', 'in:active,low_stock,expired'],
+            'status' => ['exclude'],
         ];
     }
 
@@ -40,9 +40,7 @@ class StoreBloodInventoryRequest extends BaseFormRequest
                 return;
             }
             $expiresAt = Carbon::parse($this->input('expiration_date').' '.($this->input('expiration_time') ?: '23:59:59'), 'Asia/Manila');
-            if ($this->input('status') === 'expired' && $expiresAt->isFuture()) {
-                $validator->errors()->add('expiration_date', 'Expired stock must have a past expiration date and time.');
-            } elseif ($this->input('status') !== 'expired' && $expiresAt->isPast()) {
+            if ($expiresAt->isPast()) {
                 $validator->errors()->add('expiration_date', 'Available stock must have a future expiration date and time.');
             }
         });

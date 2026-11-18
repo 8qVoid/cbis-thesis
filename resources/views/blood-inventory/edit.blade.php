@@ -14,27 +14,18 @@
 <div class="col-md-3"><label class="form-label">Blood bags</label><input name="units_available" type="number" min="0" max="100000" step="1" class="form-control" value="{{ old('units_available',$bloodInventory->units_available) }}" required><small class="form-text text-muted">Each bag counts as one unit.</small></div>
 <div class="col-md-3"><label class="form-label">Expiration Date</label><input name="expiration_date" type="date" class="form-control" value="{{ old('expiration_date',$bloodInventory->expiration_date?->toDateString()) }}" required></div>
 <div class="col-md-3"><label class="form-label">Expiration Time</label><input name="expiration_time" type="time" class="form-control" value="{{ old('expiration_time',substr($bloodInventory->expiration_time ?: '23:59', 0, 5)) }}" required><small class="text-muted">Philippine time; older records default to 11:59 PM</small></div>
-<div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active" @selected(old('status', $bloodInventory->status)==='active')>In storage</option><option value="low_stock" @selected(old('status', $bloodInventory->status)==='low_stock')>Low stock</option><option value="expired" @selected(old('status', $bloodInventory->status)==='expired')>Expired</option></select><small class="text-muted">The inventory list shows Low stock when 1–5 bags remain and Depleted when none remain.</small></div>
+<div class="col-12"><small class="text-muted">Stock status is calculated from the blood component, bag count, and expiration time.</small></div>
 <div class="col-12 d-flex flex-wrap gap-2 pt-2"><a href="{{ route('blood-inventory.index') }}#stock-batches" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Update Adjustment</button></div>
 </div></form>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form.js-confirm-action');
     const date = document.querySelector('[name="expiration_date"]');
-    const status = document.querySelector('[name="status"]');
-    const update = () => {
-        if (status.value === 'expired') {
-            date.removeAttribute('min'); date.max = '{{ now('Asia/Manila')->toDateString() }}';
-        } else {
-            date.removeAttribute('max'); date.min = '{{ now('Asia/Manila')->toDateString() }}';
-        }
-    };
-    status.addEventListener('change', update); update();
+    date.min = '{{ now('Asia/Manila')->toDateString() }}';
     form.addEventListener('submit', () => {
         const units = form.querySelector('[name="units_available"]').value;
         const time = form.querySelector('[name="expiration_time"]').value;
-        const selectedStatus = status.options[status.selectedIndex].text;
-        form.dataset.confirmMessage = `Review this stock adjustment before saving:\nBlood bags: ${units}\nExpiration: ${date.value} ${time} (Philippine time)\nStatus: ${selectedStatus}`;
+        form.dataset.confirmMessage = `Review this stock adjustment before saving:\nBlood bags: ${units}\nExpiration: ${date.value} ${time} (Philippine time)\nStatus is calculated automatically.`;
     });
 });
 </script>

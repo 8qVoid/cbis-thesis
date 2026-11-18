@@ -14,21 +14,7 @@
 <div class="col-md-3"><label class="form-label">Blood bags</label><input name="units_available" value="{{ old('units_available') }}" type="number" min="0" max="100000" step="1" class="form-control" required><small class="form-text text-muted">Each bag counts as one unit.</small></div>
 <div class="col-md-3"><label class="form-label">Expiration Date</label><input name="expiration_date" value="{{ old('expiration_date') }}" type="date" class="form-control" required></div>
 <div class="col-md-3"><label class="form-label">Expiration Time</label><input name="expiration_time" value="{{ old('expiration_time') }}" type="time" class="form-control" required><small class="text-muted">Philippine time</small></div>
-<div class="col-md-3"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active" @selected(old('status') === 'active')>In storage</option><option value="low_stock" @selected(old('status') === 'low_stock')>Low stock</option><option value="expired" @selected(old('status') === 'expired')>Expired</option></select></div>
+<div class="col-12"><small class="text-muted">Stock status is calculated from the blood component, bag count, and expiration time.</small></div>
 <div class="col-12 d-flex flex-wrap gap-2 pt-2"><a href="{{ route('blood-inventory.index') }}#stock-batches" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-danger">Save Adjustment</button></div>
 </div></form>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const date = document.querySelector('[name="expiration_date"]');
-    const status = document.querySelector('[name="status"]');
-    const update = () => {
-        if (status.value === 'expired') {
-            date.removeAttribute('min'); date.max = '{{ now('Asia/Manila')->toDateString() }}';
-        } else {
-            date.removeAttribute('max'); date.min = '{{ now('Asia/Manila')->toDateString() }}';
-        }
-    };
-    status.addEventListener('change', update); update();
-});
-</script>
 @endsection

@@ -137,6 +137,7 @@ class BloodInventoryController extends Controller
     public function store(StoreBloodInventoryRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $data['status'] = $data['units_available'] <= BloodInventory::lowStockThreshold($data['component']) ? 'low_stock' : 'active';
         if (! empty($data['donation_record_id'])) {
             $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
                 ->findOrFail($data['donation_record_id']);
@@ -179,6 +180,7 @@ class BloodInventoryController extends Controller
         abort_if($bloodInventory->status === 'expired' || $bloodInventory->isExpired(), 403, 'Expired stock cannot be edited.');
 
         $data = $request->validated();
+        $data['status'] = $data['units_available'] <= BloodInventory::lowStockThreshold($data['component']) ? 'low_stock' : 'active';
         if (! empty($data['donation_record_id'])) {
             $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
                 ->findOrFail($data['donation_record_id']);

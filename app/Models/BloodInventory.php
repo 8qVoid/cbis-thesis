@@ -23,6 +23,15 @@ class BloodInventory extends Model
         'fresh_frozen_plasma' => 'Fresh Frozen Plasma',
     ];
 
+    public static function lowStockThreshold(string $component): int
+    {
+        return match ($component) {
+            'whole_blood', 'packed_red_blood_cells' => 20,
+            'fresh_frozen_plasma' => 10,
+            default => 5,
+        };
+    }
+
     protected $table = 'blood_inventory';
 
     protected $fillable = [

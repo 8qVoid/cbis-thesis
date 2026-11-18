@@ -70,9 +70,10 @@ class OperationalAuditTest extends TestCase
         $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasErrors('expiration_date');
         $this->assertTrue($stock->fresh()->expiration_date->isFuture());
         $data['status'] = 'expired';
+        $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasErrors('expiration_date');
+        $data['expiration_date'] = today()->addDays(10)->toDateString();
         $this->put(route('blood-inventory.update', $stock), $data)->assertSessionHasNoErrors()->assertRedirect();
-        $this->get(route('blood-inventory.index'))->assertOk()
-            ->assertViewHas('totalAvailableUnits', 0);
+        $this->assertSame('low_stock', $stock->fresh()->status);
     }
 
     public function test_manual_balance_changes_are_visible_as_stock_in_and_out(): void
