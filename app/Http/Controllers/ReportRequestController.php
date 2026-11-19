@@ -45,13 +45,22 @@ class ReportRequestController extends Controller
         ]);
         $type = $data['report_type'];
         $selection = $type === 'selected_report' ? $this->selectedReportOptions($data) : null;
-        $pendingKey = $user->id.':'.$type;
+        $pendingKey = ReportRequest::pendingKeyFor($user->id, $type, $selection);
 
         try {
             $reportRequest = DB::transaction(function () use ($request, $user, $type, $selection, $pendingKey) {
-                if (ReportRequest::where('pending_key', $pendingKey)->exists()) {
+                // Serialize submissions for this requester, including legacy pending keys.
+                User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+                $duplicate = ReportRequest::where('requested_by', $user->id)
+                    ->where('report_type', $type)
+                    ->where('status', 'pending')
+                    ->get()
+                    ->contains(fn ($pending) => ReportRequest::pendingKeyFor(
+                        $user->id, $type, $pending->selection,
+                    ) === $pendingKey);
+                if ($duplicate) {
                     throw ValidationException::withMessages([
-                        'report_type' => 'You already have a pending request for this report.',
+                        'report_type' => 'An identical report request is already pending QAO review. Choose different dates, sections, or detail options, or wait for its review.',
                     ]);
                 }
 
@@ -75,7 +84,7 @@ class ReportRequestController extends Controller
         } catch (QueryException $exception) {
             if (ReportRequest::where('pending_key', $pendingKey)->exists()) {
                 throw ValidationException::withMessages([
-                    'report_type' => 'You already have a pending request for this report.',
+                    'report_type' => 'An identical report request is already pending QAO review. Choose different dates, sections, or detail options, or wait for its review.',
                 ]);
             }
 

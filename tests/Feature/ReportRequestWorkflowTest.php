@@ -34,6 +34,47 @@ class ReportRequestWorkflowTest extends TestCase
         $this->bbs->assignRole('Blood Bank Staff');
     }
 
+    public function test_pending_selected_reports_compare_dates_sections_and_detail_including_legacy_requests(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 19));
+        $payload = [
+            'report_type' => 'selected_report', 'records' => ['inventory', 'donations'],
+            'detail' => 'summary', 'period' => 'month', 'month' => '2026-09',
+        ];
+        $this->actingAs($this->bbs)->post(route('report-requests.store'), $payload)
+            ->assertSessionHasNoErrors()->assertRedirect();
+        $first = ReportRequest::sole();
+        // Existing installations used a key containing only user and report type.
+        $first->update(['pending_key' => $this->bbs->id.':selected_report']);
+
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'records' => ['donations', 'inventory'],
+        ])->assertSessionHasErrors('report_type');
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'period' => 'range', 'from' => '2026-09-01', 'to' => '2026-09-30',
+        ])->assertSessionHasErrors('report_type');
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'month' => '2026-10',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'month' => '2026-10',
+        ])->assertSessionHasErrors('report_type');
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'records' => ['inventory'],
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $this->post(route('report-requests.store'), [
+            ...$payload, 'detail' => 'both',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertSame(4, ReportRequest::where('status', 'pending')->count());
+
+        $this->actingAs($this->qao)->post(route('report-requests.review', $first), [
+            'decision' => 'rejected', 'review_notes' => 'Request can be revised.',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+        $this->actingAs($this->bbs)->post(route('report-requests.store'), $payload)
+            ->assertSessionHasNoErrors()->assertRedirect();
+        $this->assertSame(5, ReportRequest::count());
+    }
+
     public function test_bbs_requests_stock_summary_and_downloads_only_after_qao_approval(): void
     {
         $stock = BloodInventory::create([

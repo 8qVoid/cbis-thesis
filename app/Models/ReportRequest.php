@@ -23,6 +23,24 @@ class ReportRequest extends Model
         return ['reviewed_at' => 'datetime', 'selection' => 'array', 'snapshot' => 'array'];
     }
 
+    public static function pendingKeyFor(int $userId, string $type, ?array $selection): string
+    {
+        $key = $userId.':'.$type;
+        if ($type !== 'selected_report') {
+            return $key;
+        }
+
+        $records = array_values(array_unique($selection['records'] ?? []));
+        sort($records);
+
+        return $key.':'.hash('sha256', json_encode([
+            'records' => $records,
+            'detail' => $selection['detail'] ?? null,
+            'from' => $selection['from'] ?? null,
+            'to' => $selection['to'] ?? null,
+        ], JSON_THROW_ON_ERROR));
+    }
+
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');
