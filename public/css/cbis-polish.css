@@ -333,6 +333,11 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-summary-link:hover,.cbis-summary-link:focus-visible { color:inherit; border-color:#c8103d; box-shadow:0 0 0 2px #c8103d22; }
 .cbis-low-stock-link { color:#8a3b18; background:#fff6ef; border:1px solid #e8c9b5; font-weight:600; white-space:normal; text-align:left; }
 .cbis-low-stock-link:hover,.cbis-low-stock-link:focus-visible { color:#722d11; background:#ffeadb; border-color:#c9835d; }
+.cbis-stock-search-wrap { position:relative; }
+.cbis-stock-suggestions { position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; max-height:280px; overflow-y:auto; padding:5px; border:1px solid #dce2ea; border-radius:8px; background:#fff; box-shadow:0 10px 28px #17284020; }
+.cbis-stock-suggestion { display:block; width:100%; padding:9px 10px; border:0; border-radius:5px; background:#fff; color:#253047; text-align:left; font-size:.84rem; }
+.cbis-stock-suggestion:hover,.cbis-stock-suggestion:focus-visible { background:#fcebef; color:#a71938; outline:0; }
+.cbis-stock-suggestion-empty { padding:10px; color:#667085; font-size:.82rem; }
 @media(min-width:768px) {
  .cbis-donor-directory .cbis-mobile-table-wrap { overflow-x:visible; }
  .cbis-donor-directory .cbis-mobile-card-table { width:100%; min-width:0; table-layout:fixed; }

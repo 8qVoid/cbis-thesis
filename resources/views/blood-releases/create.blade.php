@@ -12,7 +12,7 @@
 @if($inventory->isEmpty())
 <div class="col-12"><div class="alert alert-warning mb-0">No active inventory units are available for release.</div></div>
 @else
-<div class="col-md-6"><label class="form-label" for="releaseInventorySearch">Find stock</label><input type="search" id="releaseInventorySearch" class="form-control mb-2" placeholder="Search blood type or component" autocomplete="off"><small class="d-block text-muted mb-2">Sorted by earliest expiry date and time (first to expire, first out).</small><label class="form-label" for="releaseInventorySelect">Available stock batch</label><select name="blood_inventory_id" id="releaseInventorySelect" class="form-select">@foreach($inventory as $item)<option value="{{ $item->id }}" data-units="{{ $item->units_available }}" data-search="{{ strtolower($item->blood_type.' '.$item->component_label) }}">{{ $item->blood_type }} · {{ $item->component_label }} · {{ $item->units_available }} units · expires {{ $item->expiresAt()?->format('M j, Y g:i A') }} PHT @if(auth('web')->user()?->isCentralAdmin()) - {{ $item->facility->name ?? 'No facility' }} @endif</option>@endforeach</select></div>
+<div class="col-md-6"><label class="form-label" for="releaseInventorySearch">Find stock</label><div class="cbis-stock-search-wrap"><input type="search" id="releaseInventorySearch" class="form-control" placeholder="Search blood type or component" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="releaseStockSuggestions"><div id="releaseStockSuggestions" class="cbis-stock-suggestions" role="listbox" hidden></div></div><small class="d-block text-muted mt-2 mb-2">Sorted by earliest expiry date and time (first to expire, first out).</small><label class="form-label" for="releaseInventorySelect">Available stock batch</label><select name="blood_inventory_id" id="releaseInventorySelect" class="form-select">@foreach($inventory as $item)<option value="{{ $item->id }}" data-units="{{ $item->units_available }}" data-search="{{ strtolower($item->blood_type.' '.$item->component_label) }}">{{ $item->blood_type }} · {{ $item->component_label }} · {{ $item->units_available }} units · expires {{ $item->expiresAt()?->format('M j, Y g:i A') }} PHT @if(auth('web')->user()?->isCentralAdmin()) - {{ $item->facility->name ?? 'No facility' }} @endif</option>@endforeach</select></div>
 <div class="col-md-3"><label class="form-label">Units Released</label><input type="number" name="units_released" id="releaseUnitsInput" min="1" max="{{ min($inventory->first()?->units_available ?? 1, $reservation ? $reservation->units_requested - $reservation->releases()->sum('units_released') : 100000) }}" value="{{ min($inventory->first()?->units_available ?? 1, $reservation ? $reservation->units_requested - $reservation->releases()->sum('units_released') : 1) }}" class="form-control" required><small class="text-muted" id="releaseUnitsHelp">Available in selected batch: {{ $inventory->first()?->units_available }} unit(s)</small></div>
 <div class="col-md-3"><label class="form-label">Released At</label><input type="datetime-local" name="released_at" value="{{ now('Asia/Manila')->format('Y-m-d\TH:i') }}" class="form-control" required></div>
 <div class="col-md-6"><label class="form-label">Patient Name</label><input name="patient_name" value="{{ $reservation?->patient?->name }}" class="form-control" @disabled($reservation)>@if($reservation)<input type="hidden" name="patient_name" value="{{ $reservation->patient->name }}"><small class="text-muted">Filled from the approved reservation.</small>@endif</div>
@@ -27,17 +27,33 @@
         const inventorySelect = document.getElementById('releaseInventorySelect');
         const unitsInput = document.getElementById('releaseUnitsInput');
         const searchInput = document.getElementById('releaseInventorySearch');
+        const suggestions = document.getElementById('releaseStockSuggestions');
         const stockOptions = [...inventorySelect.options];
+        const closeSuggestions = () => { suggestions.hidden = true; searchInput.setAttribute('aria-expanded', 'false'); };
+        const selectStock = (option) => {
+            inventorySelect.value = option.value;
+            searchInput.value = '';
+            stockOptions.forEach(item => { item.hidden = false; });
+            closeSuggestions();
+            syncAvailableUnits();
+        };
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.trim().toLowerCase();
-            const current = inventorySelect.value;
-            stockOptions.forEach(option => { option.hidden = Boolean(query) && !option.dataset.search.includes(query); });
-            if (inventorySelect.selectedOptions[0]?.hidden) {
-                const firstMatch = stockOptions.find(option => !option.hidden);
-                if (firstMatch) inventorySelect.value = firstMatch.value;
-            } else if (current) { inventorySelect.value = current; }
-            syncAvailableUnits();
+            const matches = stockOptions.filter(option => !query || option.dataset.search.includes(query));
+            suggestions.replaceChildren();
+            if (!query) { closeSuggestions(); return; }
+            if (!matches.length) {
+                const empty = document.createElement('div'); empty.className = 'cbis-stock-suggestion-empty'; empty.textContent = 'No matching stock. Try a blood type or component.'; suggestions.append(empty);
+            } else {
+                matches.slice(0, 8).forEach(option => {
+                    const button = document.createElement('button'); button.type = 'button'; button.className = 'cbis-stock-suggestion'; button.role = 'option'; button.textContent = option.textContent.trim();
+                    button.addEventListener('click', () => selectStock(option)); suggestions.append(button);
+                });
+            }
+            suggestions.hidden = false; searchInput.setAttribute('aria-expanded', 'true');
         });
+        searchInput.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !suggestions.hidden) { event.preventDefault(); suggestions.querySelector('button')?.click(); } if (event.key === 'Escape') closeSuggestions(); });
+        document.addEventListener('click', (event) => { if (!event.target.closest('.cbis-stock-search-wrap')) closeSuggestions(); });
         const unitsHelp = document.getElementById('releaseUnitsHelp');
 
         const reservationRemaining = @json($reservation ? $reservation->units_requested - $reservation->releases()->sum('units_released') : null);
