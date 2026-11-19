@@ -40,10 +40,10 @@
         <strong>{{ $lowStockGroups }}</strong>
         <span>Groups below their component threshold</span>
     </a>
-    <a class="card cbis-inventory-summary-card cbis-summary-link" href="{{ route('blood-inventory.index', ['expiring' => 'soon']) }}#stock-batches" aria-label="View {{ $expiringStorageGroups }} expiring stock groups and their records">
-        <small>Expiring soon</small>
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="{{ route('blood-inventory.index', ['expiring' => 'soon']) }}#stock-batches" aria-label="View batches expiring within 14 days across {{ $expiringStorageGroups }} blood type and component groups">
+        <small>Expiring groups · 14 days</small>
         <strong>{{ $expiringStorageGroups }}</strong>
-        <span>Groups with nearest expiry within 14 days</span>
+        <span>Blood type and component groups; click to see individual batches</span>
     </a>
 </div>
 
