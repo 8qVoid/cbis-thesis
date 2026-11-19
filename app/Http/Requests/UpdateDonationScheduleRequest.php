@@ -4,6 +4,13 @@ namespace App\Http\Requests;
 
 class UpdateDonationScheduleRequest extends StoreDonationScheduleRequest
 {
+    public function authorize(): bool
+    {
+        $schedule = $this->route('donation_schedule');
+
+        return parent::authorize() && $schedule?->isEditable();
+    }
+
     public function rules(): array
     {
         $rules = parent::rules();

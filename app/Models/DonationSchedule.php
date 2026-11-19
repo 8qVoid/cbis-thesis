@@ -89,6 +89,17 @@ class DonationSchedule extends Model
         return $registrationDeadline === null || $registrationDeadline->isFuture();
     }
 
+    public function isEditable(): bool
+    {
+        if (in_array($this->status, ['completed', 'cancelled'], true)) {
+            return false;
+        }
+
+        $end = $this->end_at ?? $this->event_date?->copy()->endOfDay();
+
+        return $end === null || $end->isFuture();
+    }
+
     private function formatDisplayTime(?string $time): ?string
     {
         if (blank($time)) {

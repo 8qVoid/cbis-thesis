@@ -188,6 +188,27 @@ class OperationalAuditTest extends TestCase
             ->assertSee('Show registration');
     }
 
+    public function test_qao_cannot_edit_a_completed_or_past_event(): void
+    {
+        $qao = User::factory()->create(['facility_id' => null, 'is_active' => true]);
+        $qao->assignRole('Quality Assurance Officer');
+        $event = DonationSchedule::create([
+            'facility_id' => $this->main->id, 'title' => 'Finished drive',
+            'event_type' => 'blood_donation', 'event_date' => today()->subDay(),
+            'start_time' => '08:00', 'end_time' => '12:00',
+            'start_at' => today()->subDay()->setTime(8, 0),
+            'end_at' => today()->subDay()->setTime(12, 0),
+            'venue' => 'Audit Hall', 'status' => 'completed',
+        ]);
+
+        $this->actingAs($qao)->get(route('donation-schedules.edit', $event))->assertForbidden();
+        $this->put(route('donation-schedules.update', $event), [])->assertForbidden();
+        $this->get(route('donation-schedules.show', $event))->assertOk()->assertDontSee('Edit event');
+
+        $event->update(['status' => 'planned']);
+        $this->get(route('donation-schedules.edit', $event))->assertForbidden();
+    }
+
     public function test_inactive_accounts_cannot_keep_using_an_existing_session(): void
     {
         $patient = User::factory()->create(['facility_id' => null, 'is_active' => true]);

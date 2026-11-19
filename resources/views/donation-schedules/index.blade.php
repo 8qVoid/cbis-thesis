@@ -95,7 +95,7 @@
             @if($canViewSchedules)
                 <a href="{{ route('donation-schedules.show', $schedule) }}" class="btn btn-sm btn-outline-secondary">View event</a>
             @endif
-            @if($canManageSchedules)
+            @if($canManageSchedules && $schedule->isEditable())
                 <a href="{{ route('donation-schedules.edit', $schedule) }}" class="btn btn-sm btn-outline-primary">Edit event</a>
             @endif
             @if($canManageSchedules || $canReviewActivities)

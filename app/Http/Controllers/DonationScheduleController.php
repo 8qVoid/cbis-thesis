@@ -125,6 +125,7 @@ class DonationScheduleController extends Controller
     public function edit(DonationSchedule $donationSchedule): View
     {
         $this->authorizeRecord($donationSchedule);
+        abort_unless($donationSchedule->isEditable(), 403, 'This event has ended and cannot be edited.');
         $facilities = auth()->user()->isCentralAdmin()
             ? Facility::query()->orderBy('name')->get()
             : Facility::query()->whereKey(auth()->user()->facility_id)->get();
@@ -135,6 +136,7 @@ class DonationScheduleController extends Controller
     public function update(UpdateDonationScheduleRequest $request, DonationSchedule $donationSchedule): RedirectResponse
     {
         $this->authorizeRecord($donationSchedule);
+        abort_unless($donationSchedule->isEditable(), 403, 'This event has ended and cannot be edited.');
 
         $data = $request->validated();
         if (! auth()->user()->isCentralAdmin()) {
@@ -159,9 +161,7 @@ class DonationScheduleController extends Controller
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($donationSchedule, $data) {
             $record = DonationSchedule::whereKey($donationSchedule->id)->lockForUpdate()->firstOrFail();
-            if (in_array($record->status, ['completed', 'cancelled'], true) && $data['status'] !== $record->status) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['status' => 'A closed event cannot change status. Create a new event for another schedule.']);
-            }
+            abort_unless($record->isEditable(), 403, 'This event has ended and cannot be edited.');
             $record->update($data);
         });
         $donationSchedule->refresh();
