@@ -331,17 +331,18 @@ body.bg-light { background:#f6f7fa !important; color:var(--cbis-text); }
 .cbis-inventory-summary-card { padding:18px 20px; border:1px solid #e1e6ee; box-shadow:0 6px 18px #17284008; }
 .cbis-summary-link { color:inherit; text-decoration:none; }
 .cbis-summary-link:hover,.cbis-summary-link:focus-visible { color:inherit; border-color:#c8103d; box-shadow:0 0 0 2px #c8103d22; }
-.cbis-donor-directory .cbis-mobile-table-wrap { overflow-x:clip; }
- .cbis-donor-directory .cbis-mobile-card-table,.cbis-donor-directory .cbis-mobile-card-table tbody,.cbis-donor-directory .cbis-mobile-card-table tr { display:block; width:100%; min-width:0; }
- .cbis-donor-directory .cbis-mobile-card-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
- .cbis-donor-directory .cbis-mobile-card-table tbody { padding:8px; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-reservation-row { margin-bottom:10px; border:1px solid #e2e7ef; border-radius:8px; background:#fff; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-reservation-row td { display:grid; grid-template-columns:110px minmax(0,1fr); gap:6px 12px; width:100%; max-width:none; padding:9px 12px; overflow-wrap:anywhere; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-reservation-row td::before { content:attr(data-label); color:#596477; font-size:.75rem; font-weight:700; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-reservation-row td > * { min-width:0; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-reservation-row .cbis-record-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; white-space:normal; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-table-empty td { display:block; width:100%; }
- .cbis-donor-directory .cbis-mobile-card-table .cbis-table-empty td::before { content:none; }
+@media(min-width:768px) {
+ .cbis-donor-directory .cbis-mobile-table-wrap { overflow-x:visible; }
+ .cbis-donor-directory .cbis-mobile-card-table { width:100%; min-width:0; table-layout:fixed; }
+ .cbis-donor-directory th:nth-child(1) { width:18%; }
+ .cbis-donor-directory th:nth-child(2) { width:9%; }
+ .cbis-donor-directory th:nth-child(3) { width:29%; }
+ .cbis-donor-directory th:nth-child(4) { width:24%; }
+ .cbis-donor-directory.cbis-record-table th:last-child { width:20%; }
+ .cbis-donor-directory td { overflow-wrap:anywhere; }
+ .cbis-donor-directory .cbis-table-actions { white-space:normal; }
+ .cbis-donor-directory .cbis-row-actions { margin-left:4px; }
+}
 .cbis-inventory-summary-card small { color:#6b778c; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
 .cbis-inventory-summary-card strong { display:block; margin:6px 0; color:#14233a; font-size:34px; line-height:1; }
 .cbis-inventory-summary-card span { color:#657187; font-size:13px; }
