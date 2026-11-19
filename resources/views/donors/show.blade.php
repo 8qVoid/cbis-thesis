@@ -10,7 +10,7 @@
 @endphp
 <div class="cbis-page-heading">
     <div><div class="cbis-eyebrow">Donor profile</div><h1 class="cbis-page-title mb-0">{{ $donor->full_name }}</h1><p class="cbis-page-subtitle">Identity, contact information, and current screening status.</p></div>
-    <div class="d-flex flex-wrap gap-2"><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary">Back to donors</a>@can('manage donors')<a href="{{ route('donors.edit', $donor) }}" class="btn btn-danger">Edit donor</a>@endcan</div>
+    <div class="d-flex flex-wrap gap-2"><a href="{{ route('donors.index') }}" class="btn btn-outline-secondary">Back to donors</a></div>
 </div>
 <div class="cbis-donor-staff-summary" data-live-region="donor-details">
     <section class="card"><small>Blood type</small><strong>{{ $donor->blood_type }}</strong></section>

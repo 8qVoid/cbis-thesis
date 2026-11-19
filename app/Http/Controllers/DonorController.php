@@ -106,6 +106,7 @@ class DonorController extends Controller
 
     public function edit(Donor $donor): View
     {
+        abort(403, 'Donor personal details are managed by the account holder.');
         $this->authorizeDonor($donor);
         $facilities = Facility::query()->orderBy('name')->get();
 
@@ -114,6 +115,7 @@ class DonorController extends Controller
 
     public function update(UpdateDonorRequest $request, Donor $donor): RedirectResponse
     {
+        abort(403, 'Donor personal details are managed by the account holder.');
         $this->authorizeDonor($donor);
 
         $data = $request->validated();

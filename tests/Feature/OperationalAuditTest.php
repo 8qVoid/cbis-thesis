@@ -45,7 +45,12 @@ class OperationalAuditTest extends TestCase
     {
         $donor = Donor::create(['first_name' => 'Online', 'last_name' => 'Audit', 'birth_date' => '2000-01-01', 'sex' => 'male', 'blood_type' => 'A+', 'is_online_registered' => true]);
         $this->actingAs($this->bbs)->get(route('donors.index'))->assertOk()->assertSee('Audit, Online');
-        $this->get(route('donors.edit', $donor))->assertOk();
+        $this->get(route('donors.edit', $donor))->assertForbidden();
+        $this->put(route('donors.update', $donor), [
+            'first_name' => 'Changed', 'last_name' => 'Audit', 'birth_date' => '2000-01-01',
+            'sex' => 'male', 'blood_type' => 'A+',
+        ])->assertForbidden();
+        $this->assertSame('Online', $donor->fresh()->first_name);
     }
 
     public function test_inventory_component_links_filter_the_results(): void
