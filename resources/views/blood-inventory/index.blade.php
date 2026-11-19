@@ -93,7 +93,7 @@
     <div class="card-header cbis-card-title">Low-stock groups</div>
     <div class="card-body d-flex flex-wrap gap-2">
         @forelse($storageRows->filter(fn ($row) => (int) $row->units <= \App\Models\BloodInventory::lowStockThreshold($row->component)) as $row)
-            <a class="btn btn-sm btn-outline-warning" href="{{ route('blood-inventory.storage', ['blood_type' => $row->blood_type, 'component' => $row->component]) }}">
+            <a class="btn btn-sm cbis-low-stock-link" href="{{ route('blood-inventory.storage', ['blood_type' => $row->blood_type, 'component' => $row->component]) }}">
                 {{ $row->blood_type }} · {{ $components[$row->component] }} · {{ (int) $row->units }} unit{{ (int) $row->units === 1 ? '' : 's' }}
             </a>
         @empty
