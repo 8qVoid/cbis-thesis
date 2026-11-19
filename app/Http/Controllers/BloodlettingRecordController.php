@@ -58,6 +58,7 @@ class BloodlettingRecordController extends Controller
     public function edit(BloodlettingRecord $bloodlettingRecord): View
     {
         $this->authorizeRecord($bloodlettingRecord);
+        abort_if($bloodlettingRecord->verification_status !== 'pending' || \App\Models\BloodInventory::withTrashed()->where('donation_record_id', $bloodlettingRecord->donation_record_id)->exists(), 403, 'Finalized records or records linked to inventory cannot be changed.');
         $user = auth()->user();
         $donationRecords = FacilityScope::apply(DonationRecord::query()->with('facility')->orderByDesc('donated_at'), $user)->get();
         $facilities = Facility::orderBy('name')->get();
@@ -68,6 +69,7 @@ class BloodlettingRecordController extends Controller
     public function update(UpdateBloodlettingRecordRequest $request, BloodlettingRecord $bloodlettingRecord): RedirectResponse
     {
         $this->authorizeRecord($bloodlettingRecord);
+        abort_if($bloodlettingRecord->verification_status !== 'pending' || \App\Models\BloodInventory::withTrashed()->where('donation_record_id', $bloodlettingRecord->donation_record_id)->exists(), 403, 'Finalized records or records linked to inventory cannot be changed.');
 
         $data = $request->validated();
         $donationRecord = FacilityScope::apply(DonationRecord::query(), auth()->user())
@@ -83,6 +85,7 @@ class BloodlettingRecordController extends Controller
     public function destroy(BloodlettingRecord $bloodlettingRecord): RedirectResponse
     {
         $this->authorizeRecord($bloodlettingRecord);
+        abort_if($bloodlettingRecord->verification_status !== 'pending' || \App\Models\BloodInventory::withTrashed()->where('donation_record_id', $bloodlettingRecord->donation_record_id)->exists(), 403, 'Finalized records or records linked to inventory cannot be changed.');
         $bloodlettingRecord->delete();
         $this->logAudit('bloodletting_record.deleted', $bloodlettingRecord);
 

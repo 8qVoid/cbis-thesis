@@ -32,7 +32,7 @@ class BloodInventoryController extends Controller
         $inventory = FacilityScope::apply(BloodInventory::query()->with(['facility', 'donationRecord']), auth()->user())
             ->when($filters['blood_type'] ?? null, fn ($query, $type) => $query->where('blood_type', $type))
             ->when($filters['component'] ?? null, fn ($query, $component) => $query->where('component', $component))
-            ->when($filters['status'] ?? null, fn ($query) => $query->where('units_available', '>', 0)->where('units_available', '<=', 5)->where('status', '!=', 'expired')->notExpired())
+            ->when($filters['status'] ?? null, fn ($query) => $query->where('units_available', '>', 0)->whereRaw("units_available <= CASE component WHEN 'whole_blood' THEN 20 WHEN 'packed_red_blood_cells' THEN 20 WHEN 'fresh_frozen_plasma' THEN 10 ELSE 5 END")->where('status', '!=', 'expired')->notExpired())
             ->when($filters['expiring'] ?? null, fn ($query) => $query->where('status', '!=', 'expired')->where('units_available', '>', 0)->notExpired()->whereDate('expiration_date', '<=', now('Asia/Manila')->addDays(14)))
             ->orderBy('blood_type')
             ->orderBy('expiration_date')

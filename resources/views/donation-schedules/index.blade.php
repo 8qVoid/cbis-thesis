@@ -102,7 +102,7 @@
             <details class="cbis-event-actions">
                 <summary aria-label="More actions for {{ $schedule->title }}">More actions</summary>
                 <div class="cbis-event-action-buttons">
-                        @if($canReviewActivities && $schedule->approval_status === 'pending')
+                        @if($canReviewActivities && $schedule->approval_status === 'pending' && $schedule->isEditable())
                             <form
                                 method="POST"
                                 action="{{ route('donation-schedules.review',$schedule) }}"
@@ -148,7 +148,8 @@
                                     <button class="btn btn-sm btn-outline-success">End Event</button>
                                 </form>
                             @endif
-                            <form
+                            @if($schedule->isEditable() && ! $schedule->eventRegistrations()->exists())
+<form
                                 method="POST"
                                 action="{{ route('donation-schedules.destroy', $schedule) }}"
                                 class="d-inline js-confirm-action"
@@ -161,6 +162,7 @@
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
+@endif
                         @endif
 
                 </div>

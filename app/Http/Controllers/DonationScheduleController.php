@@ -197,6 +197,7 @@ class DonationScheduleController extends Controller
 
     public function destroy(DonationSchedule $donationSchedule): RedirectResponse
     {
+        abort_unless($donationSchedule->isEditable() && ! $donationSchedule->eventRegistrations()->exists(), 403, "Events that have ended or have registrations must be retained.");
         $this->authorizeRecord($donationSchedule);
         $donationSchedule->delete();
         $this->logAudit('donation_schedule.deleted', $donationSchedule);
@@ -207,6 +208,7 @@ class DonationScheduleController extends Controller
     public function review(Request $request, DonationSchedule $donationSchedule): RedirectResponse
     {
         abort_unless(auth()->user()->can('review activities'), 403);
+        abort_unless($donationSchedule->isEditable(), 403, 'Ended events cannot be reviewed.');
         $data = $request->validate(['approval_status' => ['required', 'in:approved,rejected'], 'review_notes' => ['nullable', 'string', 'max:1000']]);
         $updated = DonationSchedule::whereKey($donationSchedule->getKey())->where('approval_status', 'pending')->update([
             ...$data, 'is_public' => $data['approval_status'] === 'approved',
