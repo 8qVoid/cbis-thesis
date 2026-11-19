@@ -22,17 +22,17 @@
 </div>
 
 <div class="cbis-inventory-summary-grid mb-3" data-live-region="storage-summary">
-    <section class="card cbis-inventory-summary-card">
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="#storage-batches" aria-label="View {{ $totalUnits }} stored units">
         <small>Units in storage</small>
         <strong>{{ $totalUnits }}</strong>
         <span>Non-expired units, including reserved stock</span>
-    </section>
-    <section class="card cbis-inventory-summary-card">
+    </a>
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="#storage-batches" aria-label="View {{ $batchCount }} stock batches">
         <small>Stock batches</small>
         <strong>{{ $batchCount }}</strong>
         <span>Current stock records for this blood type and component</span>
-    </section>
-    <section class="card cbis-inventory-summary-card">
+    </a>
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="#storage-batches" aria-label="View batches by expiry date">
         <small>Nearest expiry</small>
         @if($nearestExpiryDate)
             <strong><time datetime="{{ $nearestExpiryDate }}">{{ \Illuminate\Support\Carbon::parse($nearestExpiryDate)->format('M d, Y') }}</time></strong>
@@ -41,7 +41,7 @@
             <strong>—</strong>
             <span>No current stock batches</span>
         @endif
-    </section>
+    </a>
 </div>
 
 <p class="small text-muted">One unit is one blood bag. A stock batch may contain several bags only when they share the same expiration date; bags with different dates belong in separate batches.</p>
@@ -76,7 +76,7 @@
     </div>
 </form>
 
-<div data-live-region="storage-batches">
+<div id="storage-batches" data-live-region="storage-batches">
     @if($batches->count())
         <p class="small text-muted cbis-storage-results-note">Showing {{ $batches->firstItem() }}–{{ $batches->lastItem() }} of {{ $batches->total() }} stock batch{{ $batches->total() === 1 ? '' : 'es' }}. Displaying {{ $filteredUnits }} individual blood bag{{ $filteredUnits === 1 ? '' : 's' }}.</p>
         @foreach($pageExpiryGroups as $expiryDate => $dateBatches)
@@ -90,7 +90,7 @@
                     <h2 class="h6 mb-0" id="storage-expiry-{{ $expiryDate }}">Expires <time datetime="{{ $expiryDate }}">{{ \Illuminate\Support\Carbon::parse($expiryDate)->format('M d, Y') }}</time>@if($dateUnits > 0 && $dateUnits <= 5) <span class="badge cbis-status-low ms-1">Low stock group</span>@endif</h2>
                     <p>{{ $dateUnits }} unit{{ $dateUnits === 1 ? '' : 's' }} · {{ $dateBatchCount }} stock batch{{ $dateBatchCount === 1 ? '' : 'es' }} total</p>
                 </div>
-                <div class="cbis-storage-batch-grid" aria-label="Blood bags expiring {{ $expiryDate }}">
+    <div class="cbis-storage-batch-grid" aria-label="Blood bags expiring {{ $expiryDate }}">
                     @foreach($dateBatches as $batch)
                         @php
                             $units = (int) $batch->units_available;

@@ -46,7 +46,7 @@ class BloodInventoryController extends Controller
             ->notExpired()->groupBy('blood_type', 'component')->get()
             ->keyBy(fn ($row) => $row->blood_type.'|'.$row->component);
         $totalAvailableUnits = (int) $storageRows->sum('units');
-        $lowStockGroups = $storageRows->filter(fn ($row) => (int) $row->units <= 5)->count();
+        $lowStockGroups = $storageRows->filter(fn ($row) => (int) $row->units <= BloodInventory::lowStockThreshold($row->component))->count();
         $expiringStorageGroups = $storageRows->filter(fn ($row) => $row->next_expiration && today()->diffInDays($row->next_expiration, false) <= 14)->count();
 
         $recentStockIns = FacilityScope::apply(DonationRecord::query()->with(['donor', 'inventory'])->whereHas('inventory'), auth()->user())

@@ -6,8 +6,8 @@
     $canManageInventory = $currentUser?->can('manage inventory') ?? false;
     $components = \App\Models\BloodInventory::COMPONENTS;
     $bloodTypes = \App\Models\BloodInventory::BLOOD_TYPES;
-    $statusClass = fn (int $units): string => $units === 0 ? 'cbis-tone-info' : ($units <= 5 ? 'cbis-tone-warning' : 'cbis-tone-success');
-    $statusLabel = fn (int $units): string => $units === 0 ? 'No stock' : ($units <= 5 ? 'Low stock' : 'In storage');
+    $statusClass = fn (int $units, string $component): string => $units === 0 ? 'cbis-tone-info' : ($units <= \App\Models\BloodInventory::lowStockThreshold($component) ? 'cbis-tone-warning' : 'cbis-tone-success');
+    $statusLabel = fn (int $units, string $component): string => $units === 0 ? 'No stock' : ($units <= \App\Models\BloodInventory::lowStockThreshold($component) ? 'Low stock' : 'In storage');
 @endphp
 
 <div class="cbis-page-heading">
@@ -30,21 +30,21 @@
 </nav>
 
 <div class="cbis-inventory-summary-grid mb-3" data-live-region="inventory-summary">
-    <section class="card cbis-inventory-summary-card">
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="#current-storage" aria-label="View {{ $totalAvailableUnits }} units in current storage">
         <small>Units in storage</small>
         <strong>{{ $totalAvailableUnits }}</strong>
         <span>Non-expired units, including reserved stock</span>
-    </section>
-    <section class="card cbis-inventory-summary-card">
+    </a>
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="#low-stock-groups" aria-label="View {{ $lowStockGroups }} low-stock groups">
         <small>Low-stock groups</small>
         <strong>{{ $lowStockGroups }}</strong>
-        <span>Blood type/component groups at 5 units or fewer</span>
-    </section>
-    <section class="card cbis-inventory-summary-card">
+        <span>Groups below their component threshold</span>
+    </a>
+    <a class="card cbis-inventory-summary-card cbis-summary-link" href="{{ route('blood-inventory.index', ['expiring' => 'soon']) }}#stock-batches" aria-label="View {{ $expiringStorageGroups }} expiring stock groups and their records">
         <small>Expiring soon</small>
         <strong>{{ $expiringStorageGroups }}</strong>
         <span>Groups with nearest expiry within 14 days</span>
-    </section>
+    </a>
 </div>
 
 <section id="current-storage" class="card mb-3" data-live-region="inventory-storage">
@@ -74,7 +74,7 @@
                         >
                             <span class="cbis-storage-cell-top">
                                 <span class="cbis-storage-units">{{ $units }}</span>
-                                <span class="cbis-inline-status {{ $statusClass($units) }}">{{ $statusLabel($units) }}</span>
+                                <span class="cbis-inline-status {{ $statusClass($units, $componentKey) }}">{{ $statusLabel($units, $componentKey) }}</span>
                             </span>
                             @if($stock?->next_expiration)
                                 <small>{{ (int) $stock->batch_count }} batch{{ (int) $stock->batch_count === 1 ? '' : 'es' }} · Next expiry {{ \Illuminate\Support\Carbon::parse($stock->next_expiration)->format('M d, Y') }}</small>
@@ -86,6 +86,19 @@
                 </div>
             @endforeach
         </div>
+    </div>
+</section>
+
+<section id="low-stock-groups" class="card mb-3">
+    <div class="card-header cbis-card-title">Low-stock groups</div>
+    <div class="card-body d-flex flex-wrap gap-2">
+        @forelse($storageRows->filter(fn ($row) => (int) $row->units <= \App\Models\BloodInventory::lowStockThreshold($row->component)) as $row)
+            <a class="btn btn-sm btn-outline-warning" href="{{ route('blood-inventory.storage', ['blood_type' => $row->blood_type, 'component' => $row->component]) }}">
+                {{ $row->blood_type }} · {{ $components[$row->component] }} · {{ (int) $row->units }} unit{{ (int) $row->units === 1 ? '' : 's' }}
+            </a>
+        @empty
+            <span class="text-muted">No low-stock groups.</span>
+        @endforelse
     </div>
 </section>
 
