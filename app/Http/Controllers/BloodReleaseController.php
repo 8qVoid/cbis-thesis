@@ -44,7 +44,10 @@ class BloodReleaseController extends Controller
                 ->with('facility')
                 ->where('status', '!=', 'expired')
                 ->where('units_available', '>', 0)
-                ->notExpired(),
+                ->notExpired()
+                ->orderBy('expiration_date')
+                ->orderBy('expiration_time')
+                ->orderBy('id'),
             $user
         )->get();
 
